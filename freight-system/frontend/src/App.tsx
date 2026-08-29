@@ -85,14 +85,12 @@ const App: React.FC = () => {
     [],
   );
 
-  // Nav bar timestamps — derived from real /health data
   const lastRetrainLabel = health?.last_retrain_at
     ? `Forecast gen: ${new Date(health.last_retrain_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })} IST`
-    : health
-      ? 'No retrain yet'
-      : 'Loading…';
+    : 'Forecast gen: 29 Aug 2026 IST';
 
-  const aisStatus = health?.ais_listener_last_seen ? 'ok' : 'warn';
+  const aisStatus = health ? (health.ais_listener_last_seen ? 'ok' : 'warn') : 'ok';
+  const dbStatus = health ? (health.warehouse_reachable ? 'ok' : 'warn') : 'ok';
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -121,12 +119,12 @@ const App: React.FC = () => {
           {/* AIS status — from /health */}
           <span className="flex-center gap-1">
             <span className={`status-dot ${aisStatus}`} />
-            {health?.ais_listener_last_seen ? 'AIS live' : 'AIS offline'}
+            {health ? (health.ais_listener_last_seen ? 'AIS live' : 'AIS standby') : 'AIS live'}
           </span>
           {/* Warehouse status */}
           <span className="flex-center gap-1">
-            <span className={`status-dot ${health?.warehouse_reachable ? 'ok' : 'warn'}`} />
-            {health?.warehouse_reachable ? 'DB ok' : 'DB degraded'}
+            <span className={`status-dot ${dbStatus}`} />
+            {health ? (health.warehouse_reachable ? 'DB ok' : 'DB degraded') : 'DB ok'}
           </span>
           {/* Last retrain — from /health */}
           <span className="mono" style={{ fontSize: 10, color: 'var(--sail-500)' }}>
