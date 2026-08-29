@@ -1,0 +1,11 @@
+{
+  "buildCommand": "cd freight-system/frontend && npm install && npm run build",
+  "outputDirectory": "freight-system/frontend/dist",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

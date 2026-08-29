@@ -1,0 +1,91 @@
+# Render Infrastructure as Code Blueprint
+# Declares the 4 backend resources: Web API, AIS Worker, Retrain Cron, and PostgreSQL Database.
+# Reference: DOC3 §4 & DOC4 Step 14
+
+services:
+  # ─── 1. FastAPI Web API Service ─────────────────────────────────────────────
+  - type: web
+    name: freightcast-api
+    runtime: python
+    rootDir: freight-system
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: freightcast-db
+          property: connectionString
+      - key: PYTHONPATH
+        value: .
+      - key: FRONTEND_ORIGINS
+        value: "https://*.vercel.app,http://localhost:5173"
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: NVIDIA_API_KEY
+        sync: false
+      - key: NVIDIA_MODEL
+        value: meta/llama-3.3-70b-instruct
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: ANTHROPIC_MODEL
+        value: claude-3-5-sonnet-20241022
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: gpt-4o
+      - key: AISSTREAM_API_KEY
+        sync: false
+      - key: MYSHIPTRACKING_API_KEY
+        sync: false
+      - key: OILPRICEAPI_API_KEY
+        sync: false
+
+  # ─── 2. AIS Persistent Ingestion Worker ───────────────────────────────────────
+  - type: worker
+    name: freightcast-ais-listener
+    runtime: python
+    rootDir: freight-system
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python backend/ingestion/ais_listener.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: freightcast-db
+          property: connectionString
+      - key: PYTHONPATH
+        value: .
+      - key: AISSTREAM_API_KEY
+        sync: false
+      - key: MYSHIPTRACKING_API_KEY
+        sync: false
+
+  # ─── 3. Scheduled Model Retraining & Ingestion Cron ──────────────────────────
+  - type: cron
+    name: freightcast-retrain
+    runtime: python
+    rootDir: freight-system
+    plan: free
+    schedule: "0 2 * * 0" # Weekly every Sunday at 02:00 UTC
+    buildCommand: pip install -r requirements.txt
+    startCommand: python backend/ingestion/scheduler.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: freightcast-db
+          property: connectionString
+      - key: PYTHONPATH
+        value: .
+      - key: OILPRICEAPI_API_KEY
+        sync: false
+
+databases:
+  # ─── 4. Managed PostgreSQL Database ──────────────────────────────────────────
+  - name: freightcast-db
+    plan: free
+    databaseName: freight_db
+    user: freight_user
