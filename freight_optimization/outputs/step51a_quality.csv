@@ -1,0 +1,17 @@
+metric,value
+vessel_candidates_input,36
+economic_vessel_route_pairs,216
+physical_vessel_route_pairs,216
+planning_departure_dates,10
+all_vessel_route_date_rows,2160
+feasible_vessel_route_date_rows,781
+not_reachable_date_rows,1379
+final_date_scenario_rows,2343
+final_rows_with_economics,2343
+unique_final_vessels,11
+unique_final_routes,16
+unique_final_departure_dates,9
+unique_final_scenarios,3
+api_calls_myshiptracking,0
+myshiptracking_credits_consumed,0
+oilpriceapi_calls,0

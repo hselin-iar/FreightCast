@@ -1,0 +1,2 @@
+generated_utc,cross_class_selected,capacity_capable,within_route_typical_range,above_route_typical_range,below_route_typical_range,route_size_data_missing,route_size_supported,large_vessel_requires_review,live_bunker_context,myshiptracking_api_calls,myshiptracking_credits,oilpriceapi_calls,status
+2026-08-28T11:19:57.119093+00:00,5,5,0,5,0,0,0,5,Step51P live bunker,0,0,0,ROUTE_SIZE_COMPATIBILITY_AUDIT_COMPLETE

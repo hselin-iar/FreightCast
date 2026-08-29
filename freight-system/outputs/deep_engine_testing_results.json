@@ -1,0 +1,428 @@
+{
+  "timestamp": "2026-08-29 14:56:18 UTC",
+  "battery_1_constraints": [
+    {
+      "case_id": "FEAS_01_CAPESIZE_DEEPWATER_CLEAR",
+      "desc": "Capesize (18.2m draft, 292m LOA) -> Gangavaram (Deepwater, Max Draft 19.0m, Max LOA 320m)",
+      "passed": true,
+      "result": {
+        "is_feasible": true,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": false,
+        "discharge_days": 2.67,
+        "tidal_window_note": null,
+        "infeasible_reason": null
+      }
+    },
+    {
+      "case_id": "FEAS_02_CAPESIZE_DRAFT_EXCEED_LIGHTENING",
+      "desc": "Capesize (18.2m draft) -> Paradip (Max Draft 14.5m) -> Requires Lightening at Dhamra",
+      "passed": false,
+      "result": {
+        "is_feasible": false,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": false,
+        "discharge_days": 0.0,
+        "tidal_window_note": null,
+        "infeasible_reason": "LOA 292.0m exceeds port limit 260.0m"
+      }
+    },
+    {
+      "case_id": "FEAS_03_CAPESIZE_TIDAL_WINDOW_PORT",
+      "desc": "Capesize -> Dhamra (Tidal-dependent port with High Water Slack window)",
+      "passed": false,
+      "result": {
+        "is_feasible": false,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": false,
+        "discharge_days": 0.0,
+        "tidal_window_note": null,
+        "infeasible_reason": "LOA 292.0m exceeds port limit 280.0m"
+      }
+    },
+    {
+      "case_id": "FEAS_04_PANAMAX_DRAFT_CLEAR_PARADIP",
+      "desc": "Panamax/Kamsarmax (14.2m draft) -> Paradip (Max Draft 14.5m) -> Clear Without Lightening",
+      "passed": true,
+      "result": {
+        "is_feasible": true,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": false,
+        "discharge_days": 1.88,
+        "tidal_window_note": "Paradip is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly.",
+        "infeasible_reason": null
+      }
+    },
+    {
+      "case_id": "FEAS_05_SUPRAMAX_DRAFT_CLEAR_ALL",
+      "desc": "Supramax/Ultramax (13.0m draft, 200m LOA) -> Paradip (Fully Clear)",
+      "passed": true,
+      "result": {
+        "is_feasible": true,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": false,
+        "discharge_days": 1.38,
+        "tidal_window_note": "Paradip is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly.",
+        "infeasible_reason": null
+      }
+    },
+    {
+      "case_id": "FEAS_06_INEFFICIENT_FIT_TINY_CARGO",
+      "desc": "Inefficient Fit: 20,000 MT Parcel on Capesize (180kt Capacity -> Underutilized)",
+      "passed": true,
+      "result": {
+        "is_feasible": true,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": true,
+        "discharge_days": 0.33,
+        "tidal_window_note": null,
+        "infeasible_reason": null
+      }
+    },
+    {
+      "case_id": "FEAS_07_DISCHARGE_DURATION_HIGH_CARGO",
+      "desc": "Discharge Rate Validation: 175,000 MT at Gangavaram (45,000 TPD -> 3.89 days)",
+      "passed": true,
+      "result": {
+        "is_feasible": true,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": false,
+        "discharge_days": 2.92,
+        "tidal_window_note": null,
+        "infeasible_reason": null
+      }
+    },
+    {
+      "case_id": "FEAS_08_INVALID_UNVERIFIED_PORT",
+      "desc": "Unverified Port (Not in live port_constraint catalog -> Rejection)",
+      "passed": true,
+      "result": {
+        "is_feasible": false,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": false,
+        "discharge_days": 0.0,
+        "tidal_window_note": null,
+        "infeasible_reason": "Port not in verified constraints catalog"
+      }
+    },
+    {
+      "case_id": "FEAS_09_INVALID_VESSEL_CLASS",
+      "desc": "Invalid Vessel Class (Non-existent class -> Rejection)",
+      "passed": true,
+      "result": {
+        "is_feasible": false,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": false,
+        "discharge_days": 0.0,
+        "tidal_window_note": null,
+        "infeasible_reason": "LOA 400.0m exceeds port limit 300.0m"
+      }
+    },
+    {
+      "case_id": "FEAS_10_ZERO_OR_NEGATIVE_CARGO",
+      "desc": "Zero Cargo Boundary Case (0 MT cargo)",
+      "passed": false,
+      "result": {
+        "is_feasible": true,
+        "requires_lightening": false,
+        "lightening_port": null,
+        "inefficient_fit": true,
+        "discharge_days": 0.0,
+        "tidal_window_note": null,
+        "infeasible_reason": null
+      }
+    }
+  ],
+  "battery_2_milp_optimizer": [
+    {
+      "case_id": "MILP_01_TINY_PARCEL_35KT",
+      "desc": "Small 35kt parcel (Supramax optimal, single voyage)",
+      "solved_via": "milp",
+      "voyage_count": 1,
+      "commitment_mode": "locked",
+      "total_cost_worst_case": 730980.28,
+      "total_freight_revenue_usd": 243180.0,
+      "total_net_sail_value_usd": -487800.27,
+      "infeasible_reason": null,
+      "elapsed_ms": 1628.16,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 35000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 0,
+          "mode": "locked",
+          "voyage_cost_usd": 730980.28
+        }
+      ]
+    },
+    {
+      "case_id": "MILP_02_EXACT_PANAMAX_BOUNDARY_80KT",
+      "desc": "Exact Panamax limit 80kt (Panamax vs Capesize trade-off)",
+      "solved_via": "milp",
+      "voyage_count": 1,
+      "commitment_mode": "locked",
+      "total_cost_worst_case": 2194144.58,
+      "total_freight_revenue_usd": 1103760.0,
+      "total_net_sail_value_usd": -1090384.58,
+      "infeasible_reason": null,
+      "elapsed_ms": 36.49,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 80000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 28,
+          "mode": "locked",
+          "voyage_cost_usd": 2194144.58
+        }
+      ]
+    },
+    {
+      "case_id": "MILP_03_CAPESIZE_SWEETSPOT_120KT",
+      "desc": "Single Capesize parcel 120kt (Fits cleanly within 180kt ceiling)",
+      "solved_via": "milp",
+      "voyage_count": 1,
+      "commitment_mode": "locked",
+      "total_cost_worst_case": 2786734.58,
+      "total_freight_revenue_usd": 1655640.0,
+      "total_net_sail_value_usd": -1131094.58,
+      "infeasible_reason": null,
+      "elapsed_ms": 33.59,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 120000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 28,
+          "mode": "locked",
+          "voyage_cost_usd": 2786734.58
+        }
+      ]
+    },
+    {
+      "case_id": "MILP_04_MULTI_VOYAGE_SPLIT_200KT",
+      "desc": "Multi-voyage split 200kt (Exceeds 180kt -> splits into 2 Capesize voyages)",
+      "solved_via": "milp",
+      "voyage_count": 2,
+      "commitment_mode": "locked",
+      "total_cost_worst_case": 7943529.16,
+      "total_freight_revenue_usd": 5518800.0,
+      "total_net_sail_value_usd": -2424729.16,
+      "infeasible_reason": null,
+      "elapsed_ms": 39.28,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 20000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 21,
+          "mode": "locked",
+          "voyage_cost_usd": 3971764.58
+        },
+        {
+          "voyage_num": 2,
+          "cargo_tonnes": 180000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 28,
+          "mode": "locked",
+          "voyage_cost_usd": 3971764.58
+        }
+      ]
+    },
+    {
+      "case_id": "MILP_05_MASSIVE_FLEET_PARCEL_280KT",
+      "desc": "Massive 280kt parcel (Requires 2 Capesize voyages: 180kt + 100kt)",
+      "solved_via": "milp",
+      "voyage_count": 2,
+      "commitment_mode": "locked",
+      "total_cost_worst_case": 10313889.16,
+      "total_freight_revenue_usd": 7726320.0,
+      "total_net_sail_value_usd": -2587569.16,
+      "infeasible_reason": null,
+      "elapsed_ms": 45.37,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 180000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 7,
+          "mode": "locked",
+          "voyage_cost_usd": 5156944.58
+        },
+        {
+          "voyage_num": 2,
+          "cargo_tonnes": 100000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 45,
+          "mode": "locked",
+          "voyage_cost_usd": 5156944.58
+        }
+      ]
+    },
+    {
+      "case_id": "MILP_06_OVERRIDE_EXCLUDE_CAPESIZE_SPLIT",
+      "desc": "Human Override: Exclude Capesize for 130kt (Forces 2x Panamax voyages: 80kt + 50kt)",
+      "solved_via": "milp",
+      "voyage_count": 2,
+      "commitment_mode": "locked",
+      "total_cost_worst_case": 6126719.16,
+      "total_freight_revenue_usd": 3830580.0,
+      "total_net_sail_value_usd": -2296139.16,
+      "infeasible_reason": null,
+      "elapsed_ms": 30.94,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 80000.0,
+          "vessel_class": "Panamax/Kamsarmax",
+          "port": "Gangavaram",
+          "fix_day": 7,
+          "mode": "locked",
+          "voyage_cost_usd": 3063359.58
+        },
+        {
+          "voyage_num": 2,
+          "cargo_tonnes": 50000.0,
+          "vessel_class": "Panamax/Kamsarmax",
+          "port": "Gangavaram",
+          "fix_day": 28,
+          "mode": "locked",
+          "voyage_cost_usd": 3063359.58
+        }
+      ]
+    },
+    {
+      "case_id": "MILP_07_OVERRIDE_FORCE_PORT_AND_MODE",
+      "desc": "Human Override: Force Discharge to Paradip + Force Mode Spot",
+      "solved_via": "milp",
+      "voyage_count": 1,
+      "commitment_mode": "spot",
+      "total_cost_worst_case": 2676323.51,
+      "total_freight_revenue_usd": 1035000.0,
+      "total_net_sail_value_usd": -1115916.67,
+      "infeasible_reason": null,
+      "elapsed_ms": 25.63,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 60000.0,
+          "vessel_class": "Panamax/Kamsarmax",
+          "port": "Paradip",
+          "fix_day": 14,
+          "mode": "spot",
+          "voyage_cost_usd": 2150916.67
+        }
+      ]
+    },
+    {
+      "case_id": "MILP_08_OVERRIDE_NARROW_TIME_WINDOW",
+      "desc": "Human Override: Narrow fix window (min_fix_day=14, max_completion_day=21)",
+      "solved_via": "milp",
+      "voyage_count": 1,
+      "commitment_mode": "locked",
+      "total_cost_worst_case": 1897924.58,
+      "total_freight_revenue_usd": 827820.0,
+      "total_net_sail_value_usd": -1070104.58,
+      "infeasible_reason": null,
+      "elapsed_ms": 26.27,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 60000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 14,
+          "mode": "locked",
+          "voyage_cost_usd": 1897924.58
+        }
+      ]
+    },
+    {
+      "case_id": "MILP_09_IMPOSSIBLE_CONSTRAINTS_OVERRIDE",
+      "desc": "Impossible Override: Exclude all 3 vessel classes -> Infeasible fallback",
+      "solved_via": "milp",
+      "voyage_count": 0,
+      "commitment_mode": "spot",
+      "total_cost_worst_case": 0.0,
+      "total_freight_revenue_usd": 0.0,
+      "total_net_sail_value_usd": 0.0,
+      "infeasible_reason": "No feasible (vessel, port) combination found after excluding vessels: ['Capesize', 'Panamax/Kamsarmax', 'Supramax/Ultramax']",
+      "elapsed_ms": 1.49,
+      "voyages": []
+    },
+    {
+      "case_id": "MILP_10_SOUTH_AFRICA_TIGHT_FLEX_12D",
+      "desc": "South Africa route under tight 12-day flexibility window",
+      "solved_via": "milp",
+      "voyage_count": 1,
+      "commitment_mode": "locked",
+      "total_cost_worst_case": 1972625.14,
+      "total_freight_revenue_usd": 902160.0,
+      "total_net_sail_value_usd": -1070465.14,
+      "infeasible_reason": null,
+      "elapsed_ms": 29.27,
+      "voyages": [
+        {
+          "voyage_num": 1,
+          "cargo_tonnes": 70000.0,
+          "vessel_class": "Capesize",
+          "port": "Gangavaram",
+          "fix_day": 7,
+          "mode": "locked",
+          "voyage_cost_usd": 1972625.14
+        }
+      ]
+    }
+  ],
+  "battery_3_forecasting_benchmark": {
+    "dataset": "5tc_oil_features.csv",
+    "total_observations": 56,
+    "train_observations": 44,
+    "test_observations": 12,
+    "models": {
+      "naive": {
+        "mae": 6325.83,
+        "rmse": 8667.96,
+        "mape": 27.61,
+        "r2": -0.338,
+        "directional_hit_rate_pct": 0.0
+      },
+      "moving_average": {
+        "mae": 5743.48,
+        "rmse": 8524.37,
+        "mape": 30.51,
+        "r2": -0.294,
+        "directional_hit_rate_pct": 54.55
+      },
+      "xgboost": {
+        "mae": 28703.26,
+        "rmse": 30178.2,
+        "mape": 154.28,
+        "r2": -11.3948,
+        "directional_hit_rate_pct": 53.33
+      }
+    },
+    "performance_delta": {
+      "mae_reduction_pct": -353.75,
+      "rmse_reduction_pct": -248.16
+    }
+  },
+  "summary": {}
+}

@@ -1,0 +1,12 @@
+{
+  "status": "success",
+  "duration": "0.011597783",
+  "timestamp": "2026-08-28T04:21:38.286Z",
+  "data": {
+    "account_type": "coin",
+    "created": "2026-08-28T04:09:13.013Z",
+    "available_coins": 1606,
+    "expire_date": "2026-09-07T04:09:12.000Z",
+    "is_trial": true
+  }
+}

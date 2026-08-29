@@ -1,0 +1,62 @@
+{
+  "generated_utc": "2026-08-29T14:25:45.077524+00:00",
+  "status": "Optimal",
+  "architecture": {
+    "candidate_source": "step51u_full_production_universe",
+    "preselected_solution_used": false,
+    "step51p_used_for_decision_generation": false,
+    "step51s_used_for_decision_generation": false,
+    "dwt_is_hard_constraint": true,
+    "exact_class_is_hard_constraint": true,
+    "live_bunker_used": true
+  },
+  "configuration": {
+    "maximum_sail": 12,
+    "risk_ratio": 0.6,
+    "time_limit_seconds": 120
+  },
+  "input": {
+    "step51u_rows": 358,
+    "economic_rows": 358,
+    "contracts": 16,
+    "vessels": 6,
+    "routes": 16
+  },
+  "result": {
+    "sail_contracts": 6,
+    "kill_contracts": 10,
+    "sail_vessels": 6,
+    "sail_routes": 6,
+    "bear_incremental_usd": 5207316.782227799,
+    "base_incremental_usd": 7639946.787373137,
+    "bull_incremental_usd": 12147493.461041246,
+    "worst_case_incremental_usd": 5207316.782227799,
+    "expected_incremental_usd": 8331585.676880727,
+    "bunker_cost_total_usd": 2074465.7794619808,
+    "opex_cost_total_usd": 1220945.245664883,
+    "voyage_cost_total_usd": 3445411.0251268637
+  },
+  "validation": {
+    "contract_violations": 0,
+    "capacity_violations": 0,
+    "class_violations": 0,
+    "temporal_overlap_violations": 0,
+    "max_sail_violation": 0
+  },
+  "bunker": {
+    "price_usd_per_metric_ton": 770.5
+  },
+  "api": {
+    "myshiptracking_calls": 0,
+    "myshiptracking_credits": 0,
+    "oilpriceapi_calls": 0
+  },
+  "outputs": {
+    "final_solution": "/Users/hselin/.gemini/antigravity/scratch/FrieghtCast/freight_optimization/outputs/step51v_final_solution.csv",
+    "kill_summary": "/Users/hselin/.gemini/antigravity/scratch/FrieghtCast/freight_optimization/outputs/step51v_kill_summary.csv",
+    "vessel_schedule": "/Users/hselin/.gemini/antigravity/scratch/FrieghtCast/freight_optimization/outputs/step51v_vessel_schedule.csv",
+    "contract_decisions": "/Users/hselin/.gemini/antigravity/scratch/FrieghtCast/freight_optimization/outputs/step51v_contract_decisions.csv",
+    "summary": "/Users/hselin/.gemini/antigravity/scratch/FrieghtCast/freight_optimization/outputs/step51v_summary.csv",
+    "quality": "/Users/hselin/.gemini/antigravity/scratch/FrieghtCast/freight_optimization/outputs/step51v_quality.csv"
+  }
+}

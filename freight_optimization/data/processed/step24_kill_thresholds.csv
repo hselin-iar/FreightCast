@@ -1,0 +1,289 @@
+route_id,origin,destination,vessel_class,cargo_type,scenario,alternative_value_usd,sail_value_usd,kill_penalty_threshold_usd,kill_preferred_when_penalty_greater_than,decision_at_zero_penalty
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,bear,0.0,1982830.510986513,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,bear,250000.0,1982830.510986513,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,bear,500000.0,1982830.510986513,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,bear,1000000.0,1982830.510986513,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,base,0.0,2745505.6236868748,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,base,250000.0,2745505.6236868748,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,base,500000.0,2745505.6236868748,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,base,1000000.0,2745505.6236868748,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,bull,0.0,4158706.011773256,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,bull,250000.0,4158706.011773256,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,bull,500000.0,4158706.011773256,0.0,0.0,SAIL
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,coking coal,bull,1000000.0,4158706.011773256,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,bear,0.0,328145.83183193475,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,bear,250000.0,328145.83183193475,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,bear,500000.0,328145.83183193475,171854.16816806525,171854.16816806525,KILL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,bear,1000000.0,328145.83183193475,671854.1681680653,671854.1681680653,KILL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,base,0.0,561109.839318068,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,base,250000.0,561109.839318068,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,base,500000.0,561109.839318068,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,base,1000000.0,561109.839318068,438890.160681932,438890.160681932,KILL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,bull,0.0,992780.966783987,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,bull,250000.0,992780.966783987,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,bull,500000.0,992780.966783987,0.0,0.0,SAIL
+1,"Richards Bay, South Africa","Navlakhi, India",Supramax,coal,bull,1000000.0,992780.966783987,7219.033216012991,7219.033216012991,KILL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,bear,0.0,202210.58725359244,0.0,0.0,SAIL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,bear,250000.0,202210.58725359244,47789.41274640756,47789.41274640756,KILL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,bear,500000.0,202210.58725359244,297789.41274640756,297789.41274640756,KILL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,bear,1000000.0,202210.58725359244,797789.4127464076,797789.4127464076,KILL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,base,0.0,426144.9820464647,0.0,0.0,SAIL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,base,250000.0,426144.9820464647,0.0,0.0,SAIL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,base,500000.0,426144.9820464647,73855.01795353531,73855.01795353531,KILL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,base,1000000.0,426144.9820464647,573855.0179535353,573855.0179535353,KILL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,bull,0.0,841084.6704633171,0.0,0.0,SAIL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,bull,250000.0,841084.6704633171,0.0,0.0,SAIL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,bull,500000.0,841084.6704633171,0.0,0.0,SAIL
+2,"Hay Point, Australia","Paradip, India",Panamax,coking coal,bull,1000000.0,841084.6704633171,158915.32953668293,158915.32953668293,KILL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,bear,0.0,275903.4710319103,0.0,0.0,SAIL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,bear,250000.0,275903.4710319103,0.0,0.0,SAIL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,bear,500000.0,275903.4710319103,224096.52896808973,224096.52896808973,KILL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,bear,1000000.0,275903.4710319103,724096.5289680897,724096.5289680897,KILL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,base,0.0,498031.9432861302,0.0,0.0,SAIL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,base,250000.0,498031.9432861302,0.0,0.0,SAIL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,base,500000.0,498031.9432861302,1968.0567138697952,1968.0567138697952,KILL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,base,1000000.0,498031.9432861302,501968.0567138698,501968.0567138698,KILL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,bull,0.0,909625.3438931692,0.0,0.0,SAIL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,bull,250000.0,909625.3438931692,0.0,0.0,SAIL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,bull,500000.0,909625.3438931692,0.0,0.0,SAIL
+3,"East Kalimantan, Indonesia","Navlakhi, India",Supramax,coal,bull,1000000.0,909625.3438931692,90374.65610683081,90374.65610683081,KILL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,bear,0.0,709746.6183481847,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,bear,250000.0,709746.6183481847,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,bear,500000.0,709746.6183481847,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,bear,1000000.0,709746.6183481847,290253.38165181526,290253.38165181526,KILL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,base,0.0,1087838.7486868748,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,base,250000.0,1087838.7486868748,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,base,500000.0,1087838.7486868748,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,base,1000000.0,1087838.7486868748,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,bull,0.0,1788425.324057357,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,bull,250000.0,1788425.324057357,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,bull,500000.0,1788425.324057357,0.0,0.0,SAIL
+4,"Hay Point, Australia","Visakhapatnam, India",Panamax,metallurgical coal,bull,1000000.0,1788425.324057357,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,bear,0.0,594341.9128341745,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,bear,250000.0,594341.9128341745,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,bear,500000.0,594341.9128341745,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,bear,1000000.0,594341.9128341745,405658.08716582553,405658.08716582553,KILL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,base,0.0,936734.3570464647,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,base,250000.0,936734.3570464647,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,base,500000.0,936734.3570464647,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,base,1000000.0,936734.3570464647,63265.64295353531,63265.64295353531,KILL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,bull,0.0,1571171.1270171597,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,bull,250000.0,1571171.1270171597,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,bull,500000.0,1571171.1270171597,0.0,0.0,SAIL
+5,"Hay Point, Australia","Paradip, India",Panamax,metallurgical coal,bull,1000000.0,1571171.1270171597,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,bear,0.0,343938.1880118781,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,bear,250000.0,343938.1880118781,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,bear,500000.0,343938.1880118781,156061.8119881219,156061.8119881219,KILL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,bear,1000000.0,343938.1880118781,656061.8119881218,656061.8119881218,KILL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,base,0.0,535418.3226898415,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,base,250000.0,535418.3226898415,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,base,500000.0,535418.3226898415,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,base,1000000.0,535418.3226898415,464581.6773101585,464581.6773101585,KILL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,bull,0.0,890221.8243796139,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,bull,250000.0,890221.8243796139,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,bull,500000.0,890221.8243796139,0.0,0.0,SAIL
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",Panamax,thermal coal,bull,1000000.0,890221.8243796139,109778.17562038614,109778.17562038614,KILL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,bear,0.0,315300.77438337053,0.0,0.0,SAIL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,bear,250000.0,315300.77438337053,0.0,0.0,SAIL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,bear,500000.0,315300.77438337053,184699.22561662947,184699.22561662947,KILL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,bear,1000000.0,315300.77438337053,684699.2256166295,684699.2256166295,KILL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,base,0.0,508534.48601915536,0.0,0.0,SAIL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,base,250000.0,508534.48601915536,0.0,0.0,SAIL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,base,500000.0,508534.48601915536,0.0,0.0,SAIL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,base,1000000.0,508534.48601915536,491465.51398084464,491465.51398084464,KILL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,bull,0.0,866587.2816691812,0.0,0.0,SAIL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,bull,250000.0,866587.2816691812,0.0,0.0,SAIL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,bull,500000.0,866587.2816691812,0.0,0.0,SAIL
+7,"East Kalimantan, Indonesia","Paradip, India",Supramax,coal,bull,1000000.0,866587.2816691812,133412.7183308188,133412.7183308188,KILL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,bear,0.0,310240.3983496727,0.0,0.0,SAIL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,bear,250000.0,310240.3983496727,0.0,0.0,SAIL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,bear,500000.0,310240.3983496727,189759.60165032733,189759.60165032733,KILL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,bear,1000000.0,310240.3983496727,689759.6016503273,689759.6016503273,KILL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,base,0.0,522815.80210232665,0.0,0.0,SAIL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,base,250000.0,522815.80210232665,0.0,0.0,SAIL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,base,500000.0,522815.80210232665,0.0,0.0,SAIL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,base,1000000.0,522815.80210232665,477184.19789767335,477184.19789767335,KILL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,bull,0.0,916707.8251647009,0.0,0.0,SAIL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,bull,250000.0,916707.8251647009,0.0,0.0,SAIL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,bull,500000.0,916707.8251647009,0.0,0.0,SAIL
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",Panamax,thermal coal,bull,1000000.0,916707.8251647009,83292.17483529914,83292.17483529914,KILL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,bear,0.0,483178.3499958622,0.0,0.0,SAIL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,bear,250000.0,483178.3499958622,0.0,0.0,SAIL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,bear,500000.0,483178.3499958622,16821.650004137773,16821.650004137773,KILL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,bear,1000000.0,483178.3499958622,516821.6500041378,516821.6500041378,KILL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,base,0.0,785002.969064516,0.0,0.0,SAIL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,base,250000.0,785002.969064516,0.0,0.0,SAIL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,base,500000.0,785002.969064516,0.0,0.0,SAIL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,base,1000000.0,785002.969064516,214997.03093548398,214997.03093548398,KILL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,bull,0.0,1344269.5056263604,0.0,0.0,SAIL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,bull,250000.0,1344269.5056263604,0.0,0.0,SAIL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,bull,500000.0,1344269.5056263604,0.0,0.0,SAIL
+9,"Richards Bay, South Africa","Paradip, India",Panamax,thermal coal,bull,1000000.0,1344269.5056263604,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,bear,0.0,541895.4477203311,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,bear,250000.0,541895.4477203311,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,bear,500000.0,541895.4477203311,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,bear,1000000.0,541895.4477203311,458104.55227966886,458104.55227966886,KILL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,base,0.0,798336.4482089429,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,base,250000.0,798336.4482089429,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,base,500000.0,798336.4482089429,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,base,1000000.0,798336.4482089429,201663.5517910571,201663.5517910571,KILL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,bull,0.0,1273509.3172024349,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,bull,250000.0,1273509.3172024349,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,bull,500000.0,1273509.3172024349,0.0,0.0,SAIL
+10,Indonesia,"Paradip, India",Supramax,thermal coal,bull,1000000.0,1273509.3172024349,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,bear,0.0,954157.239086767,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,bear,250000.0,954157.239086767,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,bear,500000.0,954157.239086767,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,bear,1000000.0,954157.239086767,45842.76091323304,45842.76091323304,KILL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,base,0.0,1406082.8111868748,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,base,250000.0,1406082.8111868748,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,base,500000.0,1406082.8111868748,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,base,1000000.0,1406082.8111868748,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,bull,0.0,2243479.2113614646,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,bull,250000.0,2243479.2113614646,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,bull,500000.0,2243479.2113614646,0.0,0.0,SAIL
+11,"Hay Point, Australia","Visakhapatnam, India",Panamax,coal,bull,1000000.0,2243479.2113614646,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,bear,0.0,614404.5413054023,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,bear,250000.0,614404.5413054023,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,bear,500000.0,614404.5413054023,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,bear,1000000.0,614404.5413054023,385595.4586945977,385595.4586945977,KILL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,base,0.0,933450.8564672901,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,base,250000.0,933450.8564672901,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,base,500000.0,933450.8564672901,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,base,1000000.0,933450.8564672901,66549.14353270992,66549.14353270992,KILL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,bull,0.0,1524628.369534311,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,bull,250000.0,1524628.369534311,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,bull,500000.0,1524628.369534311,0.0,0.0,SAIL
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,steam coal,bull,1000000.0,1524628.369534311,0.0,0.0,SAIL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,bear,0.0,273453.7946539358,0.0,0.0,SAIL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,bear,250000.0,273453.7946539358,0.0,0.0,SAIL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,bear,500000.0,273453.7946539358,226546.20534606418,226546.20534606418,KILL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,bear,1000000.0,273453.7946539358,726546.2053460642,726546.2053460642,KILL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,base,0.0,454046.04851915536,0.0,0.0,SAIL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,base,250000.0,454046.04851915536,0.0,0.0,SAIL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,base,500000.0,454046.04851915536,45953.95148084464,45953.95148084464,KILL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,base,1000000.0,454046.04851915536,545953.9514808446,545953.9514808446,KILL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,bull,0.0,788674.8295004879,0.0,0.0,SAIL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,bull,250000.0,788674.8295004879,0.0,0.0,SAIL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,bull,500000.0,788674.8295004879,0.0,0.0,SAIL
+14,"East Kalimantan, Indonesia","Paradip, India",Supramax,thermal coal,bull,1000000.0,788674.8295004879,211325.1704995121,211325.1704995121,KILL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,bear,0.0,441683.7357509183,0.0,0.0,SAIL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,bear,250000.0,441683.7357509183,0.0,0.0,SAIL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,bear,500000.0,441683.7357509183,58316.26424908172,58316.26424908172,KILL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,bear,1000000.0,441683.7357509183,558316.2642490817,558316.2642490817,KILL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,base,0.0,758112.7718712812,0.0,0.0,SAIL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,base,250000.0,758112.7718712812,0.0,0.0,SAIL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,base,500000.0,758112.7718712812,0.0,0.0,SAIL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,base,1000000.0,758112.7718712812,241887.2281287188,241887.2281287188,KILL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,bull,0.0,1344440.5924603124,0.0,0.0,SAIL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,bull,250000.0,1344440.5924603124,0.0,0.0,SAIL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,bull,500000.0,1344440.5924603124,0.0,0.0,SAIL
+15,Atlantic / Black Sea ports (Taman / Ust-Luga proxy),"Visakhapatnam, India",Panamax,coal,bull,1000000.0,1344440.5924603124,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,bear,0.0,1232523.0607535127,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,bear,250000.0,1232523.0607535127,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,bear,500000.0,1232523.0607535127,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,bear,1000000.0,1232523.0607535127,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,base,0.0,1745509.7528923973,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,base,250000.0,1745509.7528923973,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,base,500000.0,1745509.7528923973,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,base,1000000.0,1745509.7528923973,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,bull,0.0,2696049.4785785014,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,bull,250000.0,2696049.4785785014,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,bull,500000.0,2696049.4785785014,0.0,0.0,SAIL
+16,"Richards Bay, South Africa","Gangavaram, India",Capesize,coal,bull,1000000.0,2696049.4785785014,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,bear,0.0,568039.7929302417,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,bear,250000.0,568039.7929302417,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,bear,500000.0,568039.7929302417,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,bear,1000000.0,568039.7929302417,431960.2070697583,431960.2070697583,KILL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,base,0.0,897450.5330965682,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,base,250000.0,897450.5330965682,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,base,500000.0,897450.5330965682,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,base,1000000.0,897450.5330965682,102549.4669034318,102549.4669034318,KILL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,bull,0.0,1507832.8283764308,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,bull,250000.0,1507832.8283764308,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,bull,500000.0,1507832.8283764308,0.0,0.0,SAIL
+17,"Queensland, Australia","Haldia, India",Panamax,coking coal,bull,1000000.0,1507832.8283764308,0.0,0.0,SAIL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,bear,0.0,164765.63731741282,0.0,0.0,SAIL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,bear,250000.0,164765.63731741282,85234.36268258718,85234.36268258718,KILL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,bear,500000.0,164765.63731741282,335234.3626825872,335234.3626825872,KILL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,bear,1000000.0,164765.63731741282,835234.3626825872,835234.3626825872,KILL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,base,0.0,372472.9020528305,0.0,0.0,SAIL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,base,250000.0,372472.9020528305,0.0,0.0,SAIL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,base,500000.0,372472.9020528305,127527.0979471695,127527.0979471695,KILL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,base,1000000.0,372472.9020528305,627527.0979471696,627527.0979471696,KILL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,bull,0.0,757344.4971061426,0.0,0.0,SAIL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,bull,250000.0,757344.4971061426,0.0,0.0,SAIL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,bull,500000.0,757344.4971061426,0.0,0.0,SAIL
+18,"Richards Bay, South Africa","Haldia, India",Panamax,coking / thermal coal,bull,1000000.0,757344.4971061426,242655.50289385743,242655.50289385743,KILL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,bear,0.0,1673573.8819735297,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,bear,250000.0,1673573.8819735297,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,bear,500000.0,1673573.8819735297,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,bear,1000000.0,1673573.8819735297,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,base,0.0,2312975.1518180678,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,base,250000.0,2312975.1518180678,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,base,500000.0,2312975.1518180678,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,base,1000000.0,2312975.1518180678,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,bull,0.0,3497755.024191104,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,bull,250000.0,3497755.024191104,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,bull,500000.0,3497755.024191104,0.0,0.0,SAIL
+19,"Richards Bay, South Africa","Kandla, India",Capesize,coal,bull,1000000.0,3497755.024191104,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,bear,0.0,368612.3482392109,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,bear,250000.0,368612.3482392109,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,bear,500000.0,368612.3482392109,131387.6517607891,131387.6517607891,KILL
+20,East Coast Australia,East Coast India,Panamax,coal,bear,1000000.0,368612.3482392109,631387.6517607891,631387.6517607891,KILL
+20,East Coast Australia,East Coast India,Panamax,coal,base,0.0,655832.5502561559,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,base,250000.0,655832.5502561559,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,base,500000.0,655832.5502561559,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,base,1000000.0,655832.5502561559,344167.4497438441,344167.4497438441,KILL
+20,East Coast Australia,East Coast India,Panamax,coal,bull,0.0,1188037.802790814,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,bull,250000.0,1188037.802790814,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,bull,500000.0,1188037.802790814,0.0,0.0,SAIL
+20,East Coast Australia,East Coast India,Panamax,coal,bull,1000000.0,1188037.802790814,0.0,0.0,SAIL
+21,Indonesia,East Coast India,Panamax,coal,bear,0.0,294625.7165654523,0.0,0.0,SAIL
+21,Indonesia,East Coast India,Panamax,coal,bear,250000.0,294625.7165654523,0.0,0.0,SAIL
+21,Indonesia,East Coast India,Panamax,coal,bear,500000.0,294625.7165654523,205374.28343454772,205374.28343454772,KILL
+21,Indonesia,East Coast India,Panamax,coal,bear,1000000.0,294625.7165654523,705374.2834345477,705374.2834345477,KILL
+21,Indonesia,East Coast India,Panamax,coal,base,0.0,476369.5732089429,0.0,0.0,SAIL
+21,Indonesia,East Coast India,Panamax,coal,base,250000.0,476369.5732089429,0.0,0.0,SAIL
+21,Indonesia,East Coast India,Panamax,coal,base,500000.0,476369.5732089429,23630.426791057107,23630.426791057107,KILL
+21,Indonesia,East Coast India,Panamax,coal,base,1000000.0,476369.5732089429,523630.4267910571,523630.4267910571,KILL
+21,Indonesia,East Coast India,Panamax,coal,bull,0.0,813132.2188805911,0.0,0.0,SAIL
+21,Indonesia,East Coast India,Panamax,coal,bull,250000.0,813132.2188805911,0.0,0.0,SAIL
+21,Indonesia,East Coast India,Panamax,coal,bull,500000.0,813132.2188805911,0.0,0.0,SAIL
+21,Indonesia,East Coast India,Panamax,coal,bull,1000000.0,813132.2188805911,186867.7811194089,186867.7811194089,KILL
+22,Indonesia,West Coast India,Panamax,coal,bear,0.0,248210.5967376274,0.0,0.0,SAIL
+22,Indonesia,West Coast India,Panamax,coal,bear,250000.0,248210.5967376274,1789.4032623725943,1789.4032623725943,KILL
+22,Indonesia,West Coast India,Panamax,coal,bear,500000.0,248210.5967376274,251789.4032623726,251789.4032623726,KILL
+22,Indonesia,West Coast India,Panamax,coal,bear,1000000.0,248210.5967376274,751789.4032623726,751789.4032623726,KILL
+22,Indonesia,West Coast India,Panamax,coal,base,0.0,456729.21797591785,0.0,0.0,SAIL
+22,Indonesia,West Coast India,Panamax,coal,base,250000.0,456729.21797591785,0.0,0.0,SAIL
+22,Indonesia,West Coast India,Panamax,coal,base,500000.0,456729.21797591785,43270.782024082146,43270.782024082146,KILL
+22,Indonesia,West Coast India,Panamax,coal,base,1000000.0,456729.21797591785,543270.7820240821,543270.7820240821,KILL
+22,Indonesia,West Coast India,Panamax,coal,bull,0.0,843104.2176974072,0.0,0.0,SAIL
+22,Indonesia,West Coast India,Panamax,coal,bull,250000.0,843104.2176974072,0.0,0.0,SAIL
+22,Indonesia,West Coast India,Panamax,coal,bull,500000.0,843104.2176974072,0.0,0.0,SAIL
+22,Indonesia,West Coast India,Panamax,coal,bull,1000000.0,843104.2176974072,156895.78230259276,156895.78230259276,KILL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,bear,0.0,1905713.6042270265,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,bear,250000.0,1905713.6042270265,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,bear,500000.0,1905713.6042270265,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,bear,1000000.0,1905713.6042270265,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,base,0.0,2622062.8778923973,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,base,250000.0,2622062.8778923973,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,base,500000.0,2622062.8778923973,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,base,1000000.0,2622062.8778923973,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,bull,0.0,3949423.7091183495,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,bull,250000.0,3949423.7091183495,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,bull,500000.0,3949423.7091183495,0.0,0.0,SAIL
+23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,coal,bull,1000000.0,3949423.7091183495,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,bear,0.0,1341626.5302076652,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,bear,250000.0,1341626.5302076652,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,bear,500000.0,1341626.5302076652,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,bear,1000000.0,1341626.5302076652,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,base,0.0,2061299.7482557725,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,base,250000.0,2061299.7482557725,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,base,500000.0,2061299.7482557725,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,base,1000000.0,2061299.7482557725,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,bull,0.0,3394819.6889287727,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,bull,250000.0,3394819.6889287727,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,bull,500000.0,3394819.6889287727,0.0,0.0,SAIL
+24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,coal / coking coal,bull,1000000.0,3394819.6889287727,0.0,0.0,SAIL

@@ -1,0 +1,181 @@
+risk_aversion,bear_to_base_min,contract_id,route_id,origin,destination,vessel_class,assigned_vessel,robust_score_usd
+0.0,0.5,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_04,3008136.94253338
+0.0,0.5,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,710786.6193130144
+0.0,0.5,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_05,1268462.3599448227
+0.0,0.5,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_01,1109745.438486066
+0.0,0.5,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_02,649739.2570227156
+0.0,0.5,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_03,953019.415335163
+0.0,0.5,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_03,1602450.5182054953
+0.0,0.5,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_01,1101483.6559435732
+0.0,0.5,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1954898.011279202
+0.0,0.5,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2549319.8024501926
+0.0,0.5,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2874815.767282543
+0.0,0.5,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_02,2314761.4289119956
+0.0,0.6,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_04,3008136.94253338
+0.0,0.6,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_02,710786.6193130144
+0.0,0.6,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_03,1268462.3599448227
+0.0,0.6,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_05,1109745.438486066
+0.0,0.6,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_01,649739.2570227156
+0.0,0.6,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_04,953019.415335163
+0.0,0.6,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_01,1602450.5182054953
+0.0,0.6,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_03,1101483.6559435732
+0.0,0.6,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1954898.011279202
+0.0,0.6,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2549319.8024501926
+0.0,0.6,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2874815.767282543
+0.0,0.6,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_02,2314761.4289119956
+0.0,0.7,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_01,3008136.94253338
+0.0,0.7,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_03,710786.6193130144
+0.0,0.7,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_05,1268462.3599448227
+0.0,0.7,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_03,1109745.438486066
+0.0,0.7,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_01,649739.2570227156
+0.0,0.7,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_04,953019.415335163
+0.0,0.7,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_04,1602450.5182054953
+0.0,0.7,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_02,1101483.6559435732
+0.0,0.7,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_01,1954898.011279202
+0.0,0.7,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2549319.8024501926
+0.0,0.7,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_02,2874815.767282543
+0.0,0.7,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_02,2314761.4289119956
+0.25,0.5,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_05,2776810.334646663
+0.25,0.5,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,640126.4224427445
+0.25,0.5,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_02,1153783.4245456632
+0.25,0.5,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_04,1005894.5570730931
+0.25,0.5,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_03,591129.6363628793
+0.25,0.5,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_02,875238.423431455
+0.25,0.5,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_01,1465377.198425813
+0.25,0.5,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_01,1004713.8772840304
+0.25,0.5,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1799304.2736477798
+0.25,0.5,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2355383.3223310267
+0.25,0.5,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2657540.226518664
+0.25,0.5,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_03,2096477.7042359132
+0.25,0.6,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_04,2776810.334646663
+0.25,0.6,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,640126.4224427445
+0.25,0.6,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_05,1153783.4245456632
+0.25,0.6,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_02,1005894.5570730931
+0.25,0.6,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_03,591129.6363628793
+0.25,0.6,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_02,875238.423431455
+0.25,0.6,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_03,1465377.198425813
+0.25,0.6,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_01,1004713.8772840304
+0.25,0.6,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1799304.2736477798
+0.25,0.6,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2355383.3223310267
+0.25,0.6,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2657540.226518664
+0.25,0.6,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_01,2096477.7042359132
+0.25,0.7,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_03,2776810.334646663
+0.25,0.7,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,640126.4224427445
+0.25,0.7,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_04,1153783.4245456632
+0.25,0.7,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_02,1005894.5570730931
+0.25,0.7,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_01,591129.6363628793
+0.25,0.7,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_03,875238.423431455
+0.25,0.7,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_05,1465377.198425813
+0.25,0.7,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_02,1004713.8772840304
+0.25,0.7,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_01,1799304.2736477798
+0.25,0.7,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2355383.3223310267
+0.25,0.7,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_02,2657540.226518664
+0.25,0.7,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_01,2096477.7042359132
+0.5,0.5,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_05,2545483.7267599464
+0.5,0.5,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_02,569466.2255724747
+0.5,0.5,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_02,1039104.4891465037
+0.5,0.5,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_03,902043.6756601202
+0.5,0.5,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_04,532520.0157030431
+0.5,0.5,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_03,797457.4315277471
+0.5,0.5,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_04,1328303.8786461311
+0.5,0.5,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_01,907944.0986244878
+0.5,0.5,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1643710.5360163576
+0.5,0.5,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2161446.842211861
+0.5,0.5,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2440264.6857547844
+0.5,0.5,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_01,1878193.9795598304
+0.5,0.6,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_04,2545483.7267599464
+0.5,0.6,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,569466.2255724747
+0.5,0.6,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_03,1039104.4891465037
+0.5,0.6,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_02,902043.6756601202
+0.5,0.6,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_03,532520.0157030431
+0.5,0.6,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_01,797457.4315277471
+0.5,0.6,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_05,1328303.8786461311
+0.5,0.6,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_02,907944.0986244878
+0.5,0.6,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1643710.5360163576
+0.5,0.6,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2161446.842211861
+0.5,0.6,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2440264.6857547844
+0.5,0.6,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_01,1878193.9795598304
+0.5,0.7,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_02,2545483.7267599464
+0.5,0.7,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_02,569466.2255724747
+0.5,0.7,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_01,1039104.4891465037
+0.5,0.7,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_05,902043.6756601202
+0.5,0.7,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_01,532520.0157030431
+0.5,0.7,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_03,797457.4315277471
+0.5,0.7,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_04,1328303.8786461311
+0.5,0.7,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_04,907944.0986244878
+0.5,0.7,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_01,1643710.5360163576
+0.5,0.7,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,2161446.842211861
+0.5,0.7,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_02,2440264.6857547844
+0.5,0.7,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_03,1878193.9795598304
+0.75,0.5,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_01,2314157.1188732297
+0.75,0.5,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,498806.0287022047
+0.75,0.5,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_02,924425.5537473442
+0.75,0.5,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_03,798192.7942471474
+0.75,0.5,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_02,473910.39504320675
+0.75,0.5,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_03,719676.4396240391
+0.75,0.5,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_04,1191230.5588664492
+0.75,0.5,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_01,811174.3199649451
+0.75,0.5,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1488116.7983849351
+0.75,0.5,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,1967510.3620926957
+0.75,0.5,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2222989.144990905
+0.75,0.5,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_05,1659910.2548837475
+0.75,0.6,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_05,2314157.1188732297
+0.75,0.6,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,498806.0287022047
+0.75,0.6,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_01,924425.5537473442
+0.75,0.6,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_02,798192.7942471474
+0.75,0.6,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_03,473910.39504320675
+0.75,0.6,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_01,719676.4396240391
+0.75,0.6,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_03,1191230.5588664492
+0.75,0.6,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_02,811174.3199649451
+0.75,0.6,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1488116.7983849351
+0.75,0.6,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,1967510.3620926957
+0.75,0.6,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2222989.144990905
+0.75,0.6,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_04,1659910.2548837475
+0.75,0.7,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_02,2314157.1188732297
+0.75,0.7,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_02,498806.0287022047
+0.75,0.7,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_04,924425.5537473442
+0.75,0.7,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_03,798192.7942471474
+0.75,0.7,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_01,473910.39504320675
+0.75,0.7,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_03,719676.4396240391
+0.75,0.7,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_01,1191230.5588664492
+0.75,0.7,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_04,811174.3199649451
+0.75,0.7,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_01,1488116.7983849351
+0.75,0.7,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,1967510.3620926957
+0.75,0.7,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_02,2222989.144990905
+0.75,0.7,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_05,1659910.2548837475
+1.0,0.5,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_03,2082830.510986513
+1.0,0.5,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,428145.8318319348
+1.0,0.5,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_01,809746.6183481847
+1.0,0.5,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_02,694341.9128341745
+1.0,0.5,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_03,415300.7743833705
+1.0,0.5,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_02,641895.4477203311
+1.0,0.5,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_05,1054157.239086767
+1.0,0.5,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_01,714404.5413054023
+1.0,0.5,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1332523.060753513
+1.0,0.5,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,1773573.8819735297
+1.0,0.5,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2005713.6042270265
+1.0,0.5,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_04,1441626.5302076652
+1.0,0.6,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_04,2082830.510986513
+1.0,0.6,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_01,428145.8318319348
+1.0,0.6,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_02,809746.6183481847
+1.0,0.6,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_03,694341.9128341745
+1.0,0.6,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_02,415300.7743833705
+1.0,0.6,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_03,641895.4477203311
+1.0,0.6,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_05,1054157.239086767
+1.0,0.6,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_04,714404.5413054023
+1.0,0.6,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_02,1332523.060753513
+1.0,0.6,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,1773573.8819735297
+1.0,0.6,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_01,2005713.6042270265
+1.0,0.6,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_01,1441626.5302076652
+1.0,0.7,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,PANAMAX_03,2082830.510986513
+1.0,0.7,CONTRACT_001,1,"Richards Bay, South Africa","Navlakhi, India",Supramax,SUPRAMAX_04,428145.8318319348
+1.0,0.7,CONTRACT_004,4,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_02,809746.6183481847
+1.0,0.7,CONTRACT_005,5,"Hay Point, Australia","Paradip, India",Panamax,PANAMAX_04,694341.9128341745
+1.0,0.7,CONTRACT_007,7,"East Kalimantan, Indonesia","Paradip, India",Supramax,SUPRAMAX_02,415300.7743833705
+1.0,0.7,CONTRACT_010,10,Indonesia,"Paradip, India",Supramax,SUPRAMAX_03,641895.4477203311
+1.0,0.7,CONTRACT_011,11,"Hay Point, Australia","Visakhapatnam, India",Panamax,PANAMAX_01,1054157.239086767
+1.0,0.7,CONTRACT_013,13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",Supramax,SUPRAMAX_01,714404.5413054023
+1.0,0.7,CONTRACT_016,16,"Richards Bay, South Africa","Gangavaram, India",Capesize,CAPESIZE_01,1332523.060753513
+1.0,0.7,CONTRACT_019,19,"Richards Bay, South Africa","Kandla, India",Capesize,CAPESIZE_03,1773573.8819735297
+1.0,0.7,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,CAPESIZE_02,2005713.6042270265
+1.0,0.7,CONTRACT_024,24,US East Coast (Hampton Roads / Baltimore),East Coast India (Paradip / Visakhapatnam),Panamax,PANAMAX_05,1441626.5302076652

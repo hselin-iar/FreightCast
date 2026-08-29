@@ -1,0 +1,151 @@
+{
+  "status": "success",
+  "duration": "0.003066607",
+  "timestamp": "2026-08-28T08:58:26.556Z",
+  "data": [
+    {
+      "vessel_name": "CAPE RAINBOW",
+      "mmsi": 373033000,
+      "imo": 9603398,
+      "vtype": 7,
+      "lat": -23.81563,
+      "lng": 151.51699,
+      "course": 98,
+      "speed": 0,
+      "nav_status": 1,
+      "received": "2026-08-28T08:58:25Z"
+    },
+    {
+      "vessel_name": "NSU VOYAGER",
+      "mmsi": 431491000,
+      "imo": 9790880,
+      "vtype": 7,
+      "lat": -23.78151,
+      "lng": 151.51616,
+      "course": 102,
+      "speed": 0,
+      "nav_status": 1,
+      "received": "2026-08-28T08:50:11Z"
+    },
+    {
+      "vessel_name": "MARAN GAS LETO",
+      "mmsi": 241355000,
+      "imo": 9682576,
+      "vtype": 8,
+      "lat": -23.76588,
+      "lng": 151.53798,
+      "course": 0.6,
+      "speed": 16.6,
+      "nav_status": 0,
+      "received": "2026-08-28T08:19:48Z"
+    },
+    {
+      "vessel_name": "EFESSOS WAVE",
+      "mmsi": 210083000,
+      "imo": 9454905,
+      "vtype": 7,
+      "lat": -23.86487,
+      "lng": 151.59145,
+      "course": 122,
+      "speed": 0,
+      "nav_status": 1,
+      "received": "2026-08-28T03:06:24Z"
+    },
+    {
+      "vessel_name": "SDTR ERICA",
+      "mmsi": 538009641,
+      "imo": 9877872,
+      "vtype": 7,
+      "lat": -23.85242,
+      "lng": 151.61422,
+      "course": 231,
+      "speed": 0,
+      "nav_status": 1,
+      "received": "2026-08-28T03:07:35Z"
+    },
+    {
+      "vessel_name": "YUN LONG FENG",
+      "mmsi": 413985000,
+      "imo": 9523201,
+      "vtype": 7,
+      "lat": -23.8292,
+      "lng": 151.58686,
+      "course": 119,
+      "speed": 0.1,
+      "nav_status": 1,
+      "received": "2026-08-28T03:07:34Z"
+    },
+    {
+      "vessel_name": "CAROLA",
+      "mmsi": 636016900,
+      "imo": 9708318,
+      "vtype": 7,
+      "lat": -23.89876,
+      "lng": 151.57304,
+      "course": 146,
+      "speed": 0.2,
+      "nav_status": 1,
+      "received": "2026-08-28T02:58:29Z"
+    },
+    {
+      "vessel_name": "RTM DHAMBUL",
+      "mmsi": 564856000,
+      "imo": 9607136,
+      "vtype": 7,
+      "lat": -23.83336,
+      "lng": 151.51863,
+      "course": 251,
+      "speed": 0,
+      "nav_status": 1,
+      "received": "2026-08-28T03:07:49Z"
+    },
+    {
+      "vessel_name": "WINCANTON",
+      "mmsi": 357800000,
+      "imo": 9212452,
+      "vtype": 8,
+      "lat": -23.86608,
+      "lng": 151.61309,
+      "course": 209,
+      "speed": 0,
+      "nav_status": 1,
+      "received": "2026-08-28T03:05:40Z"
+    },
+    {
+      "vessel_name": "AZUL TIERRA",
+      "mmsi": 352393000,
+      "imo": 9889306,
+      "vtype": 7,
+      "lat": -23.79716,
+      "lng": 151.5176,
+      "course": 181,
+      "speed": 0.1,
+      "nav_status": 1,
+      "received": "2026-08-28T03:06:42Z"
+    },
+    {
+      "vessel_name": "CHESAPEAKE HIGHWAY",
+      "mmsi": 351733000,
+      "imo": 9565546,
+      "vtype": 7,
+      "lat": -23.86656,
+      "lng": 151.57271,
+      "course": 116,
+      "speed": 0.1,
+      "nav_status": 1,
+      "received": "2026-08-28T03:07:48Z"
+    },
+    {
+      "vessel_name": "METIS TITANIUM",
+      "mmsi": 538012764,
+      "imo": 9914371,
+      "vtype": 7,
+      "lat": -23.84856,
+      "lng": 151.58976,
+      "course": 128,
+      "speed": 0,
+      "nav_status": 1,
+      "received": "2026-08-28T02:58:27Z"
+    }
+  ]
+}

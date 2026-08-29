@@ -1,0 +1,54 @@
+{
+  "request": {
+    "endpoint": "https://api.oilpriceapi.com/v1/prices/latest",
+    "params": {
+      "by_code": "VLSFO_USD"
+    },
+    "started_utc": "2026-08-28T16:12:58.909363+00:00",
+    "finished_utc": "2026-08-28T16:13:00.606644+00:00"
+  },
+  "response": {
+    "status": "success",
+    "data": {
+      "code": "VLSFO_SGSIN_USD",
+      "price": 770.5,
+      "created_at": "2026-08-28T16:11:32.820Z",
+      "source": "market_reporting",
+      "type": "spot_price",
+      "currency": "USD",
+      "formatted": "$770.50",
+      "unit": "metric_ton",
+      "updated_at": "2026-08-28T16:11:32.820Z",
+      "metadata": {
+        "source": "market_reporting",
+        "source_description": "Aggregated from published market sources",
+        "discover": {
+          "endpoint": "/v1/prices/all",
+          "description": "Get every commodity price in a single call"
+        }
+      },
+      "as_of": "2026-08-28T16:11:32.820Z",
+      "collected_at": "2026-08-28T16:11:32.820Z",
+      "synthetic": false,
+      "changes": {
+        "24h": {
+          "amount": -10.5,
+          "percent": -1.34,
+          "previous_price": 781.0,
+          "previous_timestamp": "2026-08-27T16:11:15Z",
+          "measured_at": "2026-08-28T16:11:32Z",
+          "span_hours": 24.0
+        }
+      },
+      "data_status": "current",
+      "freshness": {
+        "status": "current",
+        "age_seconds": 87,
+        "expected_max_age_seconds": 3600,
+        "circuit_breaker_open": false
+      },
+      "stale": false,
+      "age_days": 0
+    }
+  }
+}

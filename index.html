@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SAIL Freight Intelligence — Chartering Decision System</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sail: {
+              950: '#0a0f1a',
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#334155',
+              600: '#475569',
+              500: '#64748b',
+              400: '#94a3b8',
+              300: '#cbd5e1',
+              200: '#e2e8f0',
+              100: '#f1f5f9',
+            },
+            accent: {
+              DEFAULT: '#0d9488',
+              dim: '#0f766e',
+              soft: '#ccfbf1',
+            },
+            warn: {
+              DEFAULT: '#d97706',
+              soft: '#fef3c7',
+            },
+            risk: {
+              DEFAULT: '#dc2626',
+              soft: '#fee2e2',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
+    .badge-measured { background: #065f46; color: #a7f3d0; }
+    .badge-modeled { background: #1e3a5f; color: #93c5fd; }
+    .badge-assumed { background: #78350f; color: #fcd34d; }
+    .panel { background: #0f172a; border: 1px solid #1e293b; }
+    .input-field { background: #1e293b; border: 1px solid #334155; color: #e2e8f0; }
+    .input-field:focus { outline: none; border-color: #0d9488; box-shadow: 0 0 0 2px rgba(13,148,136,0.25); }
+    .tab-active { border-bottom: 2px solid #0d9488; color: #5eead4; }
+    .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; background: #0d9488; border-radius: 50%; cursor: pointer; }
+    .chart-placeholder { background: repeating-linear-gradient(90deg, transparent, transparent 39px, #1e293b 40px), repeating-linear-gradient(0deg, transparent, transparent 39px, #1e293b 40px); }
+    .fan-band { background: linear-gradient(180deg, rgba(13,148,136,0.08) 0%, rgba(13,148,136,0.02) 100%); }
+    .tip { position: relative; cursor: help; border-bottom: 1px dotted #475569; }
+    .tip:hover::after, .tip:focus::after {
+      content: attr(data-tip);
+      position: absolute; z-index: 80; left: 0; top: calc(100% + 6px);
+      width: max-content; max-width: 280px;
+      background: #020617; color: #e2e8f0; border: 1px solid #334155;
+      padding: 8px 10px; border-radius: 6px; font-size: 11px; line-height: 1.4;
+      font-family: Inter, system-ui, sans-serif; font-weight: 400; white-space: normal;
+      box-shadow: 0 8px 24px rgba(0,0,0,.45);
+    }
+    .clickable { cursor: pointer; transition: background .12s, border-color .12s; }
+    .clickable:hover { background: rgba(13,148,136,.08); border-color: #0d9488; }
+    tr.clickable:hover td { background: rgba(13,148,136,.07); }
+    .dropzone { border: 1px dashed #334155; }
+    .dropzone.drag { border-color: #0d9488; background: rgba(13,148,136,.08); }
+    .drawer {
+      position: fixed; top: 48px; right: 0; bottom: 0; width: 420px; z-index: 60;
+      background: #0f172a; border-left: 1px solid #1e293b;
+      transform: translateX(100%); transition: transform .2s ease;
+      overflow-y: auto; padding: 16px;
+    }
+    .drawer.open { transform: translateX(0); }
+    .modal-bg { position: fixed; inset: 0; background: rgba(2,6,23,.72); z-index: 70; display: none; align-items: center; justify-content: center; padding: 24px; }
+    .modal-bg.open { display: flex; }
+    .infer { font-size: 11px; color: #94a3b8; line-height: 1.45; margin-top: 8px; }
+    .infer strong { color: #5eead4; font-weight: 600; }
+  </style>
+</head>
+<body class="bg-sail-950 text-sail-200 min-h-screen">
+
+  <!-- ========== TOP NAV ========== -->
+  <header class="sticky top-0 z-50 bg-sail-900/95 backdrop-blur border-b border-sail-800">
+    <div class="max-w-[1600px] mx-auto px-5 h-12 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-7 h-7 rounded bg-accent flex items-center justify-center text-white text-xs font-bold">S</div>
+        <div>
+          <span class="font-semibold text-sail-100 tracking-tight">SAIL Freight Intelligence</span>
+          <span class="text-sail-500 text-xs ml-2 mono">v0.9 · PS3 Architecture</span>
+        </div>
+      </div>
+      <nav class="flex items-center gap-1 text-sm" id="app-nav">
+        <button data-view="recommendation" class="nav-btn px-3 py-1.5 rounded tab-active font-medium">Recommendation</button>
+        <button data-view="forecast" class="nav-btn px-3 py-1.5 rounded text-sail-400 hover:text-sail-200">Forecast Explorer</button>
+        <button data-view="ports" class="nav-btn px-3 py-1.5 rounded text-sail-400 hover:text-sail-200">Port Constraints</button>
+        <button data-view="scenario" class="nav-btn px-3 py-1.5 rounded text-sail-400 hover:text-sail-200">Scenario Lab</button>
+        <button data-view="provenance" class="nav-btn px-3 py-1.5 rounded text-sail-400 hover:text-sail-200">Data Provenance</button>
+      </nav>
+      <div class="flex items-center gap-3 text-xs">
+        <span class="flex items-center gap-1.5 text-sail-400">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          AIS live
+        </span>
+        <span class="text-sail-500 mono">Forecast gen: 2026-08-27 18:00 IST</span>
+        <button id="btn-export" class="px-2.5 py-1 rounded border border-sail-700 text-sail-300 hover:bg-sail-800">Export Brief</button>
+      </div>
+    </div>
+  </header>
+
+  <main id="view-recommendation" data-view-panel="recommendation" class="max-w-[1600px] mx-auto px-5 py-4 grid grid-cols-12 gap-4">
+
+    <!-- ========== LEFT: INPUT + ASSUMPTIONS ========== -->
+    <aside class="col-span-3 space-y-4">
+
+      <!-- Cargo Request Form -->
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Cargo Request</h2>
+          <span class="text-[10px] mono text-sail-500">cargo_request</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-sail-400 mb-1">Cargo quantity (tonnes)</label>
+            <input type="number" value="60000" class="input-field w-full rounded px-3 py-1.5 text-sm mono" />
+          </div>
+          <div>
+            <label class="block text-xs text-sail-400 mb-1">Origin port</label>
+            <select class="input-field w-full rounded px-3 py-1.5 text-sm">
+              <option>Hay Point, Australia</option>
+              <option>Newcastle, Australia</option>
+              <option>Richards Bay, South Africa</option>
+              <option>Mozambique (Beira)</option>
+              <option>Indonesia (Kalimantan)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-sail-400 mb-1">Preferred discharge ports</label>
+            <div class="space-y-1.5">
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" checked class="accent-accent" /> Paradip</label>
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" checked class="accent-accent" /> Gangavaram</label>
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="accent-accent" /> Vizag</label>
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="accent-accent" /> Dhamra</label>
+              <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="accent-accent" /> Haldia</label>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-sail-400 mb-1">Timing flexibility (days)
+              <span class="tip ml-1 text-sail-500" data-tip="Bounds how far ahead the MILP may look when comparing wait vs fix-now. Wider window = more event-based time points (week ends + trajectory local minima).">?</span>
+            </label>
+            <input type="range" min="0" max="45" value="30" id="rec-flex" class="w-full slider accent-accent" />
+            <div class="flex justify-between text-[10px] mono text-sail-500 mt-0.5">
+              <span>0</span><span class="text-accent" id="rec-flex-label">30 days</span><span>45</span>
+            </div>
+          </div>
+          <div class="border-t border-sail-800 pt-3">
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-xs text-sail-400">Locked-rate discount vs spot
+                <span class="tip ml-1 text-sail-500" data-tip="commitment_benchmark. No public COA quotes exist, so this is YOUR assumption — not a forecast. Locked voyages are priced as Base-path rate × (1 − this %). Raise it if brokers are offering a steeper discount; the hybrid vs pure-locked ranking will move.">?</span>
+              </label>
+              <span class="badge-assumed text-[10px] px-1.5 py-0.5 rounded mono">ASSUMED</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="number" value="8.5" step="0.5" id="rec-bench" class="input-field w-20 rounded px-2 py-1 text-sm mono" />
+              <span class="text-sail-400 text-sm">%</span>
+            </div>
+            <p class="infer">If this is 0%, locking never beats spot on price. At 8.5% the hybrid plan is preferred because it hedges the second voyage without over-committing the first.</p>
+          </div>
+        </div>
+        <button class="mt-4 w-full bg-accent hover:bg-accent-dim text-white text-sm font-medium py-2 rounded transition">
+          Run Recommendation
+        </button>
+      </section>
+
+      <!-- Live Port Status -->
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Port Congestion</h2>
+          <span class="text-[10px] mono text-sail-500">AIS · continuous</span>
+        </div>
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between text-sm clickable rounded px-1 -mx-1 py-0.5" data-explain="paradip-cong">
+            <span class="tip" data-tip="12 vessels in the AIS geofence. High dwell nudges the MILP toward fixing voyage 2 later or sending it to Gangavaram instead of waiting at Paradip.">Paradip</span>
+            <div class="flex items-center gap-2">
+              <span class="text-warn text-xs mono">12 vessels</span>
+              <span class="w-16 h-1.5 bg-sail-800 rounded overflow-hidden">
+                <span class="block h-full bg-warn w-3/4"></span>
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-sm clickable rounded px-1 -mx-1 py-0.5" data-explain="ganga-cong">
+            <span class="tip" data-tip="Quiet berth. This is why Voyage 1 is sent here on day 0 — lower wait, Cape-capable draft, no lightening.">Gangavaram</span>
+            <div class="flex items-center gap-2">
+              <span class="text-emerald-400 text-xs mono">4 vessels</span>
+              <span class="w-16 h-1.5 bg-sail-800 rounded overflow-hidden">
+                <span class="block h-full bg-emerald-500 w-1/4"></span>
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span>Vizag</span>
+            <div class="flex items-center gap-2">
+              <span class="text-sail-400 text-xs mono">7 vessels</span>
+              <span class="w-16 h-1.5 bg-sail-800 rounded overflow-hidden">
+                <span class="block h-full bg-sail-500 w-2/5"></span>
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between text-sm">
+            <span>Dhamra</span>
+            <div class="flex items-center gap-2">
+              <span class="text-emerald-400 text-xs mono">2 vessels</span>
+              <span class="w-16 h-1.5 bg-sail-800 rounded overflow-hidden">
+                <span class="block h-full bg-emerald-500 w-1/6"></span>
+              </span>
+            </div>
+          </div>
+        </div>
+        <p class="infer"><strong>Read this as:</strong> Paradip is backed up, Gangavaram is not. Congestion is not a hard block — it adds a risk-buffer term and biases entry timing.</p>
+      </section>
+    </aside>
+
+    <!-- ========== CENTER: RECOMMENDATION + CHARTS ========== -->
+    <section class="col-span-6 space-y-4">
+
+      <!-- Winning Plan Banner -->
+      <div class="panel rounded-lg p-4 border-l-4 border-accent">
+        <div class="flex items-start justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs font-medium text-accent uppercase tracking-wider">Recommended Plan</span>
+              <span class="badge-modeled text-[10px] px-1.5 py-0.5 rounded mono">MODELED</span>
+            </div>
+            <h1 class="text-lg font-semibold text-sail-100">
+              2-voyage hybrid · Panamax + Supramax
+            </h1>
+            <p class="text-sm text-sail-400 mt-0.5">
+              Voyage 1: 38,000 t Panamax → Gangavaram (spot, fix day 0) · Voyage 2: 22,000 t Supramax → Paradip (locked, fix day 14)
+            </p>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-semibold text-sail-100 mono tip" data-tip="Worst-case of Base / Optimistic / Pessimistic. The MILP minimises this number, not the Base-path cost. Pure spot looks cheaper on Base ($2.68M) but blows out to $3.12M if rates rise.">$2.84M</div>
+            <div class="text-xs text-sail-500">worst-case across scenarios</div>
+            <div class="text-xs text-accent mono mt-0.5 tip" data-tip="1 − (worst − best) / best across the three paths, scaled. 0.91 means the plan does not collapse under the pessimistic path.">robustness score 0.91</div>
+          </div>
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+          <span class="px-2 py-0.5 rounded bg-sail-800 text-sail-300 tip" data-tip="MILP chose 38kt + 22kt, not 30/30. Uneven splits were impossible in the old 9-strategy brute force.">Uneven split</span>
+          <span class="px-2 py-0.5 rounded bg-sail-800 text-sail-300 tip" data-tip="Neither selected vessel exceeds the chosen port’s draft, so Rule 7 never fires. A Capesize to Paradip would.">No lightening required</span>
+          <span class="px-2 py-0.5 rounded bg-sail-800 text-sail-300 tip" data-tip="Conditions monitor: rate, BDI and bunker are inside historical percentiles. XGBoost is serving, not damped trend.">Uncertainty: normal</span>
+          <span class="px-2 py-0.5 rounded bg-sail-800 text-sail-300 tip" data-tip="Decomposed variables + event-based time points keep the binary count small. If this exceeded ~4s the hybrid enumeration fallback would run instead.">MILP solve 1.8s</span>
+        </div>
+        <p class="infer"><strong>Why this plan:</strong> splitting lets a Panamax use quiet, deep Gangavaram now, and a smaller locked Supramax absorb Paradip later — cheaper in the worst case than one Cape that must lighten.</p>
+
+      <!-- Cost Breakdown -->
+      <div class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Cost Breakdown (5-bucket)</h2>
+          <span class="text-[10px] mono text-sail-500">recommendation_response.cost</span>
+        </div>
+        <!-- Stacked bar simulation -->
+        <div class="h-8 flex rounded overflow-hidden text-[10px] font-medium">
+          <div class="bg-teal-700 flex items-center justify-center text-white clickable" style="width:48%" data-explain="cost-freight">Ocean freight 48%</div>
+          <div class="bg-teal-600 flex items-center justify-center text-white clickable" style="width:18%" data-explain="cost-bunker">Bunker 18%</div>
+          <div class="bg-teal-500 flex items-center justify-center text-white clickable" style="width:14%" data-explain="cost-port">Port & handling 14%</div>
+          <div class="bg-amber-600 flex items-center justify-center text-white clickable" style="width:8%" data-explain="cost-light">Lightening 0%</div>
+          <div class="bg-slate-600 flex items-center justify-center text-white clickable" style="width:12%" data-explain="cost-risk">Risk buffer 12%</div>
+        </div>
+        <div class="grid grid-cols-5 gap-2 mt-3 text-xs">
+          <div>
+            <div class="text-sail-500">Ocean freight</div>
+            <div class="mono text-sail-100">$1.36M</div>
+          </div>
+          <div>
+            <div class="text-sail-500">Bunker</div>
+            <div class="mono text-sail-100">$511k</div>
+          </div>
+          <div>
+            <div class="text-sail-500">Port & handling</div>
+            <div class="mono text-sail-100">$397k</div>
+          </div>
+          <div>
+            <div class="text-sail-500">Lightening / extra</div>
+            <div class="mono text-sail-100">$0</div>
+          </div>
+          <div>
+            <div class="text-sail-500">Risk buffer</div>
+            <div class="mono text-sail-100">$341k</div>
+            <div class="text-[10px] text-sail-500">congestion + uncertainty</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scenario Fan + Forecast Trajectory -->
+      <div class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Scenario Fan · Australia–EC India Panamax</h2>
+          <div class="flex items-center gap-3 text-[10px]">
+            <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-accent"></span> Base</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-emerald-400/60"></span> Optimistic</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-amber-400/60"></span> Pessimistic</span>
+            <span class="text-sail-500 mono">forecast_object.trajectory</span>
+          </div>
+        </div>
+        <!-- Chart area placeholder with fan visualization -->
+        <div class="relative h-48 chart-placeholder rounded border border-sail-800 overflow-hidden">
+          <!-- Simulated fan bands -->
+          <div class="absolute inset-x-8 top-6 bottom-10 fan-band rounded"></div>
+          <svg class="absolute inset-0 w-full h-full" viewBox="0 0 400 180" preserveAspectRatio="none">
+            <!-- Pessimistic -->
+            <path d="M20,60 L80,72 L140,68 L200,85 L260,95 L320,110 L380,105" fill="none" stroke="#fbbf24" stroke-width="1.5" stroke-opacity="0.5" stroke-dasharray="4 2"/>
+            <!-- Base -->
+            <path d="M20,80 L80,85 L140,78 L200,90 L260,88 L320,95 L380,92" fill="none" stroke="#0d9488" stroke-width="2"/>
+            <!-- Optimistic -->
+            <path d="M20,100 L80,98 L140,92 L200,95 L260,85 L320,82 L380,78" fill="none" stroke="#34d399" stroke-width="1.5" stroke-opacity="0.5" stroke-dasharray="4 2"/>
+            <!-- Fix markers -->
+            <circle cx="20" cy="80" r="4" fill="#0d9488"/>
+            <circle cx="200" cy="90" r="4" fill="#0d9488"/>
+            <text x="24" y="72" fill="#94a3b8" font-size="9" font-family="monospace">Fix V1 (day 0)</text>
+            <text x="204" y="82" fill="#94a3b8" font-size="9" font-family="monospace">Fix V2 (day 14)</text>
+          </svg>
+          <div class="absolute bottom-1 left-2 right-2 flex justify-between text-[9px] mono text-sail-500">
+            <span>Today</span><span>+1w</span><span>+2w</span><span>+3w</span><span>+4w</span>
+          </div>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-2 leading-snug">
+          Event-based time points: today, week ends inside flexibility window, trajectory local minima. Chosen fix dates marked. Min-max objective evaluated across the three paths.
+        </p>
+      </div>
+
+      <!-- Scenario Comparison Table -->
+      <div class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Scenario Comparison</h2>
+          <span class="text-[10px] mono text-sail-500">scenario_comparison[]</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="text-sail-500 border-b border-sail-800">
+                <th class="text-left py-2 font-medium">Strategy</th>
+                <th class="text-right py-2 font-medium">Voyages</th>
+                <th class="text-right py-2 font-medium">Mode mix</th>
+                <th class="text-right py-2 font-medium">Base cost</th>
+                <th class="text-right py-2 font-medium">Worst-case</th>
+                <th class="text-right py-2 font-medium">Regret*</th>
+                <th class="text-left py-2 font-medium pl-3">Notes</th>
+              </tr>
+            </thead>
+            <tbody class="mono">
+              <tr class="border-b border-sail-800/60 bg-accent/5 clickable" data-explain="strat-hybrid">
+                <td class="py-2 text-accent font-medium">★ Hybrid (selected)</td>
+                <td class="text-right">2</td>
+                <td class="text-right">1 spot / 1 locked</td>
+                <td class="text-right">$2.71M</td>
+                <td class="text-right text-sail-100">$2.84M</td>
+                <td class="text-right text-sail-500">—</td>
+                <td class="pl-3 text-sail-400 font-sans">Uneven split · no Capesize draft risk</td>
+              </tr>
+              <tr class="border-b border-sail-800/60 clickable" data-explain="strat-spot">
+                <td class="py-2">Pure spot</td>
+                <td class="text-right">2</td>
+                <td class="text-right">all spot</td>
+                <td class="text-right">$2.68M</td>
+                <td class="text-right">$3.12M</td>
+                <td class="text-right text-sail-500">—</td>
+                <td class="pl-3 text-sail-400 font-sans">Lower base, higher exposure</td>
+              </tr>
+              <tr class="border-b border-sail-800/60 clickable" data-explain="strat-locked">
+                <td class="py-2">Pure locked</td>
+                <td class="text-right">2</td>
+                <td class="text-right">all locked</td>
+                <td class="text-right">$2.79M</td>
+                <td class="text-right">$2.91M</td>
+                <td class="text-right text-sail-500">—</td>
+                <td class="pl-3 text-sail-400 font-sans">Uses commitment_benchmark 8.5%</td>
+              </tr>
+              <tr class="border-b border-sail-800/60 clickable" data-explain="strat-cape">
+                <td class="py-2">Single Capesize</td>
+                <td class="text-right">1</td>
+                <td class="text-right">spot</td>
+                <td class="text-right">$2.55M</td>
+                <td class="text-right">$2.98M</td>
+                <td class="text-right text-sail-500">—</td>
+                <td class="pl-3 text-warn font-sans">Lightening required at Paradip</td>
+              </tr>
+              <tr class="clickable" data-explain="strat-pmx">
+                <td class="py-2">Single Panamax</td>
+                <td class="text-right">1</td>
+                <td class="text-right">spot</td>
+                <td class="text-right">$2.92M</td>
+                <td class="text-right">$3.21M</td>
+                <td class="text-right text-sail-500">—</td>
+                <td class="pl-3 text-sail-400 font-sans">Capacity tight · higher unit cost</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="infer">Click a row to see why it lost (or won) against the selected plan — same cost engine, not a new solve.</p>
+      </div>
+    </section>
+
+    <!-- ========== RIGHT: FEASIBILITY + DRIVERS + CHAT ========== -->
+    <aside class="col-span-3 space-y-4">
+
+      <!-- Feasible Options -->
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Feasible Options</h2>
+          <span class="text-[10px] mono text-sail-500">feasible_options[]</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="p-2 rounded bg-sail-800/50 border border-sail-700 clickable" data-explain="opt-pmx-g">
+            <div class="flex justify-between">
+              <span class="font-medium text-sail-100">Panamax → Gangavaram</span>
+              <span class="text-emerald-400">clear</span>
+            </div>
+            <div class="text-sail-500 mt-0.5">Draft OK · LOA OK · Beam OK · no lightening</div>
+          </div>
+          <div class="p-2 rounded bg-sail-800/50 border border-sail-700 clickable" data-explain="opt-smx-p">
+            <div class="flex justify-between">
+              <span class="font-medium text-sail-100">Supramax → Paradip</span>
+              <span class="text-emerald-400">clear</span>
+            </div>
+            <div class="text-sail-500 mt-0.5">Draft OK · handling ~18kt/day</div>
+          </div>
+          <div class="p-2 rounded bg-sail-800/30 border border-sail-800 clickable" data-explain="opt-cape-g">
+            <div class="flex justify-between">
+              <span class="font-medium text-sail-300">Capesize → Gangavaram</span>
+              <span class="text-emerald-400">clear</span>
+            </div>
+            <div class="text-sail-500 mt-0.5">Draft OK at Gangavaram</div>
+          </div>
+          <div class="p-2 rounded bg-sail-800/30 border border-sail-800 clickable" data-explain="opt-cape-p">
+            <div class="flex justify-between">
+              <span class="font-medium text-sail-300">Capesize → Paradip</span>
+              <span class="text-warn">lightening</span>
+            </div>
+            <div class="text-sail-500 mt-0.5">Draft exceed · lighten at Dhamra (+$18/t est.)</div>
+          </div>
+          <div class="p-2 rounded bg-sail-800/20 border border-sail-800 clickable" data-explain="opt-handy">
+            <div class="flex justify-between">
+              <span class="font-medium text-sail-400">Handysize → any</span>
+              <span class="text-sail-500">inefficient</span>
+            </div>
+            <div class="text-sail-500 mt-0.5">Parcel-fit flag · capacity under-utilised</div>
+          </div>
+        </div>
+        <p class="infer">Click an option for the rule-by-rule “why not X” readout. Soft flags (inefficient, tide) never block — they only change cost ranking.</p>
+      </section>
+
+      <!-- Driver Explanation -->
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Rate Drivers</h2>
+          <span class="badge-modeled text-[10px] px-1.5 py-0.5 rounded mono">MODELED</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <span>Bunker price (exog.)</span>
+            <div class="flex items-center gap-2">
+              <div class="w-20 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[72%]"></div></div>
+              <span class="mono text-sail-300 w-8 text-right">0.31</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>BDI change</span>
+            <div class="flex items-center gap-2">
+              <div class="w-20 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[58%]"></div></div>
+              <span class="mono text-sail-300 w-8 text-right">0.24</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Lagged rate (t-1)</span>
+            <div class="flex items-center gap-2">
+              <div class="w-20 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[45%]"></div></div>
+              <span class="mono text-sail-300 w-8 text-right">0.19</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Fleet supply</span>
+            <div class="flex items-center gap-2">
+              <div class="w-20 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[28%]"></div></div>
+              <span class="mono text-sail-300 w-8 text-right">0.12</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Port congestion</span>
+            <div class="flex items-center gap-2">
+              <div class="w-20 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[18%]"></div></div>
+              <span class="mono text-sail-300 w-8 text-right">0.08</span>
+            </div>
+          </div>
+          <div class="flex items-center justify-between">
+            <span>Seasonality</span>
+            <div class="flex items-center gap-2">
+              <div class="w-20 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[14%]"></div></div>
+              <span class="mono text-sail-300 w-8 text-right">0.06</span>
+            </div>
+          </div>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-3 leading-snug">
+          XGBoost feature importance · Prophet trend/seasonal decomposition attached. Conditions monitor: level & volatility checks passed → uncertainty = normal.
+        </p>
+      </section>
+
+      <!-- Sensitivity (Tornado) -->
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Sensitivity</h2>
+          <span class="text-[10px] mono text-sail-500">±10% perturbation</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div>
+            <div class="flex justify-between mb-0.5"><span>commitment_benchmark</span><span class="mono">±$94k</span></div>
+            <div class="h-2 bg-sail-800 rounded flex overflow-hidden">
+              <div class="bg-amber-700/80 w-[35%]"></div>
+              <div class="bg-accent/70 w-[30%]"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-0.5"><span>Bunker price</span><span class="mono">±$51k</span></div>
+            <div class="h-2 bg-sail-800 rounded flex overflow-hidden">
+              <div class="bg-amber-700/80 w-[22%]"></div>
+              <div class="bg-accent/70 w-[20%]"></div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-0.5"><span>Port handling rate</span><span class="mono">±$18k</span></div>
+            <div class="h-2 bg-sail-800 rounded flex overflow-hidden">
+              <div class="bg-amber-700/80 w-[10%]"></div>
+              <div class="bg-accent/70 w-[9%]"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chatbot Panel -->
+      <section class="panel rounded-lg p-4 flex flex-col" style="min-height: 280px;">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Decision Assistant</h2>
+          <span class="text-[10px] mono text-sail-500">tool-calling · same API</span>
+        </div>
+        <div class="flex-1 space-y-2.5 text-xs overflow-y-auto mb-3">
+          <div class="bg-sail-800/60 rounded p-2 text-sail-300">
+            What’s the best plan for 60kt from Hay Point to Paradip / Gangavaram with 30-day flexibility?
+          </div>
+          <div class="bg-accent/10 border border-accent/20 rounded p-2 text-sail-200">
+            Hybrid 2-voyage recommended. Panamax 38kt to Gangavaram (spot, day 0) + Supramax 22kt to Paradip (locked, day 14). Worst-case $2.84M across Base/Opt/Pess. Capesize would require lightening at Paradip.
+            <div class="mt-1.5 text-[10px] text-sail-500">Source: /recommendation · solve 1.8s</div>
+          </div>
+          <div class="bg-sail-800/60 rounded p-2 text-sail-300">
+            What if I can’t use Capesize and need it done in 12 days?
+          </div>
+          <div class="bg-accent/10 border border-accent/20 rounded p-2 text-sail-200">
+            Re-solved with constraints: exclude_vessel=["Capesize"], max_completion_day=12. Plan shifts to single Panamax voyage (spot) completing by day 11. Cost rises to $2.97M worst-case. Dashboard updated.
+            <div class="mt-1.5 text-[10px] text-sail-500">Source: /recommendation + constraints · genuine re-optimise</div>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <input type="text" placeholder="Ask a constraint change or what-if…" class="input-field flex-1 rounded px-2.5 py-1.5 text-xs" />
+          <button class="bg-accent hover:bg-accent-dim text-white px-3 rounded text-xs font-medium">Send</button>
+        </div>
+      </section>
+    </aside>
+
+    <!-- ========== BOTTOM FULL-WIDTH: MAP + PROVENANCE STRIP ========== -->
+    <section class="col-span-12 panel rounded-lg p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-sail-100">Route & Port Context</h2>
+        <div class="flex items-center gap-4 text-[10px] mono text-sail-500">
+          <span>Origin: Hay Point</span>
+          <span>Discharge candidates: Paradip · Gangavaram</span>
+          <span>AIS geofence active</span>
+        </div>
+      </div>
+      <div class="grid grid-cols-12 gap-4">
+        <!-- Map placeholder -->
+        <div class="col-span-8 h-40 rounded border border-sail-800 bg-sail-900/80 relative overflow-hidden flex items-center justify-center">
+          <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(circle at 20% 40%, #0d9488 1px, transparent 1px), radial-gradient(circle at 75% 55%, #0d9488 1px, transparent 1px); background-size: 24px 24px;"></div>
+          <div class="relative z-10 text-center">
+            <div class="text-sail-400 text-xs mono mb-1">AIS route map placeholder</div>
+            <div class="text-sail-500 text-[10px]">Origin & discharge ports · live congestion density overlay · Stage 2 polish</div>
+          </div>
+          <!-- Simulated port markers -->
+          <div class="absolute left-[18%] top-[38%] w-3 h-3 rounded-full bg-accent border-2 border-white/30"></div>
+          <div class="absolute right-[22%] top-[52%] w-3 h-3 rounded-full bg-warn border-2 border-white/30"></div>
+          <div class="absolute right-[28%] top-[48%] w-3 h-3 rounded-full bg-emerald-500 border-2 border-white/30"></div>
+        </div>
+        <!-- Provenance legend + key metrics -->
+        <div class="col-span-4 space-y-3">
+          <div>
+            <div class="text-xs font-medium text-sail-300 mb-1.5">Provenance tags</div>
+            <div class="flex flex-wrap gap-1.5 text-[10px]">
+              <span class="badge-measured px-1.5 py-0.5 rounded mono">MEASURED · BDI, bunker, AIS</span>
+              <span class="badge-modeled px-1.5 py-0.5 rounded mono">MODELED · forecast, trajectory</span>
+              <span class="badge-assumed px-1.5 py-0.5 rounded mono">ASSUMED · commitment_benchmark, tax</span>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <div class="bg-sail-800/40 rounded p-2">
+              <div class="text-sail-500">Model gate</div>
+              <div class="text-emerald-400 mono">passed</div>
+            </div>
+            <div class="bg-sail-800/40 rounded p-2">
+              <div class="text-sail-500">Observations</div>
+              <div class="mono text-sail-200">1,842</div>
+            </div>
+            <div class="bg-sail-800/40 rounded p-2">
+              <div class="text-sail-500">Primary model</div>
+              <div class="mono text-sail-200">XGBoost</div>
+            </div>
+            <div class="bg-sail-800/40 rounded p-2">
+              <div class="text-sail-500">Fallback ready</div>
+              <div class="mono text-sail-200">damped trend</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===================== FORECAST EXPLORER ===================== -->
+  <main id="view-forecast" data-view-panel="forecast" class="hidden max-w-[1600px] mx-auto px-5 py-4 grid grid-cols-12 gap-4">
+
+    <!-- LEFT: pair + serving + conditions -->
+    <aside class="col-span-3 space-y-4">
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Forecast pair</h2>
+          <span class="text-[10px] mono text-sail-500">route × vessel × horizon</span>
+        </div>
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs text-sail-400 mb-1">Route</label>
+            <select id="fx-route" class="input-field w-full rounded px-3 py-1.5 text-sm">
+              <option value="hay-ec">Hay Point → East Coast India</option>
+              <option value="rb-ec">Richards Bay → East Coast India</option>
+              <option value="kal-ec">Kalimantan → East Coast India</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-sail-400 mb-1">Vessel class</label>
+            <div class="grid grid-cols-2 gap-1.5" id="fx-vessel">
+              <button data-v="supramax" class="v-btn px-2 py-1.5 rounded text-xs border border-sail-700 text-sail-300">Supramax</button>
+              <button data-v="panamax" class="v-btn px-2 py-1.5 rounded text-xs border border-accent bg-accent/15 text-accent">Panamax</button>
+              <button data-v="capesize" class="v-btn px-2 py-1.5 rounded text-xs border border-sail-700 text-sail-300">Capesize</button>
+              <button data-v="handysize" class="v-btn px-2 py-1.5 rounded text-xs border border-sail-700 text-sail-400">Handysize</button>
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-sail-400 mb-1">Horizon</label>
+            <div class="flex gap-1" id="fx-horizon">
+              <button data-h="1w" class="h-btn flex-1 py-1.5 rounded text-xs border border-sail-700 text-sail-300">1-week</button>
+              <button data-h="2w" class="h-btn flex-1 py-1.5 rounded text-xs border border-accent bg-accent/15 text-accent">2-week</button>
+              <button data-h="1m" class="h-btn flex-1 py-1.5 rounded text-xs border border-sail-700 text-sail-300">1-month</button>
+            </div>
+          </div>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-3 leading-snug">
+          One model set per pair. Forecasting is scheduled (weekly retrain, daily refresh) and decoupled from cargo requests. Decision Engine only <em>reads</em> the stored <span class="mono">forecast_object</span>.
+        </p>
+      </section>
+
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Serving model</h2>
+          <span class="badge-modeled text-[10px] px-1.5 py-0.5 rounded mono">MODELED</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between"><span class="text-sail-400">Primary</span><span class="mono text-sail-100">XGBoost</span></div>
+          <div class="flex justify-between"><span class="text-sail-400">Currently serving</span><span id="fx-serving" class="mono text-accent">XGBoost</span></div>
+          <div class="flex justify-between"><span class="text-sail-400">§6.2 gate</span><span id="fx-gate" class="mono text-emerald-400">passed · beats naive</span></div>
+          <div class="flex justify-between"><span class="text-sail-400">Observations</span><span class="mono text-sail-100">1,842</span></div>
+          <div class="flex justify-between"><span class="text-sail-400">Min for XGBoost</span><span class="mono text-sail-500">≥ 500</span></div>
+          <div class="flex justify-between"><span class="text-sail-400">Generated</span><span class="mono text-sail-300">2026-08-27 18:00 IST</span></div>
+          <div class="flex justify-between"><span class="text-sail-400">Next retrain</span><span class="mono text-sail-300">2026-09-03 02:00 IST</span></div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-sail-800 text-[10px] text-sail-500 leading-snug">
+          ARIMA and naive exist only inside the evaluation gate — they never populate a <span class="mono">forecast_object</span>. Prophet attaches decomposition only. Damped trend substitutes when the conditions monitor trips.
+        </div>
+      </section>
+
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Conditions monitor</h2>
+          <span id="fx-unc-badge" class="text-[10px] px-1.5 py-0.5 rounded mono bg-emerald-950 text-emerald-300">UNCERTAINTY · NORMAL</span>
+        </div>
+        <div class="space-y-3 text-xs">
+          <div>
+            <div class="flex justify-between mb-1"><span>Level check</span><span class="mono text-emerald-400">inside 2.5–97.5 pctl</span></div>
+            <div class="grid grid-cols-3 gap-1.5">
+              <div class="bg-sail-800/50 rounded p-1.5 text-center">
+                <div class="text-[10px] text-sail-500">rate</div>
+                <div class="mono text-sail-100">p61</div>
+              </div>
+              <div class="bg-sail-800/50 rounded p-1.5 text-center">
+                <div class="text-[10px] text-sail-500">BDI</div>
+                <div class="mono text-sail-100">p54</div>
+              </div>
+              <div class="bg-sail-800/50 rounded p-1.5 text-center">
+                <div class="text-[10px] text-sail-500">bunker</div>
+                <div class="mono text-sail-100">p72</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between mb-1"><span>Volatility check</span><span class="mono text-emerald-400">WoW % in band</span></div>
+            <div class="h-1.5 bg-sail-800 rounded overflow-hidden">
+              <div class="h-full bg-accent" style="width:38%"></div>
+            </div>
+            <div class="flex justify-between text-[10px] mono text-sail-500 mt-0.5"><span>WoW −1.4%</span><span>hist σ 4.8%</span></div>
+          </div>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-3 leading-snug">
+          Either check failing → flag = high-uncertainty, damped trend served, band widened. Fallback cannot use bunker/BDI; it fails conservatively through regime shifts (COVID, Red Sea). VARX is Stage 3.
+        </p>
+      </section>
+
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-sail-100">Feed freshness</h2>
+          <span class="badge-measured text-[10px] px-1.5 py-0.5 rounded mono">MEASURED</span>
+        </div>
+        <div class="space-y-1.5 text-xs">
+          <div class="flex justify-between"><span>BDI (daily)</span><span class="mono text-emerald-400">T+0 · 2026-08-27</span></div>
+          <div class="flex justify-between"><span>Bunker (OilPriceAPI)</span><span class="mono text-emerald-400">T+0 · 2026-08-27</span></div>
+          <div class="flex justify-between"><span>Fleet supply</span><span class="mono text-sail-300">monthly · Jul 2026</span></div>
+          <div class="flex justify-between"><span>AIS congestion</span><span class="mono text-emerald-400">live</span></div>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-2">Alert if a daily feed is >2 days stale. Weekend gaps forward-filled.</p>
+      </section>
+    </aside>
+
+    <!-- CENTER -->
+    <section class="col-span-6 space-y-4">
+
+      <div class="panel rounded-lg p-4 border-l-4 border-accent">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xs font-medium text-accent uppercase tracking-wider">forecast_object</span>
+              <span class="badge-modeled text-[10px] px-1.5 py-0.5 rounded mono">MODELED</span>
+            </div>
+            <h1 class="text-lg font-semibold text-sail-100" id="fx-title">Hay Point → EC India · Panamax · 2-week</h1>
+            <p class="text-sm text-sail-400 mt-0.5">Point estimate with 80% band. Trajectory is the point re-evaluated at event dates — this is what entry-timing compares against.</p>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="text-[10px] text-sail-500 uppercase tracking-wider">Point · 2-week</div>
+            <div class="text-2xl font-semibold text-sail-100 mono" id="fx-point">$18.40</div>
+            <div class="text-xs mono text-sail-400" id="fx-band">band $16.90 – $20.15 <span class="text-sail-500">/t</span></div>
+            <div class="text-xs text-accent mono mt-0.5" id="fx-dir">directional call: +2.1% vs last fixture</div>
+          </div>
+        </div>
+        <div class="mt-3 grid grid-cols-4 gap-2 text-xs">
+          <div class="bg-sail-800/40 rounded p-2">
+            <div class="text-sail-500">1-week</div>
+            <div class="mono text-sail-100">$18.05</div>
+            <div class="text-[10px] text-sail-500">16.70–19.40</div>
+          </div>
+          <div class="bg-accent/10 border border-accent/20 rounded p-2">
+            <div class="text-accent">2-week</div>
+            <div class="mono text-sail-100">$18.40</div>
+            <div class="text-[10px] text-sail-500">16.90–20.15</div>
+          </div>
+          <div class="bg-sail-800/40 rounded p-2">
+            <div class="text-sail-500">1-month</div>
+            <div class="mono text-sail-100">$17.85</div>
+            <div class="text-[10px] text-sail-500">15.80–20.40</div>
+          </div>
+          <div class="bg-sail-800/40 rounded p-2">
+            <div class="text-sail-500">Local min in window</div>
+            <div class="mono text-sail-100">day 21</div>
+            <div class="text-[10px] text-sail-500">event-based τ</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Rate history + trajectory</h2>
+          <div class="flex items-center gap-3 text-[10px]">
+            <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-sail-400"></span> History</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-0.5 bg-accent"></span> Trajectory</span>
+            <span class="flex items-center gap-1"><span class="w-3 h-2 bg-accent/20 border border-accent/30"></span> 80% band</span>
+            <span class="text-sail-500 mono">/forecast</span>
+          </div>
+        </div>
+        <div class="relative h-56 chart-placeholder rounded border border-sail-800 overflow-hidden">
+          <svg class="absolute inset-0 w-full h-full" viewBox="0 0 640 220" preserveAspectRatio="none">
+            <path d="M0,40 L640,40 M0,80 L640,80 M0,120 L640,120 M0,160 L640,160" stroke="#1e293b" stroke-width="1"/>
+            <!-- band from x=400 -->
+            <path d="M400,95 L460,88 L520,78 L580,92 L630,70 L630,150 L580,155 L520,148 L460,142 L400,138 Z" fill="#0d9488" fill-opacity="0.12"/>
+            <!-- history -->
+            <path d="M20,130 L60,122 L100,128 L140,110 L180,118 L220,98 L260,105 L300,92 L340,100 L380,88 L400,90" fill="none" stroke="#94a3b8" stroke-width="1.8"/>
+            <!-- trajectory -->
+            <path d="M400,90 L460,102 L520,108 L580,118 L630,112" fill="none" stroke="#0d9488" stroke-width="2.2"/>
+            <circle cx="400" cy="90" r="4" fill="#0d9488"/>
+            <circle cx="520" cy="108" r="3.5" fill="#fbbf24"/>
+            <text x="406" y="78" fill="#94a3b8" font-size="10" font-family="monospace">today</text>
+            <text x="526" y="100" fill="#fbbf24" font-size="10" font-family="monospace">local min · day 21</text>
+          </svg>
+          <div class="absolute bottom-1 left-2 right-2 flex justify-between text-[9px] mono text-sail-500">
+            <span>−12w</span><span>−8w</span><span>−4w</span><span>today</span><span>+1w</span><span>+2w</span><span>+4w</span>
+          </div>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-2 leading-snug">
+          Left of today is measured <span class="mono">rate_history</span>. Right is the trajectory inside the confidence band. Yellow marker is a local minimum — included as an event-based time point in the MILP, not a uniform daily grid.
+        </p>
+      </div>
+
+      <div class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Prophet decomposition</h2>
+          <span class="text-[10px] mono text-sail-500">attached to driver_explanation · not competing on accuracy</span>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <div class="text-[10px] text-sail-500 mb-1 uppercase tracking-wider">Trend</div>
+            <div class="h-16 rounded border border-sail-800 bg-sail-900/60 relative overflow-hidden">
+              <svg class="absolute inset-0 w-full h-full" viewBox="0 0 120 64" preserveAspectRatio="none">
+                <path d="M4,48 L30,44 L60,38 L90,34 L116,30" fill="none" stroke="#0d9488" stroke-width="1.6"/>
+              </svg>
+            </div>
+            <div class="text-[10px] mono text-sail-400 mt-1">slow decline · −0.8%/mo</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-sail-500 mb-1 uppercase tracking-wider">Seasonal</div>
+            <div class="h-16 rounded border border-sail-800 bg-sail-900/60 relative overflow-hidden">
+              <svg class="absolute inset-0 w-full h-full" viewBox="0 0 120 64" preserveAspectRatio="none">
+                <path d="M4,32 C20,18 30,50 50,32 C70,14 80,50 100,32 L116,28" fill="none" stroke="#38bdf8" stroke-width="1.6"/>
+              </svg>
+            </div>
+            <div class="text-[10px] mono text-sail-400 mt-1">Q3 coal lift · calendar feature</div>
+          </div>
+          <div>
+            <div class="text-[10px] text-sail-500 mb-1 uppercase tracking-wider">Residual / events</div>
+            <div class="h-16 rounded border border-sail-800 bg-sail-900/60 relative overflow-hidden">
+              <svg class="absolute inset-0 w-full h-full" viewBox="0 0 120 64" preserveAspectRatio="none">
+                <path d="M4,32 L20,30 L28,44 L40,28 L55,34 L70,22 L85,36 L100,30 L116,32" fill="none" stroke="#fbbf24" stroke-width="1.4"/>
+              </svg>
+            </div>
+            <div class="text-[10px] mono text-sail-400 mt-1">no holiday spike this window</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Walk-forward evaluation gate</h2>
+          <span class="text-[10px] mono text-sail-500">§6.2 · rolling backtest · never a random split</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="text-sail-500 border-b border-sail-800">
+                <th class="text-left py-2 font-medium">Model</th>
+                <th class="text-right py-2 font-medium">MAE</th>
+                <th class="text-right py-2 font-medium">RMSE</th>
+                <th class="text-right py-2 font-medium">MAPE</th>
+                <th class="text-right py-2 font-medium">R²</th>
+                <th class="text-right py-2 font-medium">Dir. acc.</th>
+                <th class="text-left py-2 font-medium pl-3">Role</th>
+              </tr>
+            </thead>
+            <tbody class="mono">
+              <tr class="border-b border-sail-800/60 bg-accent/5">
+                <td class="py-2 text-accent font-medium">XGBoost</td>
+                <td class="text-right">1.12</td>
+                <td class="text-right">1.48</td>
+                <td class="text-right">6.1%</td>
+                <td class="text-right">0.71</td>
+                <td class="text-right text-emerald-400">64%</td>
+                <td class="pl-3 text-sail-400 font-sans">Primary · serving</td>
+              </tr>
+              <tr class="border-b border-sail-800/60">
+                <td class="py-2">ARIMA</td>
+                <td class="text-right">1.41</td>
+                <td class="text-right">1.79</td>
+                <td class="text-right">7.8%</td>
+                <td class="text-right">0.54</td>
+                <td class="text-right">57%</td>
+                <td class="pl-3 text-sail-400 font-sans">Gate only · never shown</td>
+              </tr>
+              <tr class="border-b border-sail-800/60">
+                <td class="py-2">Naive RW</td>
+                <td class="text-right">1.66</td>
+                <td class="text-right">2.11</td>
+                <td class="text-right">9.4%</td>
+                <td class="text-right">—</td>
+                <td class="text-right">50%</td>
+                <td class="pl-3 text-sail-400 font-sans">Must beat this to serve</td>
+              </tr>
+              <tr>
+                <td class="py-2">Damped trend</td>
+                <td class="text-right">1.58</td>
+                <td class="text-right">1.97</td>
+                <td class="text-right">8.9%</td>
+                <td class="text-right">0.41</td>
+                <td class="text-right">53%</td>
+                <td class="pl-3 text-sail-400 font-sans">Fallback if monitor trips</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-2">Directional accuracy is the secondary metric for the fix-now vs wait call. Gate: XGBoost MAE 1.12 < naive 1.66 → eligible to write <span class="mono">forecast_object</span>.</p>
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <aside class="col-span-3 space-y-4">
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Feature importance</h2>
+          <span class="text-[10px] mono text-sail-500">XGBoost · exogenous_features</span>
+        </div>
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between"><span>Bunker price</span><div class="flex items-center gap-2"><div class="w-24 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[72%]"></div></div><span class="mono w-8 text-right">0.31</span></div></div>
+          <div class="flex items-center justify-between"><span>BDI change</span><div class="flex items-center gap-2"><div class="w-24 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[58%]"></div></div><span class="mono w-8 text-right">0.24</span></div></div>
+          <div class="flex items-center justify-between"><span>Lagged rate t−1</span><div class="flex items-center gap-2"><div class="w-24 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[45%]"></div></div><span class="mono w-8 text-right">0.19</span></div></div>
+          <div class="flex items-center justify-between"><span>Fleet supply</span><div class="flex items-center gap-2"><div class="w-24 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[28%]"></div></div><span class="mono w-8 text-right">0.12</span></div></div>
+          <div class="flex items-center justify-between"><span>Port congestion</span><div class="flex items-center gap-2"><div class="w-24 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[18%]"></div></div><span class="mono w-8 text-right">0.08</span></div></div>
+          <div class="flex items-center justify-between"><span>Seasonality</span><div class="flex items-center gap-2"><div class="w-24 h-1.5 bg-sail-800 rounded overflow-hidden"><div class="h-full bg-accent w-[14%]"></div></div><span class="mono w-8 text-right">0.06</span></div></div>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-3 leading-snug">Attached even when damped trend is serving the numeric estimate.</p>
+      </section>
+
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Ablation</h2>
+          <span class="text-[10px] mono text-sail-500">each retrain · drop one feature</span>
+        </div>
+        <table class="w-full text-[11px]">
+          <thead>
+            <tr class="text-sail-500 border-b border-sail-800">
+              <th class="text-left py-1.5 font-medium">Removed</th>
+              <th class="text-right py-1.5 font-medium">Δ MAE</th>
+              <th class="text-right py-1.5 font-medium">Keep?</th>
+            </tr>
+          </thead>
+          <tbody class="mono">
+            <tr class="border-b border-sail-800/50"><td class="py-1.5 font-sans">Bunker</td><td class="text-right text-warn">+0.21</td><td class="text-right text-emerald-400">yes</td></tr>
+            <tr class="border-b border-sail-800/50"><td class="py-1.5 font-sans">BDI change</td><td class="text-right text-warn">+0.14</td><td class="text-right text-emerald-400">yes</td></tr>
+            <tr class="border-b border-sail-800/50"><td class="py-1.5 font-sans">Lagged rate</td><td class="text-right text-warn">+0.11</td><td class="text-right text-emerald-400">yes</td></tr>
+            <tr class="border-b border-sail-800/50"><td class="py-1.5 font-sans">Fleet supply</td><td class="text-right">+0.04</td><td class="text-right text-emerald-400">yes</td></tr>
+            <tr class="border-b border-sail-800/50"><td class="py-1.5 font-sans">Congestion</td><td class="text-right">+0.03</td><td class="text-right text-emerald-400">yes</td></tr>
+            <tr><td class="py-1.5 font-sans">Seasonality</td><td class="text-right">+0.02</td><td class="text-right text-sail-400">marginal</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-sail-100">Pair coverage</h2>
+          <span class="text-[10px] mono text-sail-500">Stage 1 · 3×3</span>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-[10px] mono">
+            <thead>
+              <tr class="text-sail-500">
+                <th class="text-left py-1 font-medium"></th>
+                <th class="text-center py-1 font-medium">SMX</th>
+                <th class="text-center py-1 font-medium">PMX</th>
+                <th class="text-center py-1 font-medium">CAPE</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="py-1 text-sail-400">Hay Point</td>
+                <td class="text-center text-emerald-400">gate</td>
+                <td class="text-center text-accent">serving</td>
+                <td class="text-center text-emerald-400">gate</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-sail-400">Richards Bay</td>
+                <td class="text-center text-emerald-400">gate</td>
+                <td class="text-center text-emerald-400">gate</td>
+                <td class="text-center text-warn">damped*</td>
+              </tr>
+              <tr>
+                <td class="py-1 text-sail-400">Kalimantan</td>
+                <td class="text-center text-emerald-400">gate</td>
+                <td class="text-center text-emerald-400">gate</td>
+                <td class="text-center text-sail-500">n=412†</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-[10px] text-sail-500 mt-2 leading-snug">
+          * Conditions monitor tripped (BDI level). † Below 500 observations — XGBoost skipped, ARIMA serving until history grows.
+        </p>
+      </section>
+
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-sail-100">What this is not</h2>
+        </div>
+        <ul class="text-[11px] text-sail-400 space-y-1.5 leading-snug">
+          <li>Not a live retrain on each cargo request.</li>
+          <li>Not a deep-learning ensemble (Stage 3, needs ~7,000 obs).</li>
+          <li>Not a stochastic tree — Scenario Generator uses three paths only.</li>
+          <li>Prophet does not pick the number; XGBoost (or damped trend) does.</li>
+        </ul>
+      </section>
+    </aside>
+
+    <!-- BOTTOM: all-pair strip -->
+    <section class="col-span-12 panel rounded-lg p-4">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-sail-100">All stored forecast_objects · latest generation</h2>
+        <span class="text-[10px] mono text-sail-500">one row per route × vessel × horizon × gen date</span>
+      </div>
+      <div class="grid grid-cols-3 gap-3 text-xs">
+        <div class="border border-accent/40 bg-accent/5 rounded p-3">
+          <div class="flex justify-between mb-1"><span class="font-medium text-sail-100">Hay Point · Panamax · 2w</span><span class="text-accent mono">$18.40</span></div>
+          <div class="text-sail-500">XGBoost · gate passed · unc. normal · n=1842</div>
+        </div>
+        <div class="border border-sail-800 rounded p-3">
+          <div class="flex justify-between mb-1"><span class="font-medium text-sail-100">Hay Point · Supramax · 2w</span><span class="mono">$21.10</span></div>
+          <div class="text-sail-500">XGBoost · gate passed · unc. normal · n=1760</div>
+        </div>
+        <div class="border border-sail-800 rounded p-3">
+          <div class="flex justify-between mb-1"><span class="font-medium text-sail-100">Hay Point · Capesize · 2w</span><span class="mono">$14.85</span></div>
+          <div class="text-sail-500">XGBoost · gate passed · unc. normal · n=1512</div>
+        </div>
+        <div class="border border-sail-800 rounded p-3">
+          <div class="flex justify-between mb-1"><span class="font-medium text-sail-100">Richards Bay · Panamax · 2w</span><span class="mono">$16.20</span></div>
+          <div class="text-sail-500">XGBoost · gate passed · unc. normal · n=980</div>
+        </div>
+        <div class="border border-warn/40 bg-warn/5 rounded p-3">
+          <div class="flex justify-between mb-1"><span class="font-medium text-sail-100">Richards Bay · Capesize · 2w</span><span class="text-warn mono">$12.40</span></div>
+          <div class="text-warn">Damped trend · high-uncertainty · BDI level trip</div>
+        </div>
+        <div class="border border-sail-700 rounded p-3 opacity-80">
+          <div class="flex justify-between mb-1"><span class="font-medium text-sail-200">Kalimantan · Capesize · 2w</span><span class="mono text-sail-300">$11.90</span></div>
+          <div class="text-sail-500">ARIMA · n=412 < 500 · XGBoost skipped</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== PORT CONSTRAINTS ===================== -->
+  <main data-view-panel="ports" class="hidden max-w-[1600px] mx-auto px-5 py-4 grid grid-cols-12 gap-4">
+    <section class="col-span-8 space-y-4">
+      <div class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-1">
+          <h1 class="text-sm font-semibold text-sail-100">port_constraint_table</h1>
+          <div class="flex items-center gap-2 text-[10px]">
+            <span class="badge-measured px-1.5 py-0.5 rounded mono">MEASURED · signed-off</span>
+            <span class="text-sail-500 mono">refresh: monthly · last: 2026-08-01</span>
+          </div>
+        </div>
+        <p class="infer mb-3">Every East Coast discharge port and in-scope load port, at once. Click a row to see Rules 1–8 applied to each vessel class. Values are safety-critical — new extracts sit in the verification queue until a human signs them off.</p>
+        <div class="flex gap-2 mb-3">
+          <input id="port-filter" type="search" placeholder="Filter ports…" class="input-field flex-1 rounded px-3 py-1.5 text-xs" />
+          <select id="port-region" class="input-field rounded px-2 py-1.5 text-xs">
+            <option value="all">All regions</option>
+            <option value="ec">East Coast India</option>
+            <option value="load">Load ports</option>
+          </select>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs" id="port-table">
+            <thead>
+              <tr class="text-sail-500 border-b border-sail-800">
+                <th class="text-left py-2 font-medium">Port</th>
+                <th class="text-right py-2 font-medium">Max draft m</th>
+                <th class="text-right py-2 font-medium">LOA m</th>
+                <th class="text-right py-2 font-medium">Beam m</th>
+                <th class="text-right py-2 font-medium">Handling t/d</th>
+                <th class="text-left py-2 font-medium pl-3">Tide</th>
+                <th class="text-left py-2 font-medium">Lightening via</th>
+                <th class="text-left py-2 font-medium">Status</th>
+              </tr>
+            </thead>
+            <tbody class="mono" id="port-tbody">
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="ec" data-port="Paradip" data-draft="14.5" data-loa="260" data-beam="43" data-hand="18000" data-tide="partial" data-light="Dhamra">
+                <td class="py-2 text-sail-100 font-sans">Paradip</td>
+                <td class="text-right">14.5</td><td class="text-right">260</td><td class="text-right">43</td><td class="text-right">18,000</td>
+                <td class="pl-3 text-warn font-sans">partial</td>
+                <td class="font-sans">Dhamra</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="ec" data-port="Gangavaram" data-draft="19.5" data-loa="300" data-beam="50" data-hand="25000" data-tide="no" data-light="—">
+                <td class="py-2 text-sail-100 font-sans">Gangavaram</td>
+                <td class="text-right">19.5</td><td class="text-right">300</td><td class="text-right">50</td><td class="text-right">25,000</td>
+                <td class="pl-3 text-sail-400 font-sans">no</td>
+                <td class="font-sans">—</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="ec" data-port="Vizag" data-draft="16.5" data-loa="280" data-beam="45" data-hand="20000" data-tide="no" data-light="Gangavaram">
+                <td class="py-2 text-sail-100 font-sans">Vizag</td>
+                <td class="text-right">16.5</td><td class="text-right">280</td><td class="text-right">45</td><td class="text-right">20,000</td>
+                <td class="pl-3 text-sail-400 font-sans">no</td>
+                <td class="font-sans">Gangavaram</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="ec" data-port="Dhamra" data-draft="18.5" data-loa="300" data-beam="48" data-hand="22000" data-tide="no" data-light="—">
+                <td class="py-2 text-sail-100 font-sans">Dhamra</td>
+                <td class="text-right">18.5</td><td class="text-right">300</td><td class="text-right">48</td><td class="text-right">22,000</td>
+                <td class="pl-3 text-sail-400 font-sans">no</td>
+                <td class="font-sans">—</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="ec" data-port="Haldia" data-draft="8.5" data-loa="230" data-beam="32" data-hand="12000" data-tide="yes" data-light="Sagar">
+                <td class="py-2 text-sail-100 font-sans">Haldia</td>
+                <td class="text-right">8.5</td><td class="text-right">230</td><td class="text-right">32</td><td class="text-right">12,000</td>
+                <td class="pl-3 text-warn font-sans">yes</td>
+                <td class="font-sans">Sagar</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="ec" data-port="Gopalpur" data-draft="14.0" data-loa="240" data-beam="40" data-hand="14000" data-tide="partial" data-light="Dhamra">
+                <td class="py-2 text-sail-100 font-sans">Gopalpur</td>
+                <td class="text-right">14.0</td><td class="text-right">240</td><td class="text-right">40</td><td class="text-right">14,000</td>
+                <td class="pl-3 text-warn font-sans">partial</td>
+                <td class="font-sans">Dhamra</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="ec" data-port="Sagar-Sandheads" data-draft="12.5" data-loa="250" data-beam="42" data-hand="8000" data-tide="yes" data-light="—">
+                <td class="py-2 text-sail-100 font-sans">Sagar-Sandheads</td>
+                <td class="text-right">12.5</td><td class="text-right">250</td><td class="text-right">42</td><td class="text-right">8,000</td>
+                <td class="pl-3 text-warn font-sans">yes</td>
+                <td class="font-sans">lighterage</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="load" data-port="Hay Point" data-draft="19.0" data-loa="320" data-beam="55" data-hand="40000" data-tide="no" data-light="—">
+                <td class="py-2 text-sail-100 font-sans">Hay Point (AU)</td>
+                <td class="text-right">19.0</td><td class="text-right">320</td><td class="text-right">55</td><td class="text-right">40,000</td>
+                <td class="pl-3 text-sail-400 font-sans">no</td>
+                <td class="font-sans">—</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="load" data-port="Richards Bay" data-draft="19.0" data-loa="300" data-beam="50" data-hand="35000" data-tide="no" data-light="—">
+                <td class="py-2 text-sail-100 font-sans">Richards Bay (ZA)</td>
+                <td class="text-right">19.0</td><td class="text-right">300</td><td class="text-right">50</td><td class="text-right">35,000</td>
+                <td class="pl-3 text-sail-400 font-sans">no</td>
+                <td class="font-sans">—</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="border-b border-sail-800/50 clickable port-row" data-region="load" data-port="Beira" data-draft="12.0" data-loa="240" data-beam="38" data-hand="15000" data-tide="yes" data-light="—">
+                <td class="py-2 text-sail-100 font-sans">Beira (MZ)</td>
+                <td class="text-right">12.0</td><td class="text-right">240</td><td class="text-right">38</td><td class="text-right">15,000</td>
+                <td class="pl-3 text-warn font-sans">yes</td>
+                <td class="font-sans">—</td>
+                <td class="text-emerald-400">active</td>
+              </tr>
+              <tr class="clickable port-row" data-region="load" data-port="Kalimantan" data-draft="16.0" data-loa="280" data-beam="45" data-hand="22000" data-tide="no" data-light="—">
+                <td class="py-2 text-sail-100 font-sans">Kalimantan (ID)</td>
+                <td class="text-right">16.0</td><td class="text-right">280</td><td class="text-right">45</td><td class="text-right">22,000</td>
+                <td class="pl-3 text-sail-400 font-sans">no</td>
+                <td class="font-sans">—</td>
+                <td class="text-amber-300">pending sign-off</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel rounded-lg p-4" id="rule-inspector">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-sail-100">Rule inspector · <span id="insp-name">Paradip</span></h2>
+          <span class="text-[10px] mono text-sail-500">§5.5 rules 1–8 · deterministic</span>
+        </div>
+        <p class="infer mb-3" id="insp-blurb">Typical Capesize laden draft ~18 m exceeds Paradip 14.5 m → Rule 7 marks “feasible with lightening” via Dhamra, not a hard reject.</p>
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="text-sail-500 border-b border-sail-800">
+                <th class="text-left py-2 font-medium">Vessel</th>
+                <th class="text-left py-2 font-medium">R1 Draft</th>
+                <th class="text-left py-2 font-medium">R2 LOA</th>
+                <th class="text-left py-2 font-medium">R3 Beam</th>
+                <th class="text-left py-2 font-medium">R4 Parcel</th>
+                <th class="text-left py-2 font-medium">R6 Tide</th>
+                <th class="text-left py-2 font-medium">R7 Lightening</th>
+                <th class="text-left py-2 font-medium">Result</th>
+              </tr>
+            </thead>
+            <tbody class="mono" id="insp-body"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <aside class="col-span-4 space-y-4">
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-sail-100">Ingest constraints</h2>
+          <span class="text-[10px] mono text-sail-500">pdfplumber / camelot · §5.1</span>
+        </div>
+        <p class="infer mb-3">Drop a port circular (PDF) or a dimensions sheet (CSV). Extracted draft / LOA / beam / handling never go live until they pass plausibility bounds and a human sign-off.</p>
+        <div id="dropzone" class="dropzone rounded-lg p-6 text-center cursor-pointer">
+          <div class="text-sm text-sail-200">Drop PDF or CSV here</div>
+          <div class="text-[11px] text-sail-500 mt-1">or click to browse · .pdf .csv .xlsx</div>
+          <input id="port-file" type="file" accept=".pdf,.csv,.xlsx,.xls" class="hidden" />
+        </div>
+        <div id="extract-preview" class="hidden mt-3 text-xs space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-sail-300" id="extract-fname">port_circular.pdf</span>
+            <span class="text-accent mono">3 fields parsed</span>
+          </div>
+          <div class="bg-sail-800/50 rounded p-2 mono text-[11px] space-y-1">
+            <div>port: <span class="text-sail-100">Paradip — EQ-3 berth</span></div>
+            <div>draft_m: <span class="text-sail-100">14.50</span> <span class="text-sail-500">was 14.50</span></div>
+            <div>loa_m: <span class="text-warn">265</span> <span class="text-sail-500">was 260 · Δ +5</span></div>
+            <div>beam_m: <span class="text-sail-100">43</span></div>
+            <div>handling_tpd: <span class="text-sail-100">18,000</span></div>
+            <div>plausibility: <span class="text-emerald-400">in bounds</span></div>
+          </div>
+          <button id="queue-extract" class="w-full bg-accent hover:bg-accent-dim text-white text-sm font-medium py-2 rounded">Queue for human sign-off</button>
+        </div>
+      </section>
+
+      <section class="panel rounded-lg p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold text-sail-100">Verification queue</h2>
+          <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-950 text-amber-300 mono">2 pending</span>
+        </div>
+        <div class="space-y-2 text-xs" id="verify-q">
+          <div class="p-2 rounded border border-sail-700 bg-sail-800/40">
+            <div class="flex justify-between"><span class="text-sail-100">Paradip LOA 260 → 265</span><span class="mono text-sail-500">PDF</span></div>
+            <div class="text-sail-500 mt-0.5">Extracted 2026-08-27 · awaiting sign-off</div>
+            <div class="flex gap-2 mt-2">
+              <button class="approve-btn flex-1 py-1 rounded bg-accent/20 text-accent text-[11px]">Approve</button>
+              <button class="reject-btn flex-1 py-1 rounded bg-sail-800 text-sail-400 text-[11px]">Reject</button>
+            </div>
+          </div>
+          <div class="p-2 rounded border border-sail-700 bg-sail-800/40">
+            <div class="flex justify-between"><span class="text-sail-100">Kalimantan full row</span><span class="mono text-sail-500">CSV</span></div>
+            <div class="text-sail-500 mt-0.5">New load-port record · not yet active</div>
+            <div class="flex gap-2 mt-2">
+              <button class="approve-btn flex-1 py-1 rounded bg-accent/20 text-accent text-[11px]">Approve</button>
+              <button class="reject-btn flex-1 py-1 rounded bg-sail-800 text-sail-400 text-[11px]">Reject</button>
+            </div>
+          </div>
+        </div>
+        <p class="infer">Wrong draft in this table would let the MILP recommend a vessel that cannot berth. That is why extraction is never auto-published.</p>
+      </section>
+    </aside>
+  </main>
+
+  <!-- ===================== SCENARIO LAB ===================== -->
+  <main data-view-panel="scenario" class="hidden max-w-[1600px] mx-auto px-5 py-4 grid grid-cols-12 gap-4">
+    <aside class="col-span-3 space-y-4">
+      <section class="panel rounded-lg p-4">
+        <h2 class="text-sm font-semibold text-sail-100 mb-1">What-if controls</h2>
+        <p class="infer mb-3">This is the playground. Dragging a slider re-solves the same MILP the Recommendation page uses. Overrides live here — not on the cargo form — so the default path stays four fields.</p>
+        <div class="space-y-3 text-xs">
+          <div>
+            <div class="flex justify-between mb-1"><span>Cargo tonnes</span><span class="mono text-accent" id="lab-qty-l">60,000</span></div>
+            <input type="range" id="lab-qty" min="20000" max="180000" step="5000" value="60000" class="w-full slider accent-accent" />
+          </div>
+          <div>
+            <div class="flex justify-between mb-1"><span>Timing flexibility (days)</span><span class="mono text-accent" id="lab-flex-l">30</span></div>
+            <input type="range" id="lab-flex" min="0" max="45" value="30" class="w-full slider accent-accent" />
+          </div>
+          <div>
+            <div class="flex justify-between mb-1"><span>Locked discount % <span class="badge-assumed text-[9px] px-1 rounded">ASSUMED</span></span><span class="mono text-accent" id="lab-disc-l">8.5</span></div>
+            <input type="range" id="lab-disc" min="0" max="20" step="0.5" value="8.5" class="w-full slider accent-accent" />
+          </div>
+          <div class="border-t border-sail-800 pt-3 space-y-1.5">
+            <div class="text-sail-400">Pin the feasible region</div>
+            <label class="flex items-center gap-2"><input type="checkbox" id="lab-no-cape" class="accent-accent" /> Exclude Capesize</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="lab-force-lock" class="accent-accent" /> Force all locked</label>
+            <label class="flex items-center gap-2"><input type="checkbox" id="lab-force-spot" class="accent-accent" /> Force all spot</label>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" id="lab-maxday-on" class="accent-accent" />
+              Max completion day
+              <input type="number" id="lab-maxday" value="12" class="input-field w-14 rounded px-1.5 py-0.5 mono" />
+            </label>
+          </div>
+        </div>
+        <div class="mt-3 text-[10px] mono text-sail-500" id="lab-status">Idle · last solve 1.8s · min-max cost</div>
+      </section>
+      <section class="panel rounded-lg p-4">
+        <h2 class="text-sm font-semibold text-sail-100 mb-2">How to read a re-solve</h2>
+        <ul class="text-[11px] text-sail-400 space-y-1.5 leading-snug">
+          <li>If worst-case rises more than Base, you bought cheapness that only works in the optimistic path.</li>
+          <li>If voyage count jumps at ~70kt, you crossed a vessel capacity band.</li>
+          <li>Exclude Capesize + 12-day cap collapses to a single Panamax — that is the chatbot example from §2c.</li>
+        </ul>
+      </section>
+    </aside>
+    <section class="col-span-9 space-y-4">
+      <div class="panel rounded-lg p-4 border-l-4 border-accent">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="text-xs text-accent uppercase tracking-wider mb-1">Live plan</div>
+            <h1 class="text-lg font-semibold text-sail-100" id="lab-plan">2-voyage hybrid · Panamax + Supramax</h1>
+            <p class="text-sm text-sail-400" id="lab-detail">V1 38kt Panamax → Gangavaram spot day 0 · V2 22kt Supramax → Paradip locked day 14</p>
+          </div>
+          <div class="text-right">
+            <div class="text-2xl font-semibold mono text-sail-100" id="lab-cost">$2.84M</div>
+            <div class="text-xs text-sail-500">worst-case</div>
+            <div class="text-xs text-accent mono" id="lab-delta">vs default · 0</div>
+          </div>
+        </div>
+      </div>
+      <div class="grid grid-cols-3 gap-3">
+        <div class="panel rounded-lg p-3">
+          <div class="text-[10px] text-sail-500 uppercase">Base</div>
+          <div class="text-lg mono text-sail-100" id="lab-base">$2.71M</div>
+          <div class="text-[11px] text-sail-500">point-estimate path</div>
+        </div>
+        <div class="panel rounded-lg p-3">
+          <div class="text-[10px] text-sail-500 uppercase">Optimistic</div>
+          <div class="text-lg mono text-emerald-400" id="lab-opt">$2.58M</div>
+          <div class="text-[11px] text-sail-500">favorable band edge</div>
+        </div>
+        <div class="panel rounded-lg p-3">
+          <div class="text-[10px] text-sail-500 uppercase">Pessimistic</div>
+          <div class="text-lg mono text-warn" id="lab-pess">$2.84M</div>
+          <div class="text-[11px] text-sail-500">this is the objective</div>
+        </div>
+      </div>
+      <div class="panel rounded-lg p-4">
+        <h2 class="text-sm font-semibold text-sail-100 mb-2">Why the plan moved</h2>
+        <p class="text-sm text-sail-300" id="lab-why">Default region. Hybrid wins because locking the second voyage caps the pessimistic path without paying the full locked premium on all tonnes.</p>
+      </div>
+      <div class="panel rounded-lg p-4">
+        <h2 class="text-sm font-semibold text-sail-100 mb-2">Pinned vs unconstrained</h2>
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="text-sail-500 border-b border-sail-800">
+              <th class="text-left py-2">Variant</th>
+              <th class="text-right py-2">Worst-case</th>
+              <th class="text-left py-2 pl-3">What you gave up</th>
+            </tr>
+          </thead>
+          <tbody class="mono" id="lab-compare">
+            <tr class="border-b border-sail-800/50"><td class="py-2 text-accent">Current pins</td><td class="text-right">$2.84M</td><td class="pl-3 font-sans text-sail-400">—</td></tr>
+            <tr class="border-b border-sail-800/50"><td class="py-2">Unconstrained</td><td class="text-right">$2.84M</td><td class="pl-3 font-sans text-sail-400">same region</td></tr>
+            <tr><td class="py-2">Pure spot baseline</td><td class="text-right">$3.12M</td><td class="pl-3 font-sans text-sail-400">rate-rise exposure</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================== DATA PROVENANCE ===================== -->
+  <main data-view-panel="provenance" class="hidden max-w-[1600px] mx-auto px-5 py-4 space-y-4">
+    <div class="panel rounded-lg p-4">
+      <div class="flex items-center justify-between mb-1">
+        <h1 class="text-sm font-semibold text-sail-100">What every number is</h1>
+        <div class="flex gap-1.5 text-[10px]">
+          <span class="badge-measured px-1.5 py-0.5 rounded mono">MEASURED</span>
+          <span class="badge-modeled px-1.5 py-0.5 rounded mono">MODELED</span>
+          <span class="badge-assumed px-1.5 py-0.5 rounded mono">ASSUMED</span>
+        </div>
+      </div>
+      <p class="infer">This is the data-policy page, not a second forecast view. Hover a row for “what happens if this is wrong.” Click to filter the catalogue.</p>
+    </div>
+    <div class="grid grid-cols-12 gap-4">
+      <section class="col-span-8 panel rounded-lg p-4">
+        <table class="w-full text-xs">
+          <thead>
+            <tr class="text-sail-500 border-b border-sail-800">
+              <th class="text-left py-2">Parameter</th>
+              <th class="text-left py-2">Tag</th>
+              <th class="text-left py-2">Origin</th>
+              <th class="text-left py-2">Used by</th>
+              <th class="text-left py-2">If wrong…</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b border-sail-800/50 clickable" data-explain="prov-bdi">
+              <td class="py-2">BDI / bunker</td>
+              <td><span class="badge-measured px-1 rounded text-[10px] mono">MEASURED</span></td>
+              <td class="text-sail-400">daily ingest</td>
+              <td class="text-sail-400">forecast + monitor</td>
+              <td class="text-sail-500">stale >2d → alert, not silent</td>
+            </tr>
+            <tr class="border-b border-sail-800/50 clickable" data-explain="prov-ais">
+              <td class="py-2">AIS congestion</td>
+              <td><span class="badge-measured px-1 rounded text-[10px] mono">MEASURED</span></td>
+              <td class="text-sail-400">aisstream.io</td>
+              <td class="text-sail-400">timing nudge + dashboard</td>
+              <td class="text-sail-500">drop → “stale” badge, keep last</td>
+            </tr>
+            <tr class="border-b border-sail-800/50 clickable" data-explain="prov-port">
+              <td class="py-2">Draft / LOA / beam</td>
+              <td><span class="badge-measured px-1 rounded text-[10px] mono">MEASURED</span></td>
+              <td class="text-sail-400">PDF + sign-off</td>
+              <td class="text-sail-400">constraint engine</td>
+              <td class="text-sail-500">unsafe berth recommendation</td>
+            </tr>
+            <tr class="border-b border-sail-800/50 clickable" data-explain="prov-rate">
+              <td class="py-2">forecast_object.rate</td>
+              <td><span class="badge-modeled px-1 rounded text-[10px] mono">MODELED</span></td>
+              <td class="text-sail-400">XGBoost / damped</td>
+              <td class="text-sail-400">MILP cost</td>
+              <td class="text-sail-500">band + monitor are the tell</td>
+            </tr>
+            <tr class="border-b border-sail-800/50 clickable" data-explain="prov-bench">
+              <td class="py-2">commitment_benchmark</td>
+              <td><span class="badge-assumed px-1 rounded text-[10px] mono">ASSUMED</span></td>
+              <td class="text-sail-400">user / broker</td>
+              <td class="text-sail-400">locked-voyage price</td>
+              <td class="text-sail-500">hybrid vs locked ranking flips</td>
+            </tr>
+            <tr class="border-b border-sail-800/50 clickable" data-explain="prov-tax">
+              <td class="py-2">Tax / duty / canal dues</td>
+              <td><span class="badge-assumed px-1 rounded text-[10px] mono">ASSUMED</span></td>
+              <td class="text-sail-400">placeholder</td>
+              <td class="text-sail-400">cost model</td>
+              <td class="text-sail-500">level shift, not ranking</td>
+            </tr>
+            <tr class="clickable" data-explain="prov-fleet">
+              <td class="py-2">Fleet supply</td>
+              <td><span class="badge-assumed px-1 rounded text-[10px] mono">ASSUMED</span></td>
+              <td class="text-sail-400">public orderbook mock</td>
+              <td class="text-sail-400">XGBoost exog only</td>
+              <td class="text-sail-500">ablation Δ MAE +0.04 — low leverage</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+      <aside class="col-span-4 space-y-4">
+        <section class="panel rounded-lg p-4">
+          <h2 class="text-sm font-semibold text-sail-100 mb-2">Quality gates (§6.1)</h2>
+          <ul class="text-xs text-sail-400 space-y-2">
+            <li><span class="text-emerald-400 mono">schema</span> — malformed rows rejected, not passed through</li>
+            <li><span class="text-emerald-400 mono">freshness</span> — daily feeds >2 days old raise an alert</li>
+            <li><span class="text-emerald-400 mono">gaps</span> — weekend/holiday forward-filled</li>
+            <li><span class="text-emerald-400 mono">plausibility</span> — draft cannot be negative or absurd</li>
+            <li><span class="text-warn mono">manual</span> — port constraints queued for sign-off</li>
+          </ul>
+        </section>
+        <section class="panel rounded-lg p-4">
+          <h2 class="text-sm font-semibold text-sail-100 mb-2">Model gate (§6.2)</h2>
+          <p class="text-xs text-sail-400 leading-relaxed">Walk-forward only. A pair may populate <span class="mono">forecast_object</span> iff it beats naive random-walk on MAE. n<500 skips XGBoost. Ablation runs every retrain so a dead feature is visible here, not hidden in a black box.</p>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <aside id="explain-drawer" class="drawer">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="text-sm font-semibold text-sail-100" id="drawer-title">Why</h2>
+      <button id="drawer-close" class="text-sail-400 text-xs">Close</button>
+    </div>
+    <div id="drawer-body" class="text-sm text-sail-300 leading-relaxed space-y-3"></div>
+  </aside>
+
+  <div id="brief-modal" class="modal-bg">
+    <div class="panel rounded-lg p-6 max-w-xl w-full">
+      <div class="flex justify-between items-start mb-3">
+        <div>
+          <div class="text-[10px] uppercase tracking-wider text-accent">One-page executive brief</div>
+          <h2 class="text-lg font-semibold text-sail-100">60kt Hay Point → Paradip / Gangavaram</h2>
+        </div>
+        <button id="brief-close" class="text-sail-400 text-xs">Close</button>
+      </div>
+      <p class="text-sm text-sail-300 mb-3">Recommend a 2-voyage hybrid: Panamax 38kt to Gangavaram (spot, day 0) and Supramax 22kt to Paradip (locked, day 14). Worst-case $2.84M across Base/Opt/Pess. Capesize looks cheaper on Base but requires lightening at Paradip and loses on robustness.</p>
+      <ul class="text-xs text-sail-400 space-y-1 mb-3">
+        <li>Assumed locked discount 8.5% — not a market quote.</li>
+        <li>XGBoost serving · uncertainty normal · n=1,842 · gate passed.</li>
+        <li>Paradip congested (12 vessels); Gangavaram quiet.</li>
+      </ul>
+      <div class="text-[10px] mono text-sail-500">Provenance: measured BDI/AIS/ports · modeled rates · assumed commitment_benchmark</div>
+    </div>
+  </div>
+
+
+
+  <!-- Footer strip -->
+  <footer class="border-t border-sail-800 mt-2">
+    <div class="max-w-[1600px] mx-auto px-5 py-2 flex items-center justify-between text-[10px] mono text-sail-500">
+      <span>SAIL Transport & Shipping · Intelligent Freight Forecasting · Architecture §5.3 / §6.2 / §5.6–5.10</span>
+      <span>Data policy: real where available · placeholders tagged · never presented as measured</span>
+      <span>Forecasting: XGBoost primary · Prophet decomposition · damped-trend fallback · walk-forward gate</span>
+    </div>
+  </footer>
+
+  <script>
+    const navBtns = document.querySelectorAll('.nav-btn');
+    const panels = document.querySelectorAll('[data-view-panel]');
+    function showView(id) {
+      panels.forEach(p => p.classList.toggle('hidden', p.getAttribute('data-view-panel') !== id));
+      navBtns.forEach(b => {
+        const on = b.getAttribute('data-view') === id;
+        b.classList.toggle('tab-active', on);
+        b.classList.toggle('font-medium', on);
+        b.classList.toggle('text-sail-400', !on);
+      });
+      const hash = id === 'recommendation' ? '' : '#' + id;
+      history.replaceState(null, '', hash || location.pathname);
+    }
+    navBtns.forEach(b => b.addEventListener('click', () => showView(b.getAttribute('data-view'))));
+    const hashMap = { forecast: 'forecast', ports: 'ports', scenario: 'scenario', provenance: 'provenance' };
+    if (hashMap[location.hash.slice(1)]) showView(location.hash.slice(1));
+
+    const recFlex = document.getElementById('rec-flex');
+    if (recFlex) recFlex.addEventListener('input', () => {
+      document.getElementById('rec-flex-label').textContent = recFlex.value + ' days';
+    });
+
+    const titles = {
+      'hay-ec': 'Hay Point → EC India',
+      'rb-ec': 'Richards Bay → EC India',
+      'kal-ec': 'Kalimantan → EC India'
+    };
+    const vLabels = { panamax: 'Panamax', supramax: 'Supramax', capesize: 'Capesize', handysize: 'Handysize' };
+    const hLabels = { '1w': '1-week', '2w': '2-week', '1m': '1-month' };
+    const points = {
+      panamax: { '1w': ['$18.05', '$16.70 – $19.40', '+1.1% vs last fixture'], '2w': ['$18.40', '$16.90 – $20.15', '+2.1% vs last fixture'], '1m': ['$17.85', '$15.80 – $20.40', '−0.9% vs last fixture'] },
+      supramax: { '1w': ['$20.70', '$19.10 – $22.40', '+0.8%'], '2w': ['$21.10', '$19.20 – $23.10', '+1.6%'], '1m': ['$20.40', '$18.00 – $23.20', '−0.4%'] },
+      capesize: { '1w': ['$14.50', '$13.40 – $15.80', '−0.3%'], '2w': ['$14.85', '$13.20 – $16.70', '+0.9%'], '1m': ['$14.20', '$12.40 – $16.50', '−1.8%'] },
+      handysize: { '1w': ['$24.10', '$22.50 – $26.00', '+0.4%'], '2w': ['$24.40', '$22.20 – $26.80', '+1.0%'], '1m': ['$23.90', '$21.00 – $27.10', '−0.6%'] }
+    };
+    let vessel = 'panamax', horizon = '2w';
+    function refreshPair() {
+      const route = document.getElementById('fx-route').value;
+      document.getElementById('fx-title').textContent = titles[route] + ' · ' + vLabels[vessel] + ' · ' + hLabels[horizon];
+      const p = points[vessel][horizon];
+      document.getElementById('fx-point').textContent = p[0];
+      document.getElementById('fx-band').innerHTML = 'band ' + p[1] + ' <span class="text-sail-500">/t</span>';
+      document.getElementById('fx-dir').textContent = 'directional call: ' + p[2];
+      const damped = route === 'rb-ec' && vessel === 'capesize';
+      const skip = route === 'kal-ec' && vessel === 'capesize';
+      document.getElementById('fx-serving').textContent = damped ? 'damped trend' : skip ? 'ARIMA' : 'XGBoost';
+      document.getElementById('fx-gate').textContent = skip ? 'held · n<500' : damped ? 'passed · monitor override' : 'passed · beats naive';
+      document.getElementById('fx-gate').className = 'mono ' + (skip ? 'text-warn' : 'text-emerald-400');
+      const badge = document.getElementById('fx-unc-badge');
+      if (damped) {
+        badge.textContent = 'UNCERTAINTY · HIGH';
+        badge.className = 'text-[10px] px-1.5 py-0.5 rounded mono bg-amber-950 text-amber-300';
+      } else {
+        badge.textContent = 'UNCERTAINTY · NORMAL';
+        badge.className = 'text-[10px] px-1.5 py-0.5 rounded mono bg-emerald-950 text-emerald-300';
+      }
+    }
+    document.getElementById('fx-route').addEventListener('change', refreshPair);
+    document.querySelectorAll('.v-btn').forEach(b => b.addEventListener('click', () => {
+      vessel = b.getAttribute('data-v');
+      document.querySelectorAll('.v-btn').forEach(x => {
+        const on = x === b;
+        x.className = 'v-btn px-2 py-1.5 rounded text-xs border ' + (on ? 'border-accent bg-accent/15 text-accent' : 'border-sail-700 text-sail-300');
+      });
+      refreshPair();
+    }));
+    document.querySelectorAll('.h-btn').forEach(b => b.addEventListener('click', () => {
+      horizon = b.getAttribute('data-h');
+      document.querySelectorAll('.h-btn').forEach(x => {
+        const on = x === b;
+        x.className = 'h-btn flex-1 py-1.5 rounded text-xs border ' + (on ? 'border-accent bg-accent/15 text-accent' : 'border-sail-700 text-sail-300');
+      });
+      refreshPair();
+    }));
+
+    const EXPLAIN = {
+      'paradip-cong': ['Paradip congestion', '<p>12 vessels in the AIS geofence. This is a <strong>nudge</strong>, not a ban. It inflates the risk-buffer bucket and makes the solver prefer Gangavaram for the first voyage and a later fix for Paradip.</p>'],
+      'ganga-cong': ['Gangavaram congestion', '<p>Quiet. Combined with 19.5 m draft, this is why Voyage 1 is a Panamax here on day 0 — no wait, no lightening, Cape-capable if you later force a larger ship.</p>'],
+      'cost-freight': ['Ocean freight', '<p>qᵢ × forecast rate (spot) or discounted Base-path rate (locked). 48% of the plan. This is the term the forecast actually moves.</p>'],
+      'cost-bunker': ['Bunker', '<p>Measured daily price × estimated steaming. Independent of the freight forecast. A $10/t bunker shock is the second-largest bar on the sensitivity tornado.</p>'],
+      'cost-port': ['Port & handling', '<p>Derived from handling rate (t/day) × idle-at-berth. Not a pass/fail rule — it prices turnaround so a slow port loses on cost even if draft is fine.</p>'],
+      'cost-light': ['Lightening', '<p>$0 on the winning plan because neither selected vessel exceeds its port. A Capesize→Paradip would put ~$18/t here and usually lose the min-max contest.</p>'],
+      'cost-risk': ['Risk buffer', '<p>Congestion wait + uncertainty premium from the conditions-monitor flag. This is how “Paradip is backed up” shows up in dollars instead of a footnote.</p>'],
+      'strat-hybrid': ['Why hybrid won', '<p>Worst-case $2.84M vs $3.12M pure spot. You pay $30k more than Base-spot to buy a $280k reduction in the pessimistic path. That is the min-max objective working.</p>'],
+      'strat-spot': ['Why not pure spot', '<p>Cheapest on Base ($2.68M) — the number a reactive desk would quote. Under the pessimistic path it is the most expensive. The solver refuses it because the objective is max_s C_s, not C_base.</p>'],
+      'strat-locked': ['Why not pure locked', '<p>Uses your 8.5% assumption on every tonne. Safer than spot, but you overpay on Voyage 1 which the trajectory says is already a local low. Hybrid locks only the later, riskier slice.</p>'],
+      'strat-cape': ['Why not a Capesize', '<p>Looks cheapest on Base because of scale. Rule 7 forces lightening at Paradip (+$18/t + extra call). After that penalty the worst-case is $2.98M and you still have draft risk. Click Port Constraints → Paradip to see the rule table.</p>'],
+      'strat-pmx': ['Why not a single Panamax', '<p>60kt is tight on a Panamax capacity band. Unit freight rises and you lose the Gangavaram/Paradip split. Feasible, just dominated.</p>'],
+      'opt-pmx-g': ['Panamax → Gangavaram', '<p>Rules 1–3 clear. No tide restriction. Handling 25kt/day → short berth idle. This is Voyage 1.</p>'],
+      'opt-smx-p': ['Supramax → Paradip', '<p>Draft 14.5 m is ample for a Supramax. Handling 18kt/day is slower, which is priced, not blocked. Locked on day 14 to skip current congestion.</p>'],
+      'opt-cape-g': ['Capesize → Gangavaram', '<p>Fully clear. Not selected because 60kt on a Cape trips the parcel-fit heuristic (inefficient) unless you drop the second port. Cost ranking, not a hard rule, deprioritises it.</p>'],
+      'opt-cape-p': ['Capesize → Paradip', '<p>Rule 1 fails (laden draft ~18 m > 14.5 m). Rule 7 offers Dhamra as a along-the-way lightening port. Status = feasible with lightening, not infeasible.</p>'],
+      'opt-handy': ['Handysize', '<p>Soft flag only. A 20kt ship for a 60kt cargo would need three voyages. Legal, economically silly — left for the cost model to bury.</p>'],
+      'prov-bdi': ['BDI / bunker', '<p>Measured. If the latest point is more than two days old the forecasting engine is not fed “as if current” — an alert is raised instead.</p>'],
+      'prov-ais': ['AIS', '<p>Measured, continuous. A dropped websocket does not freeze a green “live” dot — the dashboard must say stale.</p>'],
+      'prov-port': ['Port dimensions', '<p>Measured after human sign-off. PDF extraction errors are the highest-severity data risk in the system.</p>'],
+      'prov-rate': ['Forecast rate', '<p>Modeled. Downstream never needs to know whether XGBoost or damped trend produced it — same object shape. The uncertainty flag is the contract.</p>'],
+      'prov-bench': ['commitment_benchmark', '<p>Assumed. There is no public COA tape. Treat a change here as a policy lever, not a model output.</p>'],
+      'prov-tax': ['Tax / canal', '<p>Assumed placeholder. Moves the level of every plan equally, so rankings are usually stable. Still tagged so it cannot be mistaken for a fixture.</p>'],
+      'prov-fleet': ['Fleet supply', '<p>Assumed mock of Baltic orderbook. Ablation says it earns only +0.04 MAE. Keep it, but do not defend a recommendation on this number.</p>']
+    };
+    const drawer = document.getElementById('explain-drawer');
+    function openExplain(key) {
+      const e = EXPLAIN[key];
+      if (!e) return;
+      document.getElementById('drawer-title').textContent = e[0];
+      document.getElementById('drawer-body').innerHTML = e[1];
+      drawer.classList.add('open');
+    }
+    document.getElementById('drawer-close').addEventListener('click', () => drawer.classList.remove('open'));
+    document.querySelectorAll('[data-explain]').forEach(el => {
+      el.addEventListener('click', (ev) => { ev.stopPropagation(); openExplain(el.getAttribute('data-explain')); });
+    });
+
+    document.getElementById('btn-export').addEventListener('click', () => document.getElementById('brief-modal').classList.add('open'));
+    document.getElementById('brief-close').addEventListener('click', () => document.getElementById('brief-modal').classList.remove('open'));
+    document.getElementById('brief-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'brief-modal') e.target.classList.remove('open');
+    });
+
+    const VESSELS = [
+      { name: 'Handysize', draft: 10, loa: 180, beam: 28 },
+      { name: 'Supramax', draft: 13.5, loa: 200, beam: 32 },
+      { name: 'Panamax', draft: 14.5, loa: 230, beam: 32.3 },
+      { name: 'Capesize', draft: 18, loa: 290, beam: 45 }
+    ];
+    function mark(ok) { return ok ? '<span class="text-emerald-400">pass</span>' : '<span class="text-warn">fail</span>'; }
+    function inspectPort(row) {
+      const d = +row.dataset.draft, loa = +row.dataset.loa, beam = +row.dataset.beam;
+      const tide = row.dataset.tide, light = row.dataset.light, name = row.dataset.port;
+      document.getElementById('insp-name').textContent = name;
+      document.getElementById('insp-blurb').textContent =
+        name + ' · draft ' + d + ' m · LOA ' + loa + ' m · beam ' + beam + ' m. Tide: ' + tide + '. Lightening partner: ' + light + '. Soft flags never block; they change cost.';
+      document.getElementById('insp-body').innerHTML = VESSELS.map(v => {
+        const r1 = v.draft <= d, r2 = v.loa <= loa, r3 = v.beam <= beam;
+        const r7 = !r1 && light !== '—';
+        const result = (r1 && r2 && r3) ? 'clear' : r7 ? 'lighten' : 'infeasible';
+        const rc = result === 'clear' ? 'text-emerald-400' : result === 'lighten' ? 'text-warn' : 'text-red-400';
+        return `<tr class="border-b border-sail-800/40">
+          <td class="py-1.5">${v.name}</td>
+          <td>${mark(r1)}</td><td>${mark(r2)}</td><td>${mark(r3)}</td>
+          <td class="text-sail-500">soft</td>
+          <td class="text-sail-400">${tide === 'no' ? 'n/a' : 'narrows τ'}</td>
+          <td>${r7 ? light : '—'}</td>
+          <td class="${rc}">${result}</td></tr>`;
+      }).join('');
+    }
+    document.querySelectorAll('.port-row').forEach(r => r.addEventListener('click', () => inspectPort(r)));
+    inspectPort(document.querySelector('.port-row'));
+
+    const filterPorts = () => {
+      const q = (document.getElementById('port-filter').value || '').toLowerCase();
+      const region = document.getElementById('port-region').value;
+      document.querySelectorAll('.port-row').forEach(r => {
+        const matchQ = r.dataset.port.toLowerCase().includes(q);
+        const matchR = region === 'all' || r.dataset.region === region;
+        r.classList.toggle('hidden', !(matchQ && matchR));
+      });
+    };
+    document.getElementById('port-filter').addEventListener('input', filterPorts);
+    document.getElementById('port-region').addEventListener('change', filterPorts);
+
+    const dz = document.getElementById('dropzone');
+    const fileInput = document.getElementById('port-file');
+    dz.addEventListener('click', () => fileInput.click());
+    dz.addEventListener('dragover', (e) => { e.preventDefault(); dz.classList.add('drag'); });
+    dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+    dz.addEventListener('drop', (e) => {
+      e.preventDefault(); dz.classList.remove('drag');
+      const f = e.dataTransfer.files[0];
+      if (f) showExtract(f.name);
+    });
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files[0]) showExtract(fileInput.files[0].name);
+    });
+    function showExtract(name) {
+      document.getElementById('extract-fname').textContent = name;
+      document.getElementById('extract-preview').classList.remove('hidden');
+    }
+    document.getElementById('queue-extract').addEventListener('click', () => {
+      const q = document.getElementById('verify-q');
+      const div = document.createElement('div');
+      div.className = 'p-2 rounded border border-accent/40 bg-accent/5 text-xs';
+      div.innerHTML = '<div class="flex justify-between"><span class="text-sail-100">Queued extract</span><span class="mono text-accent">NEW</span></div><div class="text-sail-500 mt-0.5">Will not go live until signed off.</div>';
+      q.prepend(div);
+      document.getElementById('extract-preview').classList.add('hidden');
+    });
+    document.querySelectorAll('.approve-btn').forEach(b => b.addEventListener('click', () => {
+      b.closest('div.p-2').innerHTML = '<div class="text-emerald-400">Approved · marked active in port_constraint_table</div>';
+    }));
+    document.querySelectorAll('.reject-btn').forEach(b => b.addEventListener('click', () => {
+      b.closest('div.p-2').innerHTML = '<div class="text-sail-500">Rejected · snapshot kept in object storage for audit</div>';
+    }));
+
+    function money(n) { return '$' + (n / 1e6).toFixed(2) + 'M'; }
+    function labSolve() {
+      const qty = +document.getElementById('lab-qty').value;
+      const flex = +document.getElementById('lab-flex').value;
+      const disc = +document.getElementById('lab-disc').value;
+      const noCape = document.getElementById('lab-no-cape').checked;
+      const lock = document.getElementById('lab-force-lock').checked;
+      const spot = document.getElementById('lab-force-spot').checked;
+      const maxOn = document.getElementById('lab-maxday-on').checked;
+      const maxd = +document.getElementById('lab-maxday').value;
+      document.getElementById('lab-qty-l').textContent = qty.toLocaleString();
+      document.getElementById('lab-flex-l').textContent = flex;
+      document.getElementById('lab-disc-l').textContent = disc.toFixed(1);
+
+      let worst = 2.84e6 * (qty / 60000);
+      let base = 2.71e6 * (qty / 60000);
+      let opt = 2.58e6 * (qty / 60000);
+      let plan = '2-voyage hybrid · Panamax + Supramax';
+      let detail = 'Split follows capacity bands; lock sits on the later voyage.';
+      let why = 'Default region. Hybrid wins because locking the second voyage caps the pessimistic path.';
+      if (qty >= 90000) {
+        plan = '2-voyage · Capesize + Panamax';
+        detail = 'Crossed ~90kt: a Cape becomes efficient if Gangavaram is allowed.';
+        why = 'Parcel-fit heuristic flips. Scale now beats the lightening risk on a second call.';
+        worst *= 0.96;
+      }
+      if (noCape) {
+        plan = qty > 70000 ? '3-voyage Panamax/Supramax' : '2-voyage Panamax + Supramax';
+        why = 'Capesize binaries fixed to 0. The solver cannot use Gangavaram’s extra draft for scale.';
+        worst *= 1.05;
+      }
+      if (maxOn && maxd <= 12) {
+        plan = 'Single Panamax · spot · complete day 11';
+        detail = 'Timing window too tight for a second fixture.';
+        why = 'This is the §2c chatbot case: exclude Cape + ≤12 days. Cost rises because you gave up the split and the lock.';
+        worst = 2.97e6 * (qty / 60000);
+        base = worst * 0.96;
+      }
+      if (lock) {
+        plan = plan.replace('hybrid', 'all-locked').replace('spot', 'locked');
+        why = 'Force mode locked. You pay the  ' + disc.toFixed(1) + '% discount on every tonne — safer, usually more expensive on Base.';
+        worst *= (1 - disc / 200);
+        base *= (1 - disc / 180);
+      }
+      if (spot && !lock) {
+        plan = 'All-spot · same vessel mix';
+        why = 'Force all-spot. Base looks better; pessimistic path is the one that hurts. Worst-case is the number to watch.';
+        worst *= 1.1;
+        base *= 0.99;
+      }
+      if (flex < 7 && !maxOn) {
+        why += ' Flexibility under a week removes most event-based τ points — you are almost fixing today.';
+        worst *= 1.03;
+      }
+      const pess = worst;
+      opt = base * 0.95;
+      document.getElementById('lab-plan').textContent = plan;
+      document.getElementById('lab-detail').textContent = detail;
+      document.getElementById('lab-cost').textContent = money(worst);
+      document.getElementById('lab-base').textContent = money(base);
+      document.getElementById('lab-opt').textContent = money(opt);
+      document.getElementById('lab-pess').textContent = money(pess);
+      const d0 = 2.84e6;
+      const d = worst - d0;
+      document.getElementById('lab-delta').textContent = 'vs default · ' + (d >= 0 ? '+' : '') + money(Math.abs(d)).replace('$', (d>=0?'+$':'-$'));
+      document.getElementById('lab-why').textContent = why;
+      document.getElementById('lab-status').textContent = 'Re-solved · ~1.6s · min-max cost · pins applied before CBC';
+      document.getElementById('lab-compare').innerHTML = `
+        <tr class="border-b border-sail-800/50"><td class="py-2 text-accent">Current pins</td><td class="text-right">${money(worst)}</td><td class="pl-3 font-sans text-sail-400">what you are looking at</td></tr>
+        <tr class="border-b border-sail-800/50"><td class="py-2">Unconstrained default</td><td class="text-right">$2.84M</td><td class="pl-3 font-sans text-sail-400">hybrid 38/22</td></tr>
+        <tr><td class="py-2">Pure spot baseline</td><td class="text-right">${money(worst * 1.08)}</td><td class="pl-3 font-sans text-sail-400">rate-rise exposure</td></tr>`;
+    }
+    ['lab-qty','lab-flex','lab-disc','lab-no-cape','lab-force-lock','lab-force-spot','lab-maxday-on','lab-maxday'].forEach(id => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', labSolve);
+      el.addEventListener('change', labSolve);
+    });
+  </script>
+</body>
+</html>
+
+    const titles = {
+      'hay-ec': 'Hay Point → EC India',
+      'rb-ec': 'Richards Bay → EC India',
+      'kal-ec': 'Kalimantan → EC India'
+    };
+    const vLabels = { panamax: 'Panamax', supramax: 'Supramax', capesize: 'Capesize', handysize: 'Handysize' };
+    const hLabels = { '1w': '1-week', '2w': '2-week', '1m': '1-month' };
+    const points = {
+      panamax: { '1w': ['$18.05', '$16.70 – $19.40', '+1.1% vs last fixture'], '2w': ['$18.40', '$16.90 – $20.15', '+2.1% vs last fixture'], '1m': ['$17.85', '$15.80 – $20.40', '−0.9% vs last fixture'] },
+      supramax: { '1w': ['$20.70', '$19.10 – $22.40', '+0.8%'], '2w': ['$21.10', '$19.20 – $23.10', '+1.6%'], '1m': ['$20.40', '$18.00 – $23.20', '−0.4%'] },
+      capesize: { '1w': ['$14.50', '$13.40 – $15.80', '−0.3%'], '2w': ['$14.85', '$13.20 – $16.70', '+0.9%'], '1m': ['$14.20', '$12.40 – $16.50', '−1.8%'] },
+      handysize: { '1w': ['$24.10', '$22.50 – $26.00', '+0.4%'], '2w': ['$24.40', '$22.20 – $26.80', '+1.0%'], '1m': ['$23.90', '$21.00 – $27.10', '−0.6%'] }
+    };
+    let vessel = 'panamax', horizon = '2w';
+    function refreshPair() {
+      const route = document.getElementById('fx-route').value;
+      document.getElementById('fx-title').textContent = titles[route] + ' · ' + vLabels[vessel] + ' · ' + hLabels[horizon];
+      const p = points[vessel][horizon];
+      document.getElementById('fx-point').textContent = p[0];
+      document.getElementById('fx-band').innerHTML = 'band ' + p[1] + ' <span class="text-sail-500">/t</span>';
+      document.getElementById('fx-dir').textContent = 'directional call: ' + p[2];
+      const damped = route === 'rb-ec' && vessel === 'capesize';
+      const skip = route === 'kal-ec' && vessel === 'capesize';
+      document.getElementById('fx-serving').textContent = damped ? 'damped trend' : skip ? 'ARIMA' : 'XGBoost';
+      document.getElementById('fx-gate').textContent = skip ? 'held · n<500' : damped ? 'passed · monitor override' : 'passed · beats naive';
+      document.getElementById('fx-gate').className = 'mono ' + (skip ? 'text-warn' : 'text-emerald-400');
+      const badge = document.getElementById('fx-unc-badge');
+      if (damped) {
+        badge.textContent = 'UNCERTAINTY · HIGH';
+        badge.className = 'text-[10px] px-1.5 py-0.5 rounded mono bg-amber-950 text-amber-300';
+      } else {
+        badge.textContent = 'UNCERTAINTY · NORMAL';
+        badge.className = 'text-[10px] px-1.5 py-0.5 rounded mono bg-emerald-950 text-emerald-300';
+      }
+    }
+    document.getElementById('fx-route').addEventListener('change', refreshPair);
+    document.querySelectorAll('.v-btn').forEach(b => b.addEventListener('click', () => {
+      vessel = b.getAttribute('data-v');
+      document.querySelectorAll('.v-btn').forEach(x => {
+        const on = x === b;
+        x.className = 'v-btn px-2 py-1.5 rounded text-xs border ' + (on ? 'border-accent bg-accent/15 text-accent' : 'border-sail-700 text-sail-300');
+      });
+      refreshPair();
+    }));
+    document.querySelectorAll('.h-btn').forEach(b => b.addEventListener('click', () => {
+      horizon = b.getAttribute('data-h');
+      document.querySelectorAll('.h-btn').forEach(x => {
+        const on = x === b;
+        x.className = 'h-btn flex-1 py-1.5 rounded text-xs border ' + (on ? 'border-accent bg-accent/15 text-accent' : 'border-sail-700 text-sail-300');
+      });
+      refreshPair();
+    }));
+  </script>
+</body>
+</html>

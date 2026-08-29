@@ -1,0 +1,17 @@
+route_id,origin,destination,vessel_count,departure_date_count,scenario_rows,max_expected_profit_usd,max_worst_case_profit_usd
+0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",10,9,270,2992700.0937234513,1961629.7030262216
+10,Indonesia,"Paradip, India",11,2,66,830572.7747173518,483886.8554293813
+11,"Hay Point, Australia","Visakhapatnam, India",10,9,270,1489779.783263263,878815.7326054362
+13,"Adang Bay (East Kalimantan), Indonesia","Kandla, India",11,2,66,969143.1229899606,537820.2656598565
+14,"East Kalimantan, Indonesia","Paradip, India",11,1,33,442576.6020350666,198431.58845198888
+17,"Queensland, Australia","Haldia, India",10,9,270,920942.3066842695,475607.6485746149
+2,"Hay Point, Australia","Paradip, India",10,9,270,390493.4267418557,87753.60989883915
+20,East Coast Australia,East Coast India,10,9,270,2719503.587398581,1751061.700185706
+21,Indonesia,East Coast India,10,2,60,2682735.6638484453,1818320.7824231428
+22,Indonesia,West Coast India,10,2,60,814834.8978027244,426538.176199725
+3,"East Kalimantan, Indonesia","Navlakhi, India",11,1,33,478864.35028671054,178565.98357952503
+4,"Hay Point, Australia","Visakhapatnam, India",10,9,270,1132689.056757056,621541.3949858759
+5,"Hay Point, Australia","Paradip, India",10,9,270,963408.2187188468,500523.426299452
+6,"Banjarmasin (South Kalimantan), Indonesia","Krishnapatnam, India",10,2,51,537214.2977789167,278349.81671025034
+7,"East Kalimantan, Indonesia","Paradip, India",11,1,33,503716.2053326553,242481.04079876223
+8,"Banjarmasin (South Kalimantan), Indonesia","Dahej, India",10,2,51,513055.8519227435,225672.4026007497

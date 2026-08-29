@@ -1,0 +1,74 @@
+{
+  "selection_status": "TWO_ROUTES",
+  "solve_status": "Optimal",
+  "optimizer_used": "TOP2_OPPORTUNITY_MILP",
+  "route_1": {
+    "contract_id": "CONTRACT_000",
+    "route_id": 0,
+    "origin": "Queensland (Gladstone / Hay Point), Australia",
+    "destination": "Visakhapatnam & Haldia, India",
+    "vessel_class": "Panamax",
+    "expected_profit_usd": 3008136.94253338,
+    "bear_profit_usd": 2082830.510986513,
+    "base_profit_usd": 2845505.6236868748,
+    "bull_profit_usd": 4258706.011773257,
+    "risk_adjusted_score_usd": 2314157.1188732297,
+    "fleet_class_available": 5,
+    "current_step35_assignment": "PANAMAX_04",
+    "planned_start": "2026-08-28",
+    "planned_end": "2026-09-16 02:33:33.020025822"
+  },
+  "route_2": {
+    "contract_id": "CONTRACT_023",
+    "route_id": 23,
+    "origin": "Richards Bay, South Africa",
+    "destination": "Krishnapatnam, India",
+    "vessel_class": "Capesize",
+    "expected_profit_usd": 2874815.767282543,
+    "bear_profit_usd": 2005713.6042270265,
+    "base_profit_usd": 2722062.8778923973,
+    "bull_profit_usd": 4049423.7091183495,
+    "risk_adjusted_score_usd": 2222989.144990905,
+    "fleet_class_available": 3,
+    "current_step35_assignment": "CAPESIZE_01",
+    "planned_start": "2026-08-28",
+    "planned_end": "2026-09-13 11:03:10.234466496"
+  },
+  "route_2_rejected_reason": null,
+  "n_candidates_after_filtering": 24,
+  "policy": {
+    "scenario_weights": {
+      "bear": 0.25,
+      "base": 0.5,
+      "bull": 0.25
+    },
+    "risk_aversion": 0.75,
+    "min_bear_profit_usd": 0.0,
+    "second_route_min_ratio": 0.7,
+    "max_routes": 2,
+    "same_lane_rejection": true
+  },
+  "fleet_availability": {
+    "Panamax": 5,
+    "Supramax": 4,
+    "Capesize": 3,
+    "Handysize": 2
+  },
+  "audit": [
+    {
+      "contract_id": "CONTRACT_002,CONTRACT_005",
+      "status": "INFO",
+      "reason": "same origin->destination lane; mutually exclusive"
+    },
+    {
+      "contract_id": "CONTRACT_004,CONTRACT_011",
+      "status": "INFO",
+      "reason": "same origin->destination lane; mutually exclusive"
+    },
+    {
+      "contract_id": "CONTRACT_007,CONTRACT_014",
+      "status": "INFO",
+      "reason": "same origin->destination lane; mutually exclusive"
+    }
+  ]
+}

@@ -1,0 +1,3 @@
+selection_position,optimizer_used,selection_status,contract_id,route_id,origin,destination,vessel_class,expected_profit_usd,bear_profit_usd,base_profit_usd,bull_profit_usd,risk_adjusted_score_usd,fleet_class_available,second_route_rejected_reason
+BEST,TOP2_OPPORTUNITY_MILP,TWO_ROUTES,CONTRACT_000,0,"Queensland (Gladstone / Hay Point), Australia","Visakhapatnam & Haldia, India",Panamax,3008136.94253338,2082830.510986513,2845505.6236868748,4258706.011773257,2314157.1188732297,5,
+SECOND,TOP2_OPPORTUNITY_MILP,TWO_ROUTES,CONTRACT_023,23,"Richards Bay, South Africa","Krishnapatnam, India",Capesize,2874815.767282543,2005713.6042270265,2722062.8778923973,4049423.7091183495,2222989.144990905,3,

@@ -1,0 +1,2 @@
+generated_utc,step51a_input_rows,contract_scenario_rows,unique_contracts,complete_physical_candidates,capacity_excluded,exact_class_candidates,cross_class_review_candidates,production_candidate_rows,review_only_rows,production_contracts,production_vessels,production_routes,review_contracts,review_vessels,live_bunker_price_usd_per_mt,myshiptracking_api_calls,myshiptracking_credits,oilpriceapi_calls,status
+2026-08-28T16:13:03.707325+00:00,2343,72,24,781,0,358,423,358,423,16,6,16,16,10,770.5,0,0,0,FULL_PRODUCTION_UNIVERSE_READY

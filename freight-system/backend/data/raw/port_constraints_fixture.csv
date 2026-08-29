@@ -1,0 +1,4 @@
+port_name,max_draft_m,max_loa_m,max_beam_m,handling_rate_tpd,tidal_dependent
+Paradip,14.0,250.0,43.0,40000.0,true
+Gangavaram,16.5,300.0,50.0,60000.0,false
+Dhamra,15.0,280.0,45.0,50000.0,true

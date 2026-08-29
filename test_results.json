@@ -1,0 +1,562 @@
+{
+  "setup": {
+    "health": {
+      "status": "ok",
+      "warehouse_reachable": true,
+      "models_loaded": true,
+      "last_retrain_at": "2026-08-29T11:52:48.974739",
+      "ais_listener_last_seen": "2026-08-29T11:51:39.008199",
+      "message": null
+    },
+    "scope": {
+      "origins": [
+        "Australia (Hay Point)",
+        "Dhamra",
+        "Gangavaram",
+        "Indonesia (East Kalimantan)",
+        "Paradip",
+        "South Africa (Richards Bay)"
+      ],
+      "dest_ports": [
+        "Australia (Hay Point)",
+        "Dhamra",
+        "Gangavaram",
+        "Indonesia (East Kalimantan)",
+        "Paradip",
+        "South Africa (Richards Bay)"
+      ],
+      "vessel_classes": [
+        "Capesize",
+        "Panamax/Kamsarmax",
+        "Supramax/Ultramax"
+      ]
+    }
+  },
+  "test1": {
+    "wall_clock_ms": 107.9,
+    "data": {
+      "recommendation": {
+        "voyage_count": 2,
+        "commitment_mode": "spot",
+        "voyages": [
+          {
+            "port": "Gangavaram",
+            "vessel_class": "Capesize",
+            "mode": "spot",
+            "fix_day": 14,
+            "cost_by_scenario": {
+              "base": 886875.0,
+              "optimistic": 1270860.0,
+              "pessimistic": 1341735.0
+            },
+            "lightening_required": false,
+            "lightening_port": null,
+            "discharge_days": 1.0,
+            "tidal_window_note": null
+          },
+          {
+            "port": "Gangavaram",
+            "vessel_class": "Capesize",
+            "mode": "spot",
+            "fix_day": 30,
+            "cost_by_scenario": {
+              "base": 886875.0,
+              "optimistic": 1270860.0,
+              "pessimistic": 1341735.0
+            },
+            "lightening_required": false,
+            "lightening_port": null,
+            "discharge_days": 1.0,
+            "tidal_window_note": null
+          }
+        ],
+        "total_cost_worst_case": 2683470.0,
+        "cost_breakdown": {
+          "freight": 0.0,
+          "ocean_freight": 0.0,
+          "bunker": 1743750.0,
+          "port_handling": 30000.0,
+          "lightening_extra": 0.0,
+          "risk_buffer": 909720.0,
+          "total": 1773750.0
+        },
+        "contains_high_uncertainty_voyage": false,
+        "solved_via": "milp",
+        "provenance": "assumed",
+        "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+        "infeasible_reason": null
+      },
+      "scenario_comparison": [
+        {
+          "voyage_count": 1,
+          "commitment_mode": "spot",
+          "voyages": [
+            {
+              "port": "Dhamra",
+              "vessel_class": "Panamax/Kamsarmax",
+              "mode": "spot",
+              "fix_day": 0,
+              "cost_by_scenario": {
+                "base": 936750.0,
+                "optimistic": 1431300.0,
+                "pessimistic": 1522965.0
+              },
+              "lightening_required": false,
+              "lightening_port": null,
+              "discharge_days": 1.2,
+              "tidal_window_note": "Dhamra is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly."
+            }
+          ],
+          "total_cost_worst_case": 1522965.0,
+          "cost_breakdown": {
+            "freight": 0.0,
+            "ocean_freight": 0.0,
+            "bunker": 918750.0,
+            "port_handling": 18000.0,
+            "lightening_extra": 0.0,
+            "risk_buffer": 586215.0,
+            "total": 936750.0
+          },
+          "contains_high_uncertainty_voyage": false,
+          "solved_via": "milp",
+          "provenance": "assumed",
+          "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+          "infeasible_reason": null
+        },
+        {
+          "voyage_count": 1,
+          "commitment_mode": "locked",
+          "voyages": [
+            {
+              "port": "Dhamra",
+              "vessel_class": "Panamax/Kamsarmax",
+              "mode": "locked",
+              "fix_day": 0,
+              "cost_by_scenario": {
+                "base": 936750.0,
+                "optimistic": 936750.0,
+                "pessimistic": 936750.0
+              },
+              "lightening_required": false,
+              "lightening_port": null,
+              "discharge_days": 1.2,
+              "tidal_window_note": "Dhamra is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly."
+            }
+          ],
+          "total_cost_worst_case": 936750.0,
+          "cost_breakdown": {
+            "freight": 0.0,
+            "ocean_freight": 0.0,
+            "bunker": 918750.0,
+            "port_handling": 18000.0,
+            "lightening_extra": 0.0,
+            "risk_buffer": 0.0,
+            "total": 936750.0
+          },
+          "contains_high_uncertainty_voyage": false,
+          "solved_via": "milp",
+          "provenance": "assumed",
+          "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+          "infeasible_reason": null
+        }
+      ]
+    }
+  },
+  "test2": {
+    "wall_clock_ms": 52.0,
+    "data": {
+      "recommendation": {
+        "voyage_count": 1,
+        "commitment_mode": "spot",
+        "voyages": [
+          {
+            "port": "Gangavaram",
+            "vessel_class": "Capesize",
+            "mode": "spot",
+            "fix_day": 14,
+            "cost_by_scenario": {
+              "base": 901875.0,
+              "optimistic": 1669845.0,
+              "pessimistic": 1811595.0
+            },
+            "lightening_required": false,
+            "lightening_port": null,
+            "discharge_days": 2.0,
+            "tidal_window_note": null
+          }
+        ],
+        "total_cost_worst_case": 1811595.0,
+        "cost_breakdown": {
+          "freight": 0.0,
+          "ocean_freight": 0.0,
+          "bunker": 871875.0,
+          "port_handling": 30000.0,
+          "lightening_extra": 0.0,
+          "risk_buffer": 909720.0,
+          "total": 901875.0
+        },
+        "contains_high_uncertainty_voyage": false,
+        "solved_via": "milp",
+        "provenance": "assumed",
+        "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+        "infeasible_reason": null
+      },
+      "scenario_comparison": [
+        {
+          "voyage_count": 1,
+          "commitment_mode": "spot",
+          "voyages": [
+            {
+              "port": "Dhamra",
+              "vessel_class": "Panamax/Kamsarmax",
+              "mode": "spot",
+              "fix_day": 0,
+              "cost_by_scenario": {
+                "base": 954750.0,
+                "optimistic": 1943850.0,
+                "pessimistic": 2127180.0
+              },
+              "lightening_required": false,
+              "lightening_port": null,
+              "discharge_days": 2.4,
+              "tidal_window_note": "Dhamra is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly."
+            }
+          ],
+          "total_cost_worst_case": 2127180.0,
+          "cost_breakdown": {
+            "freight": 0.0,
+            "ocean_freight": 0.0,
+            "bunker": 918750.0,
+            "port_handling": 36000.0,
+            "lightening_extra": 0.0,
+            "risk_buffer": 1172430.0,
+            "total": 954750.0
+          },
+          "contains_high_uncertainty_voyage": false,
+          "solved_via": "milp",
+          "provenance": "assumed",
+          "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+          "infeasible_reason": null
+        },
+        {
+          "voyage_count": 1,
+          "commitment_mode": "locked",
+          "voyages": [
+            {
+              "port": "Dhamra",
+              "vessel_class": "Panamax/Kamsarmax",
+              "mode": "locked",
+              "fix_day": 0,
+              "cost_by_scenario": {
+                "base": 954750.0,
+                "optimistic": 954750.0,
+                "pessimistic": 954750.0
+              },
+              "lightening_required": false,
+              "lightening_port": null,
+              "discharge_days": 2.4,
+              "tidal_window_note": "Dhamra is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly."
+            }
+          ],
+          "total_cost_worst_case": 954750.0,
+          "cost_breakdown": {
+            "freight": 0.0,
+            "ocean_freight": 0.0,
+            "bunker": 918750.0,
+            "port_handling": 36000.0,
+            "lightening_extra": 0.0,
+            "risk_buffer": 0.0,
+            "total": 954750.0
+          },
+          "contains_high_uncertainty_voyage": false,
+          "solved_via": "milp",
+          "provenance": "assumed",
+          "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+          "infeasible_reason": null
+        }
+      ]
+    }
+  },
+  "test3": {
+    "wall_clock_ms": 33.5,
+    "data": {
+      "recommendation": {
+        "voyage_count": 1,
+        "commitment_mode": "spot",
+        "voyages": [
+          {
+            "port": "Paradip",
+            "vessel_class": "Supramax/Ultramax",
+            "mode": "spot",
+            "fix_day": 7,
+            "cost_by_scenario": {
+              "base": 920700.0,
+              "optimistic": 1479431.25,
+              "pessimistic": 1582515.0
+            },
+            "lightening_required": false,
+            "lightening_port": null,
+            "discharge_days": 1.38,
+            "tidal_window_note": "Paradip is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly."
+          }
+        ],
+        "total_cost_worst_case": 1582515.0,
+        "cost_breakdown": {
+          "freight": 0.0,
+          "ocean_freight": 0.0,
+          "bunker": 900000.0,
+          "port_handling": 20700.0,
+          "lightening_extra": 0.0,
+          "risk_buffer": 661815.0,
+          "total": 920700.0
+        },
+        "contains_high_uncertainty_voyage": false,
+        "solved_via": "milp",
+        "provenance": "assumed",
+        "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+        "infeasible_reason": null
+      },
+      "scenario_comparison": [
+        {
+          "voyage_count": 1,
+          "commitment_mode": "spot",
+          "voyages": [
+            {
+              "port": "Paradip",
+              "vessel_class": "Panamax/Kamsarmax",
+              "mode": "spot",
+              "fix_day": 0,
+              "cost_by_scenario": {
+                "base": 920700.0,
+                "optimistic": 1367685.0,
+                "pessimistic": 1450267.5
+              },
+              "lightening_required": false,
+              "lightening_port": null,
+              "discharge_days": 1.38,
+              "tidal_window_note": "Paradip is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly."
+            }
+          ],
+          "total_cost_worst_case": 1450267.5,
+          "cost_breakdown": {
+            "freight": 0.0,
+            "ocean_freight": 0.0,
+            "bunker": 900000.0,
+            "port_handling": 20700.0,
+            "lightening_extra": 0.0,
+            "risk_buffer": 529567.5,
+            "total": 920700.0
+          },
+          "contains_high_uncertainty_voyage": false,
+          "solved_via": "milp",
+          "provenance": "assumed",
+          "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+          "infeasible_reason": null
+        },
+        {
+          "voyage_count": 1,
+          "commitment_mode": "locked",
+          "voyages": [
+            {
+              "port": "Paradip",
+              "vessel_class": "Panamax/Kamsarmax",
+              "mode": "locked",
+              "fix_day": 0,
+              "cost_by_scenario": {
+                "base": 920700.0,
+                "optimistic": 920700.0,
+                "pessimistic": 920700.0
+              },
+              "lightening_required": false,
+              "lightening_port": null,
+              "discharge_days": 1.38,
+              "tidal_window_note": "Paradip is tide-dependent: vessel arrival timing must align with high-water window. Decision Engine will restrict \u03c4 candidates accordingly."
+            }
+          ],
+          "total_cost_worst_case": 920700.0,
+          "cost_breakdown": {
+            "freight": 0.0,
+            "ocean_freight": 0.0,
+            "bunker": 900000.0,
+            "port_handling": 20700.0,
+            "lightening_extra": 0.0,
+            "risk_buffer": 0.0,
+            "total": 920700.0
+          },
+          "contains_high_uncertainty_voyage": false,
+          "solved_via": "milp",
+          "provenance": "assumed",
+          "provenance_note": "commitment_benchmark_pct=10.0% is the system default (DEFAULT_COMMITMENT_BENCHMARK_PCT) \u2014 not a cargo-specific market assessment.",
+          "infeasible_reason": null
+        }
+      ]
+    }
+  },
+  "test4": [
+    {
+      "code": "A",
+      "question": "What's the best vessel for 70,000 MT from Australia to Paradip?",
+      "wall_clock_s": 1.38,
+      "tool_called": false,
+      "constraint_note": null,
+      "reply": "Could you let me know:\n\n1. Which specific Australian load port you\u2019d like to use (e.g., Hay\u202fPoint, Newcastle, etc.)?  \n2. How many days of timing flexibility you have for the fix date (1\u202f\u2013\u202f90\u202fdays)?\n\nWith those details I can run the optimizer and tell you the best vessel option."
+    },
+    {
+      "code": "B",
+      "question": "Should I lock in three voyages or keep buying spot?",
+      "wall_clock_s": 1.34,
+      "tool_called": null,
+      "constraint_note": null,
+      "reply": null
+    },
+    {
+      "code": "C",
+      "question": "What if I can't use a Capesize and need this done in 12 days?",
+      "wall_clock_s": 0.17,
+      "tool_called": null,
+      "constraint_note": null,
+      "reply": null
+    },
+    {
+      "code": "D",
+      "question": "Why are you recommending Panamax?",
+      "wall_clock_s": 0.17,
+      "tool_called": null,
+      "constraint_note": null,
+      "reply": null
+    },
+    {
+      "code": "E",
+      "question": "What will the Panamax rate be in 2 weeks?",
+      "wall_clock_s": 0.17,
+      "tool_called": null,
+      "constraint_note": null,
+      "reply": null
+    }
+  ],
+  "test5": {
+    "forecast": {
+      "route": "Australia (Hay Point)\u2192Paradip",
+      "vessel_class": "Panamax/Kamsarmax",
+      "horizon_days": 14,
+      "generated_at": "2026-08-29T11:52:48.974739",
+      "point_estimate": 16.83,
+      "confidence_band": {
+        "lower": 15.48,
+        "upper": 18.34
+      },
+      "trajectory": [
+        {
+          "date": "2026-08-29",
+          "value": 16.63
+        },
+        {
+          "date": "2026-08-31",
+          "value": 16.66
+        },
+        {
+          "date": "2026-09-02",
+          "value": 16.68
+        },
+        {
+          "date": "2026-09-04",
+          "value": 16.71
+        },
+        {
+          "date": "2026-09-06",
+          "value": 16.74
+        },
+        {
+          "date": "2026-09-08",
+          "value": 16.76
+        },
+        {
+          "date": "2026-09-10",
+          "value": 16.79
+        },
+        {
+          "date": "2026-09-12",
+          "value": 16.82
+        }
+      ],
+      "driver_explanation": "Rate driven by Panamax/Kamsarmax fleet demand in Indian Ocean and bunker price trends.",
+      "is_high_uncertainty": false,
+      "model_used": "XGBoost",
+      "provenance": "modeled"
+    },
+    "port_status": {
+      "port": "Paradip",
+      "vessel_count": 5,
+      "avg_wait_hours": 18.5,
+      "recorded_at": "2026-08-29T11:51:39.008199Z",
+      "is_live": true,
+      "source_note": "AIS geofence",
+      "bunker_price_usd": null,
+      "provenance": "measured"
+    }
+  },
+  "test6": {
+    "zero_cargo_status": 422,
+    "zero_cargo_detail": [
+      {
+        "type": "greater_than",
+        "loc": [
+          "body",
+          "cargo_quantity"
+        ],
+        "msg": "Input should be greater than 0",
+        "input": 0,
+        "ctx": {
+          "gt": 0.0
+        }
+      }
+    ],
+    "neg_cargo_status": 422,
+    "neg_cargo_detail": [
+      {
+        "type": "greater_than",
+        "loc": [
+          "body",
+          "cargo_quantity"
+        ],
+        "msg": "Input should be greater than 0",
+        "input": -5000,
+        "ctx": {
+          "gt": 0.0
+        }
+      }
+    ],
+    "noports_status": 422,
+    "noports_detail": [
+      {
+        "type": "too_short",
+        "loc": [
+          "body",
+          "discharge_ports"
+        ],
+        "msg": "List should have at least 1 item after validation, not 0",
+        "input": [],
+        "ctx": {
+          "field_type": "List",
+          "min_length": 1,
+          "actual_length": 0
+        }
+      }
+    ],
+    "zeroflex_status": 422,
+    "zeroflex_detail": [
+      {
+        "type": "greater_than_equal",
+        "loc": [
+          "body",
+          "timing_flexibility_days"
+        ],
+        "msg": "Input should be greater than or equal to 1",
+        "input": 0,
+        "ctx": {
+          "ge": 1
+        }
+      }
+    ]
+  }
+}

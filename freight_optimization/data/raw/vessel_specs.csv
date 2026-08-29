@@ -1,0 +1,4 @@
+vessel_class,typical_dwt_min,typical_dwt_max,typical_loa_m,typical_beam_m,typical_draft_m,notes
+Supramax,50000,65000,190.0,32.2,13.0,Geared bulk carrier with grabs; flexible discharge at most Indian ports
+Panamax,70000,85000,225.0,32.3,14.5,Gearless standard coal workhorse; standard 75000 MT parcel size
+Capesize,150000,200000,292.0,45.0,18.0,Gearless large bulk carrier; full-laden draft often requires lightening at shallower ports

@@ -1,0 +1,16 @@
+metric,value
+step51p_selected_rows,11
+production_eligible_rows,6
+review_only_rows,5
+rejected_rows,0
+exact_class_rows,6
+cross_class_rows,5
+production_cross_class_rows,0
+review_cross_class_rows,5
+capacity_feasible_rows,11
+production_capacity_failures,0
+route_size_large_vessel_reviews,5
+automatic_optimizer_allowed_rows,6
+myshiptracking_api_calls,0
+myshiptracking_credits,0
+oilpriceapi_calls,0

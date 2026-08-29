@@ -1,0 +1,1289 @@
+====================================================================================================
+                 SENTENCE-LEVEL 5TC DIAGNOSTIC
+====================================================================================================
+
+Candidate reports: 146
+
+====================================================================================================
+DATE: 2019-04-08 | OLD EXTRACT: 3460.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [3460.0, 4881.0]
+CLOSING SIGNALS: ['ending']
+TEXT: lk Week 14: The Baltic Briefing About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk Week 14: The Baltic Briefing 08 April 2019 Dry Bulk | Trade & Commodities | Shipping & Transport Bulk report – Week 14 Capesize The Capesize market over the past week looked to have found a floor on Tuesday with the BCI 5TC at $3460 before firming into the rest of the week, ending at $4881.
+
+====================================================================================================
+DATE: 2019-04-15 | OLD EXTRACT: 5099.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [5099.0, 5737.0]
+CLOSING SIGNALS: ['close', 'finished', 'by\\s+friday']
+TEXT: The Baltic Capesize Index (BCI) 5TC opened on Monday at $5,099, although by Friday’s close most gains were lost, and it finished up at $5,737, a modest gain of $638.
+
+====================================================================================================
+DATE: 2019-05-13 | OLD EXTRACT: 11182.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [11182.0, 9898.0, 11621.0]
+CLOSING SIGNALS: ['by\\s+friday']
+TEXT: The BCI 5TC reduced from $11,182 at the end of the previous week to a low of $9,898 on Tuesday, but rebounded to $11,621 by Friday.
+
+====================================================================================================
+DATE: 2019-05-20 | OLD EXTRACT: 11621.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [11621.0, 12000.0]
+CLOSING SIGNALS: NONE
+TEXT: The Capesize 5TC opened with upward momentum from last week’s $11,621 and nudged to over $12,000.
+
+====================================================================================================
+DATE: 2019-05-27 | OLD EXTRACT: 12243.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [12243.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The Capesize 5TC closed on Friday at $12,243, a gain of $334 from the previous week.
+
+====================================================================================================
+DATE: 2019-06-10 | OLD EXTRACT: 12987.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [12987.0, 15007.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The Cape 5TC opened the week at $12,987 and closed out Friday at $15,007.
+
+====================================================================================================
+DATE: 2019-06-17 | OLD EXTRACT: 15007.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [15007.0]
+CLOSING SIGNALS: NONE
+TEXT: The 5TC average opened the week at $15,007 and largely softened throughout.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: [14203.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The 5TC average closed Friday at $14,203.
+
+====================================================================================================
+DATE: 2019-06-24 | OLD EXTRACT: 14203.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [14203.0, 17947.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The C5TC market opened Monday at $14,203 and closed Friday at $17,947.
+
+====================================================================================================
+DATE: 2019-07-01 | OLD EXTRACT: 17947.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [17947.0, 19360.0]
+CLOSING SIGNALS: ['close']
+TEXT: The C5TC opened the week at $17,947 to close Friday at $19,360.
+
+====================================================================================================
+DATE: 2019-07-15 | OLD EXTRACT: 27389.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [27389.0]
+CLOSING SIGNALS: ['closing']
+TEXT: The C5TC continued its rise, closing out on Friday at $27,389 surpassing highs of 2018 while still looking stable and supported.
+
+====================================================================================================
+DATE: 2019-07-22 | OLD EXTRACT: 26705.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [26705.0, 32765.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC opened the week at $26,705 to close Friday at $32,765, an increase of more than 22%.
+
+====================================================================================================
+DATE: 2019-07-29 | OLD EXTRACT: 32765.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [32765.0, 27145.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The 5TC opened the week at $32,765 and closed on Friday at $27,145.
+
+====================================================================================================
+DATE: 2019-08-05 | OLD EXTRACT: 25749.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [32963.0, 25749.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk Week 31: The Baltic Briefing About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk Week 31: The Baltic Briefing 05 August 2019 Dry Bulk | Trade & Commodities | Shipping & Transport Dry Bulk Report – Week 31 Capesize Having hit a high of $32,963 early last week, the Capesize 5TC now stands at $25,749.
+
+====================================================================================================
+DATE: 2019-08-12 | OLD EXTRACT: 24022.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [24022.0]
+CLOSING SIGNALS: NONE
+TEXT: The Cape 5TC was published at $24,022.
+
+====================================================================================================
+DATE: 2019-08-19 | OLD EXTRACT: 24022.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [24022.0, 29624.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC opened the week at $24,022 to close at $29,624.
+
+====================================================================================================
+DATE: 2019-08-27 | OLD EXTRACT: 29624.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [29624.0, 28431.0, 30437.0]
+CLOSING SIGNALS: ['closing']
+TEXT: The Capesize 5TC routes opened the week at $29,624, dropped down to $28,431, before closing the week out at $30,437.
+
+====================================================================================================
+DATE: 2019-09-02 | OLD EXTRACT: 34583.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [34583.0, 4146.0]
+CLOSING SIGNALS: ['closing']
+TEXT: Dry Bulk Week 35: The Baltic Briefing About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk Week 35: The Baltic Briefing 02 September 2019 Dry Bulk | Trade & Commodities | Shipping & Transport Bulk report – Week 35 Capesize The market continued to firm all week, with the 5TC closing on Friday at $34,583, up $4,146 for the week.
+
+====================================================================================================
+DATE: 2019-09-09 | OLD EXTRACT: 38014.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [38014.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk Week 36: The Baltic Briefing About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk Week 36: The Baltic Briefing 09 September 2019 Dry Bulk | Shipping & Transport Bulk Report – Week 36 Capesize The market reached new heights this week as the 5TC topped $38,014, a level not seen in the sector since 2013.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: [37921.0]
+CLOSING SIGNALS: ['closed', 'close', 'settle']
+TEXT: Fridays 5TC closed down $732 to settle at $37,921.
+
+====================================================================================================
+DATE: 2019-09-23 | OLD EXTRACT: 33996.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [33996.0, 31470.0]
+CLOSING SIGNALS: ['close']
+TEXT: The 5TC opened the week at $33,996 to close at $31,470.
+
+====================================================================================================
+DATE: 2019-10-07 | OLD EXTRACT: 24916.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [24916.0, 23425.0, 23675.0]
+CLOSING SIGNALS: ['closing', 'settle']
+TEXT: The Capesize 5TC opened the week at $24,916, reached a low of $23,425 Thursday, before closing up Friday +$250 to settle at $23,675.
+
+====================================================================================================
+DATE: 2019-10-21 | OLD EXTRACT: 26382.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [26382.0, 25117.0]
+CLOSING SIGNALS: ['closing']
+TEXT: The 5TC opened the week at $26,382 before closing on a slightly down note Friday at $25,117.
+
+====================================================================================================
+DATE: 2019-11-11 | OLD EXTRACT: 24637.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [20000.0]
+CLOSING SIGNALS: NONE
+TEXT: It has now dropped below the $20,000 level on 5TC, which hasn’t been seen since early July.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: [24637.0, 19716.0]
+CLOSING SIGNALS: NONE
+TEXT: The 5TC opened the week at $24,637 and was seen to drop almost 20% down to $19,716.
+
+====================================================================================================
+DATE: 2019-11-25 | OLD EXTRACT: 20970.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [20970.0, 18930.0]
+CLOSING SIGNALS: ['closed', 'close', 'settle']
+TEXT: The 5TC average opened the week at $20,970 and closed out Friday up $580 to settle at $18,930, illustrating clearly the deteriorating condition of the market.
+
+====================================================================================================
+DATE: 2019-12-02 | OLD EXTRACT: 23865.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [18930.0, 23865.0]
+CLOSING SIGNALS: NONE
+TEXT: Opening the week at $18,930 on the Capesize 5TC, it has now lifted to $23,865.
+
+====================================================================================================
+DATE: 2019-12-09 | OLD EXTRACT: 25202.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [25202.0]
+CLOSING SIGNALS: NONE
+TEXT: he Baltic Briefing About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk Week 49 - The Baltic Briefing 09 December 2019 Dry Bulk | Trade & Commodities | Shipping & Transport Bulk report – Week 49 Capesize This week the Capesize market maintained healthy earnings, as an end of year surge took the Capesize 5TC back up to $25,202 by mid-week.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: [23704.0]
+CLOSING SIGNALS: ['closed', 'close', 'settle']
+TEXT: The Capesize 5TC closed the week down -$525 to settle at $23,704.
+
+====================================================================================================
+DATE: 2019-12-16 | OLD EXTRACT: 5702.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [5702.0, 18002.0]
+CLOSING SIGNALS: ['settle', 'by\\s+friday']
+TEXT: While downward momentum may have slowed a touch by Friday, the Capesize 5TC took a trouncing, losing $5,702 to settle at an almost six-month low of $18,002.
+
+====================================================================================================
+DATE: 2019-12-23 | OLD EXTRACT: 14451.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [14451.0]
+CLOSING SIGNALS: ['settled', 'settle']
+TEXT: The C5TC settled at $14,451 on Friday, with two days left to price for the year.
+
+====================================================================================================
+DATE: 2020-01-06 | OLD EXTRACT: 10825.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [6200.0, 10825.0, 11525.0, 14337.0]
+CLOSING SIGNALS: NONE
+TEXT: A Pacific round voyage at week’s end was assessed at $6,200 and the 5TC average at $10,825 which, on 24 December 2019, were at $11,525 and $14,337 respectively.
+
+====================================================================================================
+DATE: 2020-01-13 | OLD EXTRACT: 9020.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [10825.0, 9020.0, 9438.0]
+CLOSING SIGNALS: ['close']
+TEXT: Opening the week at $10,825, the Capesize 5TC fell away to $9,020, before staging a small rally to close Friday at $9,438.
+
+====================================================================================================
+DATE: 2020-01-20 | OLD EXTRACT: 9438.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [9438.0, 8352.0]
+CLOSING SIGNALS: ['closing']
+TEXT: While the Capesize 5TC still softened marginally, opening the week at $9,438 and closing it at $8,352, market fundamentals appear to have stabilised with a dismal floor for owners in the Pacific and a tight tonnage situation in the Atlantic commanding a premium.
+
+====================================================================================================
+DATE: 2020-01-27 | OLD EXTRACT: 8352.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [8352.0, 4772.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 4 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 4 27 January 2020 Dry Bulk | Trade & Commodities | Shipping & Transport Bulk report – Week 4 Capesize The market endured heavy losses throughout the past week, with the Capesize 5TC dropping from $8,352 to $4,772.
+
+====================================================================================================
+DATE: 2020-02-17 | OLD EXTRACT: 2660.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [2660.0, 2445.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC opened the week at $2,660 to close out at $2,445.
+
+====================================================================================================
+DATE: 2020-02-24 | OLD EXTRACT: 2445.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [2445.0, 2787.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC opened the week at $2,445 to close out the week at $2,787.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: [1170.0, 7087.0]
+CLOSING SIGNALS: ['close']
+TEXT: The 5TC average duly climbed $1,170 to close at $7,087, an almost 20 per cent gain for the week.
+
+====================================================================================================
+DATE: 2020-03-02 | OLD EXTRACT: 2274.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [2274.0, 3000.0]
+CLOSING SIGNALS: NONE
+TEXT: The Capesize 5TC, now $2,274, has remained below $3,000 for three weeks straight, whilst market conditions seemingly continue to deteriorate.
+
+====================================================================================================
+DATE: 2020-03-09 | OLD EXTRACT: 2542.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [2542.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The Capesize 5TC market closed out the week at $2,542.
+
+====================================================================================================
+DATE: 2020-03-16 | OLD EXTRACT: 2542.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [2542.0, 2797.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC opened the week at $2,542 to close at $2,797.
+
+====================================================================================================
+DATE: 2020-03-23 | OLD EXTRACT: 4067.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [4067.0, 1270.0]
+CLOSING SIGNALS: ['settle']
+TEXT: With the market in a constant state of flux on a seemingly endless news cycle, increasing restrictions and disruptions, the Cape 5TC managed a lift out of its recent range to settle the week at $4,067, a lift of +$1,270 for the week.
+
+====================================================================================================
+DATE: 2020-03-30 | OLD EXTRACT: 3675.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [3675.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The Cape 5TC closed out the week at $3,675, down -392.
+
+====================================================================================================
+DATE: 2020-04-06 | OLD EXTRACT: 5949.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [5949.0]
+CLOSING SIGNALS: ['closing']
+TEXT: The market remains a touch above OPEX levels, with the Cape 5TC closing the week at $5,949.
+
+====================================================================================================
+DATE: 2020-04-20 | OLD EXTRACT: 6762.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [6762.0, 9875.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC opened the shortened week at $6,762 to close out at $9,875.
+
+====================================================================================================
+DATE: 2020-04-27 | OLD EXTRACT: 10081.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [10081.0, 8381.0]
+CLOSING SIGNALS: ['by\\s+friday']
+TEXT: The Capesize 5TC peaked early in the week at $10,081, before gains were gradually eroded down to $8,381 by Friday.
+
+====================================================================================================
+DATE: 2020-06-08 | OLD EXTRACT: 7307.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [3369.0, 7307.0]
+CLOSING SIGNALS: NONE
+TEXT: At a paltry $3369 from the beginning of the week, the Capesize 5TC has lifted to $7307 with momentum continuing to build.
+
+====================================================================================================
+DATE: 2020-06-15 | OLD EXTRACT: 12410.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [12410.0]
+CLOSING SIGNALS: NONE
+TEXT: Earnings have lifted from sub operating cost levels under two weeks ago, to now having surged up to have the Capesize 5TC settling at $12,410.
+
+====================================================================================================
+DATE: 2020-06-29 | OLD EXTRACT: 29641.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [29641.0]
+CLOSING SIGNALS: NONE
+TEXT: From persistent lows earlier caused by a barrage of negative factors, the capesize 5TC market has outperformed in spectacular fashion to now reside at $29641.
+
+====================================================================================================
+DATE: 2020-07-20 | OLD EXTRACT: 25085.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [25085.0]
+CLOSING SIGNALS: NONE
+TEXT: A backwardated forward curve illustrating a capesize 5TC spot level from today of $25,085, down to Q4 at $17-18k, gives an indication of market confidence.
+
+====================================================================================================
+DATE: 2020-07-27 | OLD EXTRACT: 25085.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [25085.0, 17285.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 30 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 30 27 July 2020 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The capesize market had the stuffing knocked out of it this week as the 5TC dropped from $25,085 down to $17,285.
+
+====================================================================================================
+DATE: 2020-09-21 | OLD EXTRACT: 15248.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [15248.0, 15761.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC opened the week at $15,248 to close at $15,761.
+
+====================================================================================================
+DATE: 2020-10-05 | OLD EXTRACT: 30000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [30000.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 40 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 40 05 October 2020 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize Firm trading activity this week has pushed the Capesize 5TC up and over the $30000 level, reaching near new highs for the year.
+
+====================================================================================================
+DATE: 2020-10-12 | OLD EXTRACT: 29479.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [34896.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 41 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 41 12 October 2020 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market reached new highs for the year this week, topping out at $34,896 on the 5TC.
+
+====================================================================================================
+DATE: 2020-10-19 | OLD EXTRACT: 19952.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [29479.0, 19952.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: Opening at $29,479, the Capesize 5TC has closed the week at $19,952, a drop of almost -30%.
+
+====================================================================================================
+DATE: 2020-11-02 | OLD EXTRACT: 3199.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [15550.0, 3199.0]
+CLOSING SIGNALS: NONE
+TEXT: Following that, rates collapsed down to $15,550 on the Capesize 5TC, a drop of $3,199 for the week.
+
+====================================================================================================
+DATE: 2020-11-09 | OLD EXTRACT: 14421.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [14421.0]
+CLOSING SIGNALS: ['settle']
+TEXT: The end of the week brought about a small uptick of +244 to settle the Capesize 5TC at $14,421, possibly placing a support level, although others would suggest it will allow for a breather before further declines.
+
+====================================================================================================
+DATE: 2020-11-30 | OLD EXTRACT: 12712.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [11996.0, 12712.0]
+CLOSING SIGNALS: ['closing']
+TEXT: Dry Bulk: Week 48 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 48 30 November 2020 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market this week continued its recent range bound sideways drift hitting a low of $11,996 Tuesday on the 5TC, before closing the week out at $12,712.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: []
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The Pacific C5 voyage route closed the week at $7.118, which is quite reflective of the range bound levels seen on the 5TC.
+
+====================================================================================================
+DATE: 2020-12-07 | OLD EXTRACT: 12712.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [12712.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 49 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 49 07 December 2020 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market continued its meandering behaviour this week as the 5TC opened at $12,712.
+
+====================================================================================================
+DATE: 2021-01-11 | OLD EXTRACT: 2020.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [16633.0, 21131.0]
+CLOSING SIGNALS: ['close', 'ended']
+TEXT: The Capesize 5TC ended 2020 at $16,633 and now closes out its opening week of 2021 at a resounding $21,131.
+
+====================================================================================================
+DATE: 2021-01-18 | OLD EXTRACT: 26489.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [21131.0, 26489.0, 23989.0]
+CLOSING SIGNALS: ['closing', 'end(?:ed)?\\s+the\\s+week']
+TEXT: Opening the second full week of the year at $21,131 the Capesize 5TC peaked mid-week at $26,489, before closing down to end the week at $23,989.
+
+====================================================================================================
+DATE: 2021-02-01 | OLD EXTRACT: 15675.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [15675.0]
+CLOSING SIGNALS: ['settled', 'settle']
+TEXT: Dropping -8,956 over the course of the week the Capesize 5TC settled at $15,675.
+
+====================================================================================================
+DATE: 2021-02-15 | OLD EXTRACT: 10304.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [10304.0]
+CLOSING SIGNALS: ['settle']
+TEXT: The Capesize 5TC registered a token drop of eight to settle at $10,304 as minimal trading was heard.
+
+====================================================================================================
+DATE: 2021-02-22 | OLD EXTRACT: 15856.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [10304.0, 15856.0, 14224.0]
+CLOSING SIGNALS: ['close']
+TEXT: From last Friday at $10,304, the Capesize 5TC reached a high on Wednesday of $15,856 before retreating to close the week out at $14,224.
+
+====================================================================================================
+DATE: 2021-03-01 | OLD EXTRACT: 14224.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [14224.0, 11934.0]
+CLOSING SIGNALS: ['close']
+TEXT: Dry Bulk: Week 8 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 8 01 March 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The market took on a mild downward slide during this week with the 5TC opening at $14,224 to close out at $11,934.
+
+====================================================================================================
+DATE: 2021-03-08 | OLD EXTRACT: 14794.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [14794.0]
+CLOSING SIGNALS: ['settled', 'settle']
+TEXT: Gaining $920 on the last trading day of the week the Capesize 5TC settled at $14,794, which reflected the solid trading activity.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: [10000.0]
+CLOSING SIGNALS: ['close']
+TEXT: No sooner does the Capesize market close in on the bottom $10,000 range on the 5TC, then the market sentiment turns sharply and violently.
+
+====================================================================================================
+DATE: 2021-03-15 | OLD EXTRACT: 14794.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [14794.0, 17889.0, 16741.0]
+CLOSING SIGNALS: NONE
+TEXT: The Capesize 5TC opened the week at $14,794 to move quickly up to $17,889 at midweek before tailing off towards the weekend at $16,741.
+
+====================================================================================================
+DATE: 2021-03-22 | OLD EXTRACT: 2696.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [2696.0, 19437.0]
+CLOSING SIGNALS: ['settle']
+TEXT: Dry Bulk: Week 11 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 11 22 March 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize A steady build for the Capesize market saw the 5TC lift $2,696 to settle the week at $19,437.
+
+====================================================================================================
+DATE: 2021-03-29 | OLD EXTRACT: 19437.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [19437.0, 19014.0]
+CLOSING SIGNALS: ['close']
+TEXT: The 5TC opened the week at $19,437 to close out the week down $423 at $19,014.
+
+====================================================================================================
+DATE: 2021-04-12 | OLD EXTRACT: 4058.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [23911.0]
+CLOSING SIGNALS: NONE
+TEXT: The Capesize 5TC lifted 4,058 over the shortened post Easter holiday week to $23,911.
+
+====================================================================================================
+DATE: 2021-04-19 | OLD EXTRACT: 23911.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [23911.0]
+CLOSING SIGNALS: NONE
+TEXT: The Capesize 5TC started the week at $23,911, surged early in the week before a lull mid-week.
+
+====================================================================================================
+DATE: 2021-04-26 | OLD EXTRACT: 6242.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [6242.0, 34762.0]
+CLOSING SIGNALS: ['settle']
+TEXT: The 5TC rose $6,242 to settle at the end of the week at $34,762.
+
+====================================================================================================
+DATE: 2021-05-04 | OLD EXTRACT: 40608.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [40608.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 17 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 17 04 May 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The market is showing no signs of easing as rates continued to ascend this week reaching record highs for the 5TC average at $40,608.
+
+====================================================================================================
+DATE: 2021-05-10 | OLD EXTRACT: 40608.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [40608.0, 44817.0, 41514.0]
+CLOSING SIGNALS: NONE
+TEXT: The 5TC opened the week at $40,608, peaked at $44,817 mid-week before finally retracing to take a breather at $41,514.
+
+====================================================================================================
+DATE: 2021-05-17 | OLD EXTRACT: 6972.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [6972.0, 34542.0]
+CLOSING SIGNALS: ['settle']
+TEXT: Dry Bulk: Week 19 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 19 17 May 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize As the week progressed it became clear that the Capesize market wasn’t having a small retracement but was in for a more significant downturn as the 5TC dropped $6,972 week-on-week to settle at $34,542.
+
+====================================================================================================
+DATE: 2021-06-07 | OLD EXTRACT: 4681.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [4681.0, 20933.0]
+CLOSING SIGNALS: ['settle']
+TEXT: Dry Bulk: Week 22 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 22 07 June 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market found little to support levels this week as a steady slide in rates saw the 5TC drop $4,681 over the week to settle at $20,933.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: []
+CLOSING SIGNALS: NONE
+TEXT: The market was at a similar level only back in late March / early April where the 5TC found some support at the 17-20k range.
+
+====================================================================================================
+DATE: 2021-06-14 | OLD EXTRACT: 20933.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [20933.0, 19845.0, 27752.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC opened the week with a relatively paltry $20,933, took some moderate losses early in the week to $19,845 before rebounding strongly to close out the week at $27,752.
+
+====================================================================================================
+DATE: 2021-07-05 | OLD EXTRACT: 34299.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [34299.0, 29106.0]
+CLOSING SIGNALS: ['closing']
+TEXT: The Capesize 5TC reached $34,299 on Tuesday before closing the week out at $29,106.
+
+====================================================================================================
+DATE: 2021-07-19 | OLD EXTRACT: 2430.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [2430.0, 28572.0]
+CLOSING SIGNALS: ['settle']
+TEXT: Dry Bulk: Week 28 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 28 19 July 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market endured a week of eroding value across all regions as the 5TC lowered $2,430 week on week to settle at $28,572.
+
+====================================================================================================
+DATE: 2021-07-26 | OLD EXTRACT: 32469.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [32469.0, 4000.0]
+CLOSING SIGNALS: ['close']
+TEXT: Dry Bulk: Week 29 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 29 26 July 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The market drifted sideways lacking a strong directional lead most of the week, with gains towards the end the 5TC average settling at $32,469 to close the week, up almost $4,000.
+
+====================================================================================================
+DATE: 2021-08-02 | OLD EXTRACT: 3244.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [3244.0, 35713.0]
+CLOSING SIGNALS: ['settle']
+TEXT: Dry Bulk: Week 30 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 30 02 August 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market strengthened this week as Pacific routes were affected by weather incidents pushing the 5TC up $3,244 week on week to settle at $35,713.
+
+====================================================================================================
+DATE: 2021-08-09 | OLD EXTRACT: 36150.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [36150.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 31 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 31 09 August 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market broke out of its recent range this week as the 5TC peaked on Thursday before easing Friday slightly down at $36,150.
+
+====================================================================================================
+DATE: 2021-08-16 | OLD EXTRACT: 4766.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [39526.0]
+CLOSING SIGNALS: NONE
+TEXT: By the end of the week both 5TC and BCI reached a new high since mid-May, at 4,766 and $39,526 respectively.
+
+====================================================================================================
+DATE: 2021-08-31 | OLD EXTRACT: 6162.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: []
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 34 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 34 31 August 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize Both the overall index and 5 time charter (5TC) average climbed back to positive territory at the end of the week after a mid-week decline.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: [51099.0]
+CLOSING SIGNALS: NONE
+TEXT: The 5TC recorded an improvement of $986 to $51,099 on Friday.
+
+====================================================================================================
+DATE: 2021-09-06 | OLD EXTRACT: 4452.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [4452.0, 46647.0]
+CLOSING SIGNALS: ['close']
+TEXT: Dry Bulk: Week 35 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 35 06 September 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market crested over the past week as the 5TC retracted $4452 since last Friday to close out at $46,647.
+
+====================================================================================================
+DATE: 2021-09-27 | OLD EXTRACT: 53240.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [53240.0, 8069.0, 61309.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The Capesize 5TC opened the week at $53,240 and never looked like taking a backward step as it closed out the week a staggering $8,069 up settling Friday at $61,309.
+
+====================================================================================================
+DATE: 2021-10-11 | OLD EXTRACT: 86953.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [86953.0, 83865.0]
+CLOSING SIGNALS: ['closing']
+TEXT: The Capesize 5TC managed a high of $86,953 on Thursday before closing out the week on a softer note at $83,865.
+
+====================================================================================================
+DATE: 2021-11-01 | OLD EXTRACT: 15398.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [36065.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 43 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 43 01 November 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market was in dire straits this week as tonnage levels were heard to be building while many areas had minimal activity as the 5TC dropped -15,398 to $36,065 week on week.
+
+====================================================================================================
+DATE: 2021-11-08 | OLD EXTRACT: 8866.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [27199.0]
+CLOSING SIGNALS: ['close']
+TEXT: Dry Bulk: Week 44 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 44 08 November 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market has endured another difficult period of sliding rates as the 5TC sustained losses week-on-week of -8866 to close out at $27,199.
+
+====================================================================================================
+DATE: 2021-11-22 | OLD EXTRACT: 2905.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [29938.0]
+CLOSING SIGNALS: ['closed', 'close', 'settle']
+TEXT: Dry Bulk: Week 46 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 46 22 November 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market closed out a generally underwhelming week with positive sentiment and an uptick in the final days with the 5TC lifting +2905 to settle at $29,938.
+
+====================================================================================================
+DATE: 2021-12-13 | OLD EXTRACT: 1344.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [1344.0, 40035.0]
+CLOSING SIGNALS: ['settle']
+TEXT: Dry Bulk: Week 49 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 49 13 December 2021 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market peaked mid-week from its recent rally as the 5TC marked down -$1344 on the last day of the week to settle at $40,035.
+
+====================================================================================================
+DATE: 2022-01-10 | OLD EXTRACT: 2022.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [19176.0, 20167.0]
+CLOSING SIGNALS: ['closing', 'ended']
+TEXT: Closing out 2021 at $19,176 the Cape 5TC ended its first week in 2022 at $20,167.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: []
+CLOSING SIGNALS: NONE
+TEXT: Initial movement in the market at the beginning of the week appeared positive as physical rates lifted slightly, yet paper markets took the opposite view, leading the 5TC to sink midweek before lifting again for the end of week.
+
+====================================================================================================
+DATE: 2022-01-17 | OLD EXTRACT: 7760.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [12407.0]
+CLOSING SIGNALS: ['settle', 'ended']
+TEXT: Dry Bulk: Week 2 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 2 17 January 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market endured a somewhat traditional post-holiday Q1 drop as the 5TC descended -7760 over the week to settle at $12,407.
+
+====================================================================================================
+DATE: 2022-01-24 | OLD EXTRACT: 7390.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [7390.0]
+CLOSING SIGNALS: NONE
+TEXT: k 3 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 3 24 January 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize There was little support to be found for the Capesize market over the last week as dwindling rates and rising bunker prices slashed earnings for owners with the 5TC Weighted Average dropping to $7,390.
+
+====================================================================================================
+DATE: 2022-01-31 | OLD EXTRACT: 7390.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [7390.0, 5826.0, 8918.0]
+CLOSING SIGNALS: ['ended']
+TEXT: The 5TC weighted average opened the week at $7,390, descended to a low of $5,826 before settling at week’s end to $8,918.
+
+====================================================================================================
+DATE: 2022-02-07 | OLD EXTRACT: 10302.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [10302.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: Dry Bulk: Week 5 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 5 07 February 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market traded sideways this week as the 5TC closed at $10,302, an improvement of +1384 over the week.
+
+====================================================================================================
+DATE: 2022-02-14 | OLD EXTRACT: 5095.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [15397.0]
+CLOSING SIGNALS: ['close']
+TEXT: Activity was clearly seen to be elevated as the Capesize 5TC rose +5095 over the week to close on a mild Friday at $15,397.
+
+====================================================================================================
+DATE: 2022-02-21 | OLD EXTRACT: 1888.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [13888.0]
+CLOSING SIGNALS: ['closed', 'closing', 'close', 'settle']
+TEXT: Closing Friday some reprieve was found as the Capesize 5TC closed on a positive up note +1888 to settle at $13,888.
+
+====================================================================================================
+DATE: 2022-02-28 | OLD EXTRACT: 18181.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [18181.0, 14026.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC reached a high of $18,181 Wednesday before shedding -4155 by weeks end to close at $14,026.
+
+====================================================================================================
+DATE: 2022-03-14 | OLD EXTRACT: 8635.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [8635.0, 22195.0]
+CLOSING SIGNALS: ['settle']
+TEXT: Dry Bulk: Week 10 / 2022 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 10 / 2022 14 March 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market appeared to get caught up in the wider market rallies this week as geopolitical tensions run high, with the 5TC lifting $8635 over the week to settle at $22,195.
+
+====================================================================================================
+DATE: 2022-03-28 | OLD EXTRACT: 5956.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [5956.0, 15648.0]
+CLOSING SIGNALS: ['close']
+TEXT: Dry Bulk: Week 12/2022 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 12/2022 28 March 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market had to contend with volatile bunker concerns once again as the 5TC lost $5956 week on week to close at $15,648.
+
+====================================================================================================
+DATE: 2022-04-04 | OLD EXTRACT: 13596.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [13596.0, 15460.0]
+CLOSING SIGNALS: ['closed', 'close', 'by\\s+friday']
+TEXT: However, by Friday green shoots were beginning to emerge as the 5TC saw a low of $13,596 yet closed at $15,460.
+
+====================================================================================================
+DATE: 2022-04-25 | OLD EXTRACT: 15299.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [15299.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 16 / 2022 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 16 / 2022 25 April 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize After several weeks of relatively flat price movement, the Capesize 5TC market has started to show a little positive sentiment with levels pushed to $15,299.
+
+====================================================================================================
+DATE: 2022-05-03 | OLD EXTRACT: 2003.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [16609.0, 17713.0]
+CLOSING SIGNALS: ['closing']
+TEXT: Dry Bulk: Week 17 / 2022 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 17 / 2022 03 May 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market had a positive week overall with the BCI and 5TC route average at 2003 points and $16,609, closing at 2,136 and $17,713.
+
+====================================================================================================
+DATE: 2022-05-09 | OLD EXTRACT: 24002.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [24002.0, 6262.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 18 / 2022 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 18 / 2022 09 May 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market has made the most of the short working week as rates have lifted strongly, with the 5TC now residing at $24,002 - up $6262 week on week.
+
+====================================================================================================
+DATE: 2022-05-16 | OLD EXTRACT: 32733.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [32733.0]
+CLOSING SIGNALS: ['ended', 'end(?:ed)?\\s+the\\s+week']
+TEXT: The 5TC ended the week at $32,733, a rise of 8731 week on week.
+
+====================================================================================================
+DATE: 2022-05-23 | OLD EXTRACT: 4805.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [4805.0, 37538.0]
+CLOSING SIGNALS: ['close']
+TEXT: The Capesize 5TC rose +$4,805 over the week to close at $37,538.
+
+====================================================================================================
+DATE: 2022-06-13 | OLD EXTRACT: 4609.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [19665.0]
+CLOSING SIGNALS: NONE
+TEXT: The softening of values was felt across all Capesize 5TC routes as the index lowered throughout the week by -4609 to $19,665.
+
+====================================================================================================
+DATE: 2022-06-20 | OLD EXTRACT: 5111.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [5111.0, 24776.0]
+CLOSING SIGNALS: NONE
+TEXT: Amongst this turmoil the sector managed to find a floor under its recent softening as sentiment improved in the latter part of the week with the Capesize 5TC lifting $5,111 over the week to finish at $24,776.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: [20000.0]
+CLOSING SIGNALS: NONE
+TEXT: Yet coming into the second part of the year history tells us cargo flows will be increasing while downside from $20,000 on the 5TC never seems to last too long under owner resistance.
+
+====================================================================================================
+DATE: 2022-06-27 | OLD EXTRACT: 4901.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [19875.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk: Week 25 / 2022 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 25 / 2022 27 June 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The Capesize market was unable to carry the rally from last week as rates were seen to dip sharply this week with the 5TC down 4901 to $19,875.
+
+====================================================================================================
+DATE: 2022-07-18 | OLD EXTRACT: 20000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [20000.0, 24209.0]
+CLOSING SIGNALS: ['closing']
+TEXT: Dry Bulk: Week 28 / 2022 About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk: Week 28 / 2022 18 July 2022 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize Firmer sentiment across both basins pushed the Capesize 5TC route average above the $20,000 threshold this week, closing at $24,209.
+
+====================================================================================================
+DATE: 2022-10-17 | OLD EXTRACT: 1909.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [17965.0]
+CLOSING SIGNALS: ['settle']
+TEXT: The Capesize 5TC lowered 1909 over the week to settle at $17,965.
+
+====================================================================================================
+DATE: 2023-02-20 | OLD EXTRACT: 4432.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [4432.0, 2246.0]
+CLOSING SIGNALS: NONE
+TEXT: Dry Bulk Shipping Report About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk Shipping Report 20 February 2023 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize There was an overriding negative sentiment in the sector this week as the Cape 5TC average fell from $4,432 to $2,246 on Friday.
+
+====================================================================================================
+DATE: 2023-02-27 | OLD EXTRACT: 2246.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [2246.0, 5271.0]
+CLOSING SIGNALS: ['close']
+TEXT: Last Friday the 5TC was at $2,246 and as we close the week it stands at $5,271.
+
+====================================================================================================
+DATE: 2023-03-13 | OLD EXTRACT: 4000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [4000.0, 14466.0]
+CLOSING SIGNALS: ['finished']
+TEXT: Subsequently, the time charter average for the 5TC rose over $4,000 compared with last Friday and finished proceedings at $14,466.
+
+====================================================================================================
+DATE: 2023-04-03 | OLD EXTRACT: 13806.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [13806.0]
+CLOSING SIGNALS: ['ended']
+TEXT: Dry Bulk Shipping Report About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Dry Bulk Shipping Report 03 April 2023 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The first quarter of 2023 ended with a decline of $95 on the Capesize time charter average (5TC), pricing at $13,806 on the last day in March.
+
+[5TC SENTENCE 2]
+DOLLAR VALUES: []
+CLOSING SIGNALS: NONE
+TEXT: On the period front this week, the Cape Cynthia (180,330 2012) was reportedly fixed basis delivery Korea 20-30 April for one year to Costamare at 108% of the 5TC.
+
+[5TC SENTENCE 3]
+DOLLAR VALUES: []
+CLOSING SIGNALS: NONE
+TEXT: Overall, the 5TC maintained the same level as at the start of the year.
+
+====================================================================================================
+DATE: 2023-04-17 | OLD EXTRACT: 15849.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [15849.0, 15344.0]
+CLOSING SIGNALS: ['ending']
+TEXT: All in all, a mixed bag with the 5TC’s starting the week after the Easter weekend at $15,849 and ending the week at $15,344.
+
+====================================================================================================
+DATE: 2023-06-26 | OLD EXTRACT: 12375.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [12375.0, 17252.0]
+CLOSING SIGNALS: NONE
+TEXT: The BCI 5TC, which opened on Monday at $12,375, has experienced a significant rise and currently stands at $17,252.
+
+====================================================================================================
+DATE: 2023-10-09 | OLD EXTRACT: 5801.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [5801.0, 27455.0]
+CLOSING SIGNALS: ['close']
+TEXT: By the end of the week, the Pacific market rebounded, remaining robust and supported, while the Atlantic market, particularly in the North Atlantic, saw significantly firmer fixtures, concluding the week on an optimistic note, as illustrated by the BCI 5TC index, which rose this week by $5,801 to reach $27,455 as the week draws to a close.
+
+====================================================================================================
+DATE: 2024-01-15 | OLD EXTRACT: 29851.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [29851.0, 18015.0]
+CLOSING SIGNALS: ['close', "friday(?:'s)?\\s+close", 'by\\s+friday']
+TEXT: The BCI 5TC commenced the week at $29,851 but experienced notable losses, concluding the week at $18,015 by Friday's close.
+
+====================================================================================================
+DATE: 2024-10-14 | OLD EXTRACT: 23509.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [23509.0, 26213.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: The BCI 5TC fell every day besides Friday, which closed at $23,509, a significant drop from Monday’s $26,213.
+
+====================================================================================================
+DATE: 2025-03-17 | OLD EXTRACT: 23697.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [23697.0, 20544.0]
+CLOSING SIGNALS: ['close']
+TEXT: The BCI 5TC experienced a steady rise throughout the week, before a slight correction saw it close at $23,697, up from $20,544 at the week's start.
+
+====================================================================================================
+DATE: 2025-06-23 | OLD EXTRACT: 7000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [7000.0, 23879.0]
+CLOSING SIGNALS: ['settle', 'by\\s+friday']
+TEXT: Overall, the week marked a reversal of recent gains, with the BCI 5TC shedding over $7,000 to settle at $23,879 by Friday.
+
+====================================================================================================
+DATE: 2025-11-24 | OLD EXTRACT: 27000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [27000.0, 30000.0]
+CLOSING SIGNALS: NONE
+TEXT: The BCI 5TC climbed steadily from the high $27,000s to just over $30,000, reinforcing a firming tone despite Thursday’s slowdown.
+
+====================================================================================================
+DATE: 2026-01-12 | OLD EXTRACT: 27652.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [27652.0, 23947.0]
+CLOSING SIGNALS: NONE
+TEXT: The BCI 182 5TC fell sharply from $27,652 to $23,947, reflecting mounting pressure from lengthening tonnage lists and overall weaker sentiment.
+
+====================================================================================================
+DATE: 2026-02-09 | OLD EXTRACT: 31000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [31000.0, 26468.0]
+CLOSING SIGNALS: ['close']
+TEXT: Dry Bulk Weekly Report About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Baltic Exchange: Dry Bulk Weekly Report 09 February 2026 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The market endured a broadly softer week, with sentiment cooling across both the Pacific and Atlantic as the BCI 182 5TC slid from the low $31,000s to finish closer to $26,468.
+
+====================================================================================================
+DATE: 2026-04-20 | OLD EXTRACT: 6000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [6000.0]
+CLOSING SIGNALS: NONE
+TEXT: The BCI 182 5TC gained over $6,000 across the week, underpinned by improving sentiment and tightening fundamentals.
+
+====================================================================================================
+DATE: 2026-04-27 | OLD EXTRACT: 39000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [39000.0]
+CLOSING SIGNALS: NONE
+TEXT: Baltic Exchange: Dry Bulk Weekly Report About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Baltic Exchange: Dry Bulk Weekly Report 27 April 2026 Dry Bulk | Trade & Commodities | Shipping & Transport Capesize The market began the week with strong upward momentum, briefly pushing the BCI 182 5TC to the cusp of $39,000, supported primarily by strength in the Atlantic basin.
+
+====================================================================================================
+DATE: 2026-05-11 | OLD EXTRACT: 42649.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [42649.0, 44941.0, 46610.0]
+CLOSING SIGNALS: NONE
+TEXT: Overall, the BCI 182 5TC rose from $42,649 on Tuesday to finish the week at $44,941, after peaking at $46,610 on Thursday.
+
+====================================================================================================
+DATE: 2026-06-01 | OLD EXTRACT: 50000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [50000.0]
+CLOSING SIGNALS: NONE
+TEXT: Despite a fragmented trading environment caused by public holidays in both the UK and Singapore, the market demonstrated resilience, with the BCI 182 5TC climbing above the $50,000 mark by Thursday.
+
+====================================================================================================
+DATE: 2026-06-08 | OLD EXTRACT: 50000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [50000.0, 44374.0]
+CLOSING SIGNALS: ['closed', 'close']
+TEXT: Baltic Exchange: Dry Bulk Weekly Report About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Baltic Exchange: Dry Bulk Weekly Report 08 June 2026 Dry Bulk Capesize The market closed the week on a softer footing, with the BCI 182 5TC easing from just under $50,000 at the start of the week to $44,374, reflecting a clear loss of momentum as the week progressed.
+
+====================================================================================================
+DATE: 2026-06-15 | OLD EXTRACT: 42798.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [42798.0, 37251.0]
+CLOSING SIGNALS: ['close']
+TEXT: The BCI 182 5TC fell from $42,798 at the start of the week to $37,251 by the close, representing a significant erosion of earnings and underscoring the loss of momentum from the stronger levels seen in late May.
+
+====================================================================================================
+DATE: 2026-06-22 | OLD EXTRACT: 37631.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [37631.0, 36756.0]
+CLOSING SIGNALS: ['close']
+TEXT: Having come under pressure through the early part of the week, the market reversed course, with the BCI 182 5TC climbing sharply to close at $37,631, up from $36,756 at the start of the week.
+
+====================================================================================================
+DATE: 2026-06-29 | OLD EXTRACT: 36946.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [36946.0, 33014.0]
+CLOSING SIGNALS: NONE
+TEXT: Overall, the BCI 182 5TC declined from $36,946 to $33,014, leaving the market firmly on the defensive by week’s end.
+
+====================================================================================================
+DATE: 2026-07-06 | OLD EXTRACT: 5000.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [5000.0, 37181.0]
+CLOSING SIGNALS: ['close']
+TEXT: The BCI 182 5TC gained just over $5,000 across the week to close at $37,181.
+
+====================================================================================================
+DATE: 2026-07-13 | OLD EXTRACT: 21153.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [21153.0]
+CLOSING SIGNALS: ['close']
+TEXT: Ultramax/Supramax Overall, the market generally maintained last week’s levels, with pockets of improvement in certain areas, but overall movement on rates was minimal and the 5TC average was only slightly higher than last Friday’s close of $21,153.
+
+====================================================================================================
+DATE: 2026-07-20 | OLD EXTRACT: 43086.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [42641.0, 43086.0, 5000.0, 37156.0]
+CLOSING SIGNALS: ['ended', 'end(?:ed)?\\s+the\\s+week']
+TEXT: Having started the week at $42,641, the BCI 182 5TC peaked at $43,086 before sliding around $5,000 to finish at $37,156, illustrating a market that ended the week firmly on the defensive.
+
+====================================================================================================
+DATE: 2026-07-27 | OLD EXTRACT: 31768.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [31768.0, 38860.0]
+CLOSING SIGNALS: NONE
+TEXT: However, sentiment improved steadily as fresh cargoes emerged and buying interest returned, lifting the BCI 5TC from its early-week low of $31,768 to finish the week at $38,860.
+
+====================================================================================================
+DATE: 2026-08-10 | OLD EXTRACT: 41395.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [41395.0, 46512.0]
+CLOSING SIGNALS: ['close', "friday(?:'s)?\\s+close", 'by\\s+friday']
+TEXT: Strength in both the Pacific and Atlantic basins underpinned the rally, driving the BCI 5TC from $41,395 at the start of the week to $46,512 by Friday's close.
+
+====================================================================================================
+DATE: 2026-08-17 | OLD EXTRACT: 46300.0
+====================================================================================================
+
+[5TC SENTENCE 1]
+DOLLAR VALUES: [46300.0, 41155.0]
+CLOSING SIGNALS: NONE
+TEXT: Baltic Exchange: Dry Bulk Weekly Report About Us About Us Contact Us Privacy Policy Publications Dry Cargo Magazine Dry Cargo Handling Directory Advertising Magazine Advertising Online Banner Advertising Newsletter Banner Advertising Online Lead-Generating Content Media kit DCi Media Pack Editorial Programme Advertising Rates News Latest News Dry Bulk Trade & Commodities Shipping & Transport Ports & Terminals Engineering & Equipment Breakbulk Regional Focus Events Subscribe Baltic Exchange: Dry Bulk Weekly Report 17 August 2026 Dry Bulk Capesize The market came under sustained pressure this week, with the BCI 5TC falling from $46,300 to $41,155 as softer Pacific conditions outweighed pockets of resilience in the Atlantic.
+
+====================================================================================================
+                         DONE
+====================================================================================================

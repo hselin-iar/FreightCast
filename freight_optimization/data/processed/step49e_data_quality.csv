@@ -1,0 +1,9 @@
+dataset,metric,value
+zone_observations,total_records,240
+zone_observations,unique_imos,54
+zone_observations,unique_mmsis,120
+zone_observations,bulk_carrier_records,76
+zone_observations,exact_duplicate_records,208
+zone_observations,records_with_lat_lon,240
+zone_observations,records_with_ais_timestamp,240
+zone_observations,recent_within_6h,240

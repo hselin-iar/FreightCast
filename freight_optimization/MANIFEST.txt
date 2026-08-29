@@ -1,0 +1,35 @@
+FREIGHT OPTIMIZER HANDOFF
+==========================
+
+Root:
+/home/aryashekhar/freight-optimization/freight_optimizer_handoff
+
+Master entry:
+run_pipeline.py
+
+Code files:
+14
+
+Model files:
+1
+
+Data files:
+425
+
+Important output files:
+18
+
+API:
+Not included — intended for integration by receiving developer.
+
+Graphs:
+Not included in core execution.
+
+Secrets:
+Excluded intentionally.
+
+Data:
+All available data/raw and data/processed files copied.
+
+Generated from:
+/home/aryashekhar/freight-optimization

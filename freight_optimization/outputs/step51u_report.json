@@ -1,0 +1,35 @@
+{
+  "generated_utc": "2026-08-28T16:13:03.710342+00:00",
+  "status": "FULL_PRODUCTION_UNIVERSE_READY",
+  "critical_correction": "Step 51U rebuilds the production universe from all Step 51A candidate rows rather than from the subset selected by Step 51P.",
+  "policy": {
+    "capacity": "DWT >= contract cargo",
+    "production_class": "exact declared vessel-class match",
+    "cross_class": "review only",
+    "route_size_audit": "informational/review evidence; does not delete otherwise valid exact-class candidates"
+  },
+  "counts": {
+    "step51a_rows": 2343,
+    "unique_contracts": 24,
+    "complete_physical_candidates": 781,
+    "capacity_excluded": 0,
+    "exact_class_candidates": 358,
+    "cross_class_review_candidates": 423,
+    "production_candidate_rows": 358,
+    "review_only_rows": 423
+  },
+  "production_dimensions": {
+    "contracts": 16,
+    "vessels": 6,
+    "routes": 16
+  },
+  "bunker": {
+    "price_usd_per_metric_ton": 770.5
+  },
+  "api": {
+    "myshiptracking_calls": 0,
+    "myshiptracking_credits": 0,
+    "oilpriceapi_calls": 0
+  },
+  "next_step": "Build Step 51V final MILP from the COMPLETE Step 51U production universe, not from Step 51P or Step 51S."
+}

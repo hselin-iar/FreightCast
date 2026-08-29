@@ -1,0 +1,4 @@
+port_name,max_draft_m,max_loa_m,max_beam_m,lightening_possible,typical_handling_rate_tpd,notes,source,verified_date,dataset_role
+Paradip,16.0,300,46,Yes,,Max draft high-tide dependent on NCIB & mechanized coal berths; Capesize possible with tide/lightening,paradipport.gov.in (Official),2026-08-26,port_constraint
+Gangavaram,18.0,300,48,No,,Deep-water berths 4-6; fully laden Capesize up to ~200000 DWT,Adani Gangavaram BPTS (Official),2026-08-26,port_constraint
+Dhamra,18.0,300,47,No,,Deep draft bulk berths; Capesize capable (secondary sources),Secondary (DPCL / trade records),2026-08-26,port_constraint

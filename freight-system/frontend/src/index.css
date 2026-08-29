@@ -1,0 +1,945 @@
+/* ============================================================
+   SAIL FrieghtCast — Design System
+   Closely mirrors index.html: sail-* navy palette, teal accent,
+   measured/modeled/assumed badge trio, 12-column grid layout.
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  /* Sail navy palette (mirror of Tailwind sail-* in index.html) */
+  --sail-950: #020617;
+  --sail-900: #0f172a;
+  --sail-800: #1e293b;
+  --sail-700: #334155;
+  --sail-600: #475569;
+  --sail-500: #64748b;
+  --sail-400: #94a3b8;
+  --sail-300: #cbd5e1;
+  --sail-200: #e2e8f0;
+  --sail-100: #f1f5f9;
+
+  /* Accent teal */
+  --accent:     #0d9488;
+  --accent-dim: #0f766e;
+  --accent-hi:  #14b8a6;
+  --accent-bg:  rgba(13,148,136,0.08);
+  --accent-15:  rgba(13,148,136,0.15);
+  --accent-20:  rgba(13,148,136,0.20);
+
+  /* Semantic */
+  --warn:      #d97706;
+  --warn-bg:   rgba(217,119,6,0.10);
+  --emerald:   #10b981;
+  --emerald-4: #34d399;
+
+  /* Provenance badge colours (match index.html) */
+  --badge-measured-bg:    #064e3b;
+  --badge-measured-text:  #6ee7b7;
+  --badge-modeled-bg:     #1e3a5f;
+  --badge-modeled-text:   #93c5fd;
+  --badge-assumed-bg:     #78350f;
+  --badge-assumed-text:   #fcd34d;
+
+  /* Fonts */
+  --f-sans: 'Inter', system-ui, sans-serif;
+  --f-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Misc */
+  --r:    4px;
+  --r-lg: 8px;
+  --nav-h: 48px;
+}
+
+html, body, #root {
+  height: 100%;
+  background: var(--sail-950);
+  color: var(--sail-200);
+  font-family: var(--f-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mono { font-family: var(--f-mono); }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--sail-700); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sail-600); }
+
+/* ── Nav ────────────────────────────────────────────────── */
+.nav-bar {
+  position: sticky; top: 0; z-index: 50;
+  height: var(--nav-h);
+  background: rgba(15,23,42,0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--sail-800);
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  gap: 12px;
+  max-width: 100%;
+}
+
+.nav-logo-mark {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.nav-brand {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--sail-100);
+  letter-spacing: -0.2px;
+}
+
+.nav-ver {
+  font-size: 10px;
+  font-family: var(--f-mono);
+  color: var(--sail-500);
+  margin-left: 4px;
+}
+
+.nav-tabs {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 16px;
+}
+
+.nav-tab {
+  padding: 5px 12px;
+  border-radius: var(--r);
+  font-size: 13px;
+  font-weight: 500;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sail-400);
+  transition: background 0.1s, color 0.1s;
+}
+.nav-tab:hover { color: var(--sail-200); background: var(--sail-800); }
+.nav-tab.active { background: var(--accent-15); color: var(--accent-hi); }
+
+.nav-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11px;
+  font-family: var(--f-mono);
+  color: var(--sail-500);
+}
+
+.status-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+}
+.status-dot.ok    { background: var(--emerald); box-shadow: 0 0 5px var(--emerald); }
+.status-dot.warn  { background: var(--warn); }
+.status-dot.error { background: #ef4444; }
+
+/* ── 12-column page grid ────────────────────────────────── */
+.page-grid {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 16px;
+}
+
+.col-3  { grid-column: span 3; min-width: 0; }
+.col-4  { grid-column: span 4; min-width: 0; }
+.col-5  { grid-column: span 5; min-width: 0; }
+.col-6  { grid-column: span 6; min-width: 0; }
+.col-8  { grid-column: span 8; min-width: 0; }
+.col-12 { grid-column: span 12; min-width: 0; }
+
+.col-space { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+
+@media (max-width: 1200px) {
+  .page-grid {
+    padding: 12px;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .col-3, .col-4, .col-5, .col-6, .col-8 {
+    grid-column: span 12;
+  }
+}
+
+/* ── Panel (mirrors .panel in index.html) ───────────────── */
+.panel {
+  background: var(--sail-900);
+  border: 1px solid var(--sail-800);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+.panel.accent-left { border-left: 3px solid var(--accent); }
+
+.panel-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sail-800);
+}
+
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--sail-100);
+}
+
+.panel-meta {
+  font-size: 10px;
+  font-family: var(--f-mono);
+  color: var(--sail-500);
+}
+
+.panel-body { padding: 16px; }
+
+/* infer text (note text below sections) */
+.infer {
+  font-size: 10px;
+  color: var(--sail-500);
+  line-height: 1.45;
+  margin-top: 10px;
+}
+.infer strong { color: var(--accent-hi); font-weight: 600; }
+
+/* ── Form elements ──────────────────────────────────────── */
+.form-group { display: flex; flex-direction: column; gap: 5px; }
+.form-label { font-size: 12px; color: var(--sail-400); }
+
+.input-field {
+  background: var(--sail-800);
+  border: 1px solid var(--sail-700);
+  border-radius: var(--r);
+  color: var(--sail-100);
+  font-family: var(--f-mono);
+  font-size: 13px;
+  padding: 7px 10px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  transition: border-color 0.12s;
+}
+.input-field:focus { border-color: var(--accent); }
+.input-field::placeholder { color: var(--sail-600); }
+
+select.input-field {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%2364748b'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
+}
+select.input-field option { background: var(--sail-800); }
+
+/* Checkbox group */
+.checkbox-item {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; color: var(--sail-300);
+  cursor: pointer; padding: 2px 0;
+}
+.checkbox-item input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 14px; height: 14px; cursor: pointer;
+}
+
+/* Range slider */
+input[type="range"] { accent-color: var(--accent); cursor: pointer; }
+
+/* ── Buttons ────────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; border-radius: var(--r); cursor: pointer;
+  font-family: var(--f-sans); font-weight: 500; font-size: 13px;
+  padding: 8px 14px; transition: background 0.12s; outline: none;
+}
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-accent:hover:not(:disabled) { background: var(--accent-dim); }
+.btn-accent:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-full { width: 100%; }
+.btn-sm { font-size: 12px; padding: 5px 10px; }
+
+/* Spinner */
+.spinner {
+  width: 13px; height: 13px;
+  border: 2px solid rgba(255,255,255,0.25);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Provenance badges ──────────────────────────────────── */
+.badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  border-radius: var(--r);
+  font-size: 10px; font-family: var(--f-mono); font-weight: 500;
+  padding: 2px 6px; letter-spacing: 0.3px; text-transform: uppercase;
+  white-space: nowrap;
+}
+.badge-measured { background: var(--badge-measured-bg); color: var(--badge-measured-text); }
+.badge-modeled  { background: var(--badge-modeled-bg);  color: var(--badge-modeled-text); }
+.badge-assumed  { background: var(--badge-assumed-bg);  color: var(--badge-assumed-text); }
+
+/* Tooltip */
+.tip-wrap { position: relative; display: inline-flex; }
+.tip-box {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%; transform: translateX(-50%);
+  width: max-content; max-width: 260px;
+  background: var(--sail-800);
+  border: 1px solid var(--sail-700);
+  border-radius: var(--r-lg);
+  padding: 8px 10px;
+  font-size: 11px; line-height: 1.4; color: var(--sail-200);
+  text-transform: none; letter-spacing: 0; font-weight: 400;
+  white-space: normal; z-index: 200;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+  pointer-events: none;
+}
+.tip-wrap:hover .tip-box { display: block; }
+
+/* ── Congestion bar ─────────────────────────────────────── */
+.cong-bar {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px;
+}
+.cong-track {
+  width: 64px; height: 6px;
+  background: var(--sail-800);
+  border-radius: 3px; overflow: hidden;
+  flex-shrink: 0;
+}
+.cong-fill { height: 100%; border-radius: 3px; }
+
+/* ── Winning plan banner content ──────────────────────── */
+.plan-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; padding: 16px;
+}
+.plan-label {
+  font-size: 11px; font-weight: 500; color: var(--accent-hi);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.plan-title {
+  font-size: 18px; font-weight: 600; color: var(--sail-100);
+  letter-spacing: -0.3px; margin-top: 2px;
+}
+.plan-subtitle { font-size: 13px; color: var(--sail-400); margin-top: 3px; }
+.plan-cost {
+  font-size: 24px; font-weight: 600; color: var(--sail-100);
+  font-family: var(--f-mono); text-align: right; letter-spacing: -0.5px;
+}
+.plan-cost-label { font-size: 11px; color: var(--sail-500); text-align: right; margin-top: 1px; }
+.plan-robustness { font-size: 11px; color: var(--accent-hi); font-family: var(--f-mono); text-align: right; margin-top: 2px; }
+
+.plan-tags {
+  display: flex; flex-wrap: wrap; gap: 6px;
+  padding: 0 16px 12px;
+}
+.plan-tag {
+  padding: 2px 8px; border-radius: var(--r);
+  background: var(--sail-800); color: var(--sail-300);
+  font-size: 11px; cursor: default;
+}
+
+/* ── Cost breakdown stacked bar ─────────────────────────── */
+.cost-stacked-bar {
+  height: 32px; border-radius: var(--r);
+  overflow: hidden; display: flex;
+}
+.cost-seg {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; font-weight: 500; color: #fff; white-space: nowrap;
+  overflow: hidden; min-width: 0;
+}
+.cost-seg.freight { background: #0f766e; }
+.cost-seg.bunker  { background: #0d9488; }
+.cost-seg.opex    { background: #0284c7; }
+.cost-seg.port    { background: #14b8a6; }
+.cost-seg.other   { background: #8b5cf6; }
+.cost-seg.tax     { background: #64748b; }
+.cost-seg.light   { background: #d97706; }
+.cost-seg.risk    { background: #334155; }
+
+.cost-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+.cost-item {}
+.cost-item-label { font-size: 11px; color: var(--sail-500); }
+.cost-item-value { font-family: var(--f-mono); font-size: 13px; color: var(--sail-100); }
+
+/* ── Scenario comparison table ──────────────────────────── */
+.sc-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.sc-table th {
+  text-align: left; padding: 8px 0; font-weight: 500; font-size: 11px;
+  color: var(--sail-500); border-bottom: 1px solid var(--sail-800);
+  white-space: nowrap;
+}
+.sc-table th:not(:first-child) { text-align: right; }
+.sc-table td {
+  padding: 9px 0; border-bottom: 1px solid rgba(30,41,59,0.6);
+  vertical-align: middle;
+}
+.sc-table td:not(:first-child):not(:last-child) { text-align: right; }
+.sc-table td.notes { padding-left: 12px; font-family: var(--f-sans); color: var(--sail-400); }
+.sc-table tr.winner td { background: rgba(13,148,136,0.05); }
+.sc-table tr.winner td:first-child { color: var(--accent-hi); font-weight: 500; }
+.sc-table tbody tr { cursor: pointer; transition: background 0.08s; }
+.sc-table tbody tr:hover td { background: var(--accent-bg); }
+
+/* ── Feasible option card ───────────────────────────────── */
+.feas-card {
+  padding: 8px 10px; border-radius: var(--r);
+  background: rgba(30,41,59,0.5); border: 1px solid var(--sail-700);
+  cursor: pointer; transition: border-color 0.12s;
+}
+.feas-card:hover { border-color: var(--accent); }
+.feas-card-head { display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: var(--sail-100); }
+.feas-card-sub { font-size: 11px; color: var(--sail-500); margin-top: 3px; }
+
+/* ── Rate driver bar ────────────────────────────────────── */
+.driver-bar {
+  width: 80px; height: 6px;
+  background: var(--sail-800); border-radius: 3px; overflow: hidden;
+}
+.driver-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+
+/* ── Sensitivity tornado bar ────────────────────────────── */
+.tornado-bar {
+  height: 8px; background: var(--sail-800);
+  border-radius: var(--r); overflow: hidden;
+  display: flex;
+}
+.tornado-neg { background: rgba(217,119,6,0.8); height: 100%; }
+.tornado-pos { background: rgba(13,148,136,0.7); height: 100%; }
+
+/* ── Forecast chart ─────────────────────────────────────── */
+.chart-wrap { width: 100%; height: 224px; position: relative; }
+.chart-legend {
+  display: flex; flex-wrap: wrap; gap: 14px;
+  padding: 10px 16px; font-size: 11px; color: var(--sail-400);
+  border-top: 1px solid var(--sail-800);
+}
+.legend-entry { display: flex; align-items: center; gap: 5px; }
+.legend-line { width: 12px; height: 2px; border-radius: 1px; flex-shrink: 0; }
+
+/* ── Fan chart SVG panel ────────────────────────────────── */
+.fan-wrap {
+  position: relative; height: 192px;
+  background: rgba(15,23,42,0.6);
+  border: 1px solid var(--sail-800);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.fan-axis {
+  position: absolute; bottom: 4px; left: 8px; right: 8px;
+  display: flex; justify-content: space-between;
+  font-size: 9px; font-family: var(--f-mono); color: var(--sail-500);
+}
+
+/* ── Route map placeholder ──────────────────────────────── */
+.map-wrap {
+  height: 160px; border-radius: var(--r);
+  border: 1px solid var(--sail-800);
+  background: rgba(15,23,42,0.8);
+  position: relative; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.map-dot {
+  position: absolute;
+  width: 12px; height: 12px;
+  border-radius: 50%; border: 2px solid rgba(255,255,255,0.25);
+}
+
+/* ── Provenance grid ────────────────────────────────────── */
+.prov-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.prov-cell {
+  background: rgba(30,41,59,0.4); border-radius: var(--r); padding: 8px;
+}
+.prov-cell-label { font-size: 11px; color: var(--sail-500); }
+.prov-cell-value { font-family: var(--f-mono); font-size: 12px; color: var(--sail-200); }
+
+/* ── Chat bubble ────────────────────────────────────────── */
+.chat-user {
+  background: rgba(30,41,59,0.6); border-radius: var(--r);
+  padding: 8px 10px; font-size: 12px; color: var(--sail-300);
+}
+.chat-bot {
+  background: rgba(13,148,136,0.08); border: 1px solid var(--accent-20);
+  border-radius: var(--r); padding: 8px 10px;
+  font-size: 12px; color: var(--sail-200);
+}
+.chat-source { font-size: 10px; color: var(--sail-500); margin-top: 6px; font-family: var(--f-mono); }
+
+/* ── Collapse toggle ────────────────────────────────────── */
+.collapse-btn {
+  background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500; color: var(--sail-400);
+  padding: 0; width: 100%; text-align: left;
+  transition: color 0.1s;
+}
+.collapse-btn:hover { color: var(--sail-200); }
+.collapse-icon { transition: transform 0.15s; font-size: 10px; }
+.collapse-icon.open { transform: rotate(90deg); }
+
+/* ── Error / empty ──────────────────────────────────────── */
+.error-bar {
+  background: rgba(239,68,68,0.08);
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--r); padding: 12px 14px;
+  font-size: 12px; color: #fca5a5;
+  display: flex; gap: 8px;
+}
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 48px 24px;
+  text-align: center; gap: 8px;
+}
+.empty-icon { font-size: 28px; opacity: 0.3; }
+.empty-title { font-size: 14px; font-weight: 500; color: var(--sail-400); }
+.empty-desc { font-size: 12px; color: var(--sail-500); max-width: 260px; line-height: 1.5; }
+
+/* ── Skeleton ───────────────────────────────────────────── */
+@keyframes shimmer {
+  from { background-position: -500px 0; }
+  to   { background-position:  500px 0; }
+}
+.skel {
+  border-radius: var(--r);
+  background: linear-gradient(90deg, var(--sail-800) 0%, var(--sail-700) 50%, var(--sail-800) 100%);
+  background-size: 1000px 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+/* ── Utility classes ────────────────────────────────────── */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.flex-between { display: flex; align-items: center; justify-content: space-between; }
+.flex-center { display: flex; align-items: center; }
+.gap-1 { gap: 4px; }
+.gap-2 { gap: 8px; }
+.gap-3 { gap: 12px; }
+.gap-4 { gap: 16px; }
+.mt-1 { margin-top: 4px; }
+.mt-2 { margin-top: 8px; }
+.mt-3 { margin-top: 12px; }
+.w-full { width: 100%; }
+.space-y > * + * { margin-top: 12px; }
+.space-y-sm > * + * { margin-top: 8px; }
+
+.text-accent { color: var(--accent-hi); }
+.text-sail-100 { color: var(--sail-100); }
+.text-sail-300 { color: var(--sail-300); }
+.text-sail-400 { color: var(--sail-400); }
+.text-sail-500 { color: var(--sail-500); }
+.text-warn { color: var(--warn); }
+.text-emerald { color: var(--emerald); }
+.text-emerald-4 { color: var(--emerald-4); }
+
+.fs-9  { font-size: 9px; }
+.fs-10 { font-size: 10px; }
+.fs-11 { font-size: 11px; }
+.fs-12 { font-size: 12px; }
+.fs-13 { font-size: 13px; }
+.fw-5 { font-weight: 500; }
+.fw-6 { font-weight: 600; }
+
+/* View switching */
+.view-panel { display: none; }
+.view-panel.active { display: grid; }
+
+/* Vessel class toggle buttons (Forecast Explorer) */
+.v-btn {
+  padding: 6px 8px; border-radius: var(--r);
+  font-size: 12px; border: 1px solid var(--sail-700);
+  color: var(--sail-300); background: transparent; cursor: pointer;
+  transition: border-color 0.1s, color 0.1s, background 0.1s;
+}
+.v-btn.active { border-color: var(--accent); background: var(--accent-15); color: var(--accent-hi); }
+.v-btn:hover:not(.active) { border-color: var(--sail-600); color: var(--sail-200); }
+
+/* Horizon pill buttons */
+.h-btn {
+  flex: 1; padding: 6px 4px; border-radius: var(--r); text-align: center;
+  font-size: 12px; border: 1px solid var(--sail-700);
+  color: var(--sail-300); background: transparent; cursor: pointer;
+  transition: border-color 0.1s, color 0.1s, background 0.1s;
+}
+.h-btn.active { border-color: var(--accent); background: var(--accent-15); color: var(--accent-hi); }
+
+/* Forecast pair card (selected horizon) */
+.horizon-card {
+  padding: 8px; border-radius: var(--r); font-size: 12px;
+}
+.horizon-card.selected {
+  background: var(--accent-15); border: 1px solid var(--accent-20); color: var(--accent-hi);
+}
+.horizon-card:not(.selected) {
+  background: rgba(30,41,59,0.4); border: 1px solid transparent;
+}
+
+/* ═══════════════════════════════════════════════════
+   Step 12 — WhatIfSliders, ScenarioFanChart, polish
+═══════════════════════════════════════════════════ */
+
+/* ── Range / slider ─────────────────────────────── */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, var(--accent) var(--pct, 50%), var(--sail-800) var(--pct, 50%));
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent-hi);
+  border: 2px solid var(--sail-900);
+  box-shadow: 0 0 0 3px rgba(13,148,136,0.2);
+  transition: box-shadow 0.15s, background 0.15s;
+  cursor: grab;
+}
+input[type="range"]::-webkit-slider-thumb:active {
+  cursor: grabbing;
+  background: var(--accent);
+  box-shadow: 0 0 0 5px rgba(13,148,136,0.25);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent-hi);
+  border: 2px solid var(--sail-900);
+  cursor: grab;
+}
+input[type="range"]:focus { outline: none; }
+input[type="range"]::-webkit-slider-runnable-track { border-radius: 2px; height: 4px; }
+
+/* ── Spinner (loading indicator in WhatIfSliders) ── */
+.spinner {
+  display: inline-block;
+  width: 12px; height: 12px;
+  border: 2px solid rgba(13,148,136,0.25);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Chart legend strip ─────────────────────────── */
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 16px 4px;
+  font-size: 10px;
+  color: var(--sail-400);
+  font-family: var(--f-mono);
+}
+.legend-entry {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.legend-line {
+  display: inline-block;
+  width: 14px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  flex-shrink: 0;
+}
+
+/* ── WhyNotComparator row hover ─────────────────── */
+.why-row-hover:hover { background: rgba(13,148,136,0.06); }
+
+/* ── Robustness gauge emerald ───────────────────── */
+.text-emerald-4 { color: var(--emerald-4); }
+
+/* ── AIS Route Map port ring pulse ─────────────── */
+@keyframes port-pulse {
+  0%   { r: 4; opacity: 0.6; }
+  100% { r: 8; opacity: 0; }
+}
+
+/* ── ExecutiveBriefExport print styles ─────────── */
+@media print {
+  /* Hide everything except the brief */
+  body > * { display: none !important; }
+  #exec-brief-content {
+    display: block !important;
+    position: fixed;
+    inset: 0;
+    background: #fff;
+    color: #111;
+    padding: 32px;
+    font-family: Georgia, serif;
+    font-size: 12pt;
+    line-height: 1.6;
+    z-index: 9999;
+  }
+  /* Force white backgrounds on tables */
+  #exec-brief-content table, #exec-brief-content td, #exec-brief-content th {
+    border-color: #e2e8f0 !important;
+    background: #fff !important;
+    color: #111 !important;
+  }
+}
+
+/* ── SensitivityPanel centred tornado ────────────
+   (overrides the basic tornado-bar from Step 11
+    with the centred split version) ──────────────── */
+.tornado-centred {
+  display: flex;
+  height: 8px;
+  background: var(--sail-800);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.tornado-neg-side {
+  flex: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+.tornado-neg-fill {
+  background: rgba(217,119,6,0.75);
+  height: 100%;
+  border-radius: 3px 0 0 3px;
+}
+.tornado-pos-fill {
+  background: rgba(13,148,136,0.7);
+  height: 100%;
+  border-radius: 0 3px 3px 0;
+}
+.tornado-divider {
+  width: 1px;
+  background: var(--sail-600);
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════
+   Step 13 — ChatPanel styles
+═══════════════════════════════════════════════════ */
+
+/* ── Ensure --indigo-hi is defined (fallback if not in :root) ── */
+:root {
+  --indigo-hi: #818cf8;
+}
+
+/* ── Chat sidebar column container ─────────────────── */
+#chat-panel {
+  height: calc(100vh - 52px);
+  position: sticky;
+  top: 52px;
+  overflow: hidden;
+}
+
+/* ── Message thread scrollbar ───────────────────── */
+#chat-panel > div:nth-child(2) {
+  scrollbar-width: thin;
+  scrollbar-color: var(--sail-700) transparent;
+}
+#chat-panel > div:nth-child(2)::-webkit-scrollbar {
+  width: 4px;
+}
+#chat-panel > div:nth-child(2)::-webkit-scrollbar-thumb {
+  background: var(--sail-700);
+  border-radius: 2px;
+}
+
+/* ── Chat input focus ring ──────────────────────── */
+#chat-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(13,148,136,0.12);
+}
+
+/* ── Send button hover ──────────────────────────── */
+#chat-send-btn:not(:disabled):hover {
+  filter: brightness(1.12);
+  transform: scale(1.04);
+  transition: filter 0.1s, transform 0.1s;
+}
+
+/* ── Example query buttons ──────────────────────── */
+.example-query-btn {
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.example-query-btn:hover {
+  transform: translateX(2px);
+}
+
+/* ── Chat update banner (dashboard_update annotation) ── */
+#chat-update-banner {
+  animation: slideInDown 0.3s ease-out;
+}
+@keyframes slideInDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Recommendation + chat outer grid ───────────── */
+/* The grid is set inline in App.tsx; just make sure the ChatPanel
+   column doesn't shrink below its 320px allocation */
+#chat-panel {
+  min-width: 0;
+}
+
+/* ── Chat Markdown formatting ───────────────────── */
+.chat-markdown {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--sail-100);
+}
+
+.chat-markdown p {
+  margin: 0 0 8px 0;
+}
+.chat-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.chat-markdown strong, .chat-markdown b {
+  color: #fff;
+  font-weight: 600;
+}
+
+.chat-markdown em, .chat-markdown i {
+  color: var(--sail-200);
+  font-style: italic;
+}
+
+.chat-markdown h1, .chat-markdown h2, .chat-markdown h3, .chat-markdown h4 {
+  color: var(--sail-100);
+  font-weight: 600;
+  margin: 10px 0 4px 0;
+}
+.chat-markdown h1 { font-size: 14px; }
+.chat-markdown h2 { font-size: 13.5px; }
+.chat-markdown h3 { font-size: 13px; color: var(--accent-hi); }
+.chat-markdown h4 { font-size: 12.5px; }
+
+.chat-markdown ul, .chat-markdown ol {
+  margin: 4px 0 8px 0;
+  padding-left: 18px;
+}
+.chat-markdown ul:last-child, .chat-markdown ol:last-child {
+  margin-bottom: 0;
+}
+.chat-markdown li {
+  margin-bottom: 3px;
+  line-height: 1.45;
+}
+
+.chat-markdown code {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(15,23,42,0.8);
+  border: 1px solid var(--sail-700);
+  color: var(--accent-hi);
+}
+
+.chat-markdown pre {
+  margin: 6px 0 8px 0;
+  padding: 8px 10px;
+  background: rgba(15,23,42,0.9);
+  border: 1px solid var(--sail-800);
+  border-radius: 6px;
+  overflow-x: auto;
+}
+.chat-markdown pre code {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 11px;
+  color: var(--sail-200);
+}
+
+.chat-markdown table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 8px 0;
+  font-size: 11px;
+  border: 1px solid var(--sail-800);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.chat-markdown th {
+  background: rgba(15,23,42,0.9);
+  color: var(--sail-300);
+  font-weight: 600;
+  text-align: left;
+  padding: 5px 8px;
+  border-bottom: 1px solid var(--sail-800);
+  border-right: 1px solid rgba(51,65,85,0.4);
+}
+.chat-markdown th:last-child {
+  border-right: none;
+}
+.chat-markdown td {
+  padding: 5px 8px;
+  border-bottom: 1px solid rgba(51,65,85,0.3);
+  border-right: 1px solid rgba(51,65,85,0.3);
+  color: var(--sail-200);
+}
+.chat-markdown td:last-child {
+  border-right: none;
+}
+.chat-markdown tr:last-child td {
+  border-bottom: none;
+}
+.chat-markdown tr:nth-child(even) td {
+  background: rgba(15,23,42,0.35);
+}
+
+.chat-markdown blockquote {
+  margin: 6px 0;
+  padding: 4px 10px;
+  border-left: 3px solid var(--accent);
+  background: rgba(13,148,136,0.06);
+  color: var(--sail-300);
+  border-radius: 0 4px 4px 0;
+}
+
+.chat-markdown hr {
+  border: none;
+  border-top: 1px solid var(--sail-800);
+  margin: 8px 0;
+}
