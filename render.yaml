@@ -3,7 +3,7 @@
 # Reference: DOC3 §4 & DOC4 Step 14
 
 services:
-  # ─── 1. FastAPI Web API Service ─────────────────────────────────────────────
+  # ─── 1. FastAPI Web API Service (Free Tier) ──────────────────────────────────
   - type: web
     name: freightcast-api
     runtime: python
@@ -49,7 +49,7 @@ services:
     name: freightcast-ais-listener
     runtime: python
     rootDir: freight-system
-    plan: free
+    plan: starter
     buildCommand: pip install -r requirements.txt
     startCommand: python backend/ingestion/ais_listener.py
     envVars:
@@ -69,7 +69,7 @@ services:
     name: freightcast-retrain
     runtime: python
     rootDir: freight-system
-    plan: free
+    plan: starter
     schedule: "0 2 * * 0" # Weekly every Sunday at 02:00 UTC
     buildCommand: pip install -r requirements.txt
     startCommand: python backend/ingestion/scheduler.py
@@ -84,7 +84,7 @@ services:
         sync: false
 
 databases:
-  # ─── 4. Managed PostgreSQL Database ──────────────────────────────────────────
+  # ─── 4. Managed PostgreSQL Database (Free Tier) ──────────────────────────────
   - name: freightcast-db
     plan: free
     databaseName: freight_db
