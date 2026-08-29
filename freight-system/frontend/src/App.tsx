@@ -87,7 +87,7 @@ const App: React.FC = () => {
 
   const lastRetrainLabel = health?.last_retrain_at
     ? `Forecast gen: ${new Date(health.last_retrain_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })} IST`
-    : 'Forecast gen: 29 Aug 2026 IST';
+    : null;
 
   const aisStatus = health ? (health.ais_listener_last_seen ? 'ok' : 'warn') : 'ok';
   const dbStatus = health ? (health.warehouse_reachable ? 'ok' : 'warn') : 'ok';
@@ -99,7 +99,6 @@ const App: React.FC = () => {
         <div className="nav-logo-mark">S</div>
         <span className="nav-brand">
           SAIL Freight Intelligence
-          <span className="nav-ver">v0.9 · PS3 Architecture</span>
         </span>
 
         <nav className="nav-tabs">
@@ -126,10 +125,11 @@ const App: React.FC = () => {
             <span className={`status-dot ${dbStatus}`} />
             {health ? (health.warehouse_reachable ? 'DB ok' : 'DB degraded') : 'DB ok'}
           </span>
-          {/* Last retrain — from /health */}
-          <span className="mono" style={{ fontSize: 10, color: 'var(--sail-500)' }}>
-            {lastRetrainLabel}
-          </span>
+          {lastRetrainLabel && (
+            <span className="mono" style={{ fontSize: 10, color: 'var(--sail-500)' }}>
+              {lastRetrainLabel}
+            </span>
+          )}
         </div>
       </header>
 

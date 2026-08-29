@@ -65,7 +65,6 @@ function CargoForm({
     <section className="panel">
       <div className="panel-hd">
         <span className="panel-title">Cargo Request</span>
-        <span className="panel-meta">cargo_request</span>
       </div>
       <form className="panel-body flex-col gap-3" style={{ display: 'flex', flexDirection: 'column', gap: 12 }} onSubmit={onSubmit}>
         {/* Quantity */}
@@ -173,7 +172,6 @@ function PortCongestionPanel({ portStatuses, loading }: { portStatuses: PortStat
     <section className="panel">
       <div className="panel-hd">
         <span className="panel-title">Port Congestion</span>
-        <span className="panel-meta">AIS · continuous</span>
       </div>
       <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {loading ? (
@@ -266,7 +264,6 @@ function CostBreakdown({ bd }: { bd: Strategy['cost_breakdown'] }) {
     <div className="panel">
       <div className="panel-hd">
         <span className="panel-title">Cost Breakdown (7-bucket Economics)</span>
-        <span className="panel-meta">recommendation_response.cost</span>
       </div>
       <div className="panel-body">
         <div className="cost-stacked-bar">
@@ -332,7 +329,6 @@ function FeasibleOptions({ rec }: { rec: Strategy }) {
     <section className="panel">
       <div className="panel-hd">
         <span className="panel-title">Feasible Options</span>
-        <span className="panel-meta">feasible_options[]</span>
       </div>
       <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {rec.voyages.map((v, i) => (
@@ -646,7 +642,7 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
               }}>
                 <span style={{ fontSize: 14 }}>↗</span>
                 <span>
-                  <strong>Updated by Decision Assistant</strong>
+                  <strong>Updated by Chartering Agent</strong>
                   {' · '}changed because you asked: {chatConstraintNote}
                 </span>
               </div>
@@ -678,12 +674,12 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
         {/* Decision Assistant lives in the right sidebar → see ChatPanel mounted in App.tsx */}
         <section className="panel">
           <div className="panel-hd">
-            <span className="panel-title">Decision Assistant</span>
+            <span className="panel-title">Chartering Agent</span>
             <span className="panel-meta" style={{ color: 'var(--accent-hi)' }}>→ sidebar →</span>
           </div>
           <div className="panel-body">
             <p className="infer">
-              The live Decision Assistant is open in the <strong>right sidebar</strong>.
+              The live Chartering Agent is open in the <strong>right sidebar</strong>.
               Ask any chartering question there — it calls the same optimizer as this form.
               Constraint-change questions (e.g. "what if no Capesize?" or "finish in 12 days")
               will automatically update the plan above.

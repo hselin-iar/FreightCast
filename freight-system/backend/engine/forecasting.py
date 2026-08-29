@@ -416,9 +416,9 @@ def _fit_xgboost_ar(history: List[float], horizon: int) -> List[float]:
         return damped_trend(history, horizon)
 
     X_list, y_list = [], []
-    for i in range(n_lags, len(history) - horizon):
+    for i in range(n_lags, len(history)):
         X_list.append(list(history[i - n_lags:i]))
-        y_list.append(history[i + horizon - 1])
+        y_list.append(history[i])
 
     X = np.array(X_list)
     y = np.array(y_list)
@@ -487,7 +487,7 @@ def _fit_xgboost_enriched(
     df["tc_std_4"]  = df["target"].shift(1).rolling(4).std(ddof=1).fillna(0.0)
     for key in sorted(_ENRICHED_EXOG_KEYS):
         df[key] = exog[key]
-    df["target_horizon"] = df["target"].shift(-horizon)
+    df["target_horizon"] = df["target"].shift(-1)
 
     train_df = df.dropna(subset=_FEAT_COLS + ["target_horizon"]).copy()
     if len(train_df) < 5:

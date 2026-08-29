@@ -1,16 +1,14 @@
-/**
- * ForecastExplorerPage.tsx — Forecast Explorer tab (fully live-wired).
- *
- * All data fetched from backend. Zero hardcoded numbers.
- * DOC3 §FEATURE: Forecast Explorer — served on-demand via GET /forecast.
- *
- * Layout (mirrors index.html Forecast Explorer section):
- *   LEFT col-3:   Route/vessel/horizon selector, Serving model info, Conditions monitor
- *   CENTER col-6: Main forecast card, Rate history + trajectory chart, Walk-forward note
- *   RIGHT col-3:  Driver explanation, Pair coverage status, What this is not
- */
-
 import React, { useCallback, useEffect, useState } from 'react';
+import {
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ComposedChart,
+  Area,
+} from 'recharts';
 import { getForecast, getScope } from '../lib/apiClient';
 import type { ForecastResponse, ScopeResponse } from '../lib/types';
 
@@ -21,70 +19,129 @@ const HORIZON_OPTIONS = [
   { label: '1-month', days: 30 },
 ];
 
-// ── Build the route string that matches what's stored in the DB ──────────────
 function buildRoute(origin: string, dest: string): string {
   return `${origin}→${dest}`;
 }
 
-// ── Skeleton loader ──────────────────────────────────────────────────────────
+function formatNum(v: any, d = 2) {
+  if (v === null || v === undefined || isNaN(Number(v))) return (0).toFixed(d);
+  return Number(v).toFixed(d);
+}
+
 function Skel({ h = 16, w = '80%' }: { h?: number; w?: string }) {
   return <div className="skel" style={{ height: h, width: w, marginBottom: 6 }} />;
 }
 
-// ── Mini SVG trajectory chart ────────────────────────────────────────────────
-function TrajectoryChart({ fc }: { fc: ForecastResponse }) {
+// ── Interactive Recharts Trajectory Chart ──────────────────────────────────────
+function InteractiveTrajectory({ fc }: { fc: ForecastResponse }) {
+  const [view, setView] = useState<'chart' | 'table'>('chart');
   const traj = fc.trajectory ?? [];
-  if (traj.length === 0) return (
-    <div style={{
-      height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4,
-    }}>
-      <span style={{ fontSize: 12, color: 'var(--sail-500)' }}>No trajectory data in this forecast object</span>
-    </div>
-  );
 
-  const values = traj.map(p => p.value);
-  const min    = Math.min(...values) * 0.9;
-  const max    = Math.max(...values) * 1.1;
-  const range  = max - min || 1;
-  const W = 640, H = 200, PAD = 20;
-  const innerW = W - PAD * 2;
-  const innerH = H - PAD * 2;
+  if (traj.length === 0) {
+    return (
+      <div style={{
+        height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4,
+      }}>
+        <span style={{ fontSize: 12, color: 'var(--sail-500)' }}>No trajectory data in this forecast object</span>
+      </div>
+    );
+  }
 
-  function toSvgX(i: number) { return PAD + (i / (traj.length - 1)) * innerW; }
-  function toSvgY(v: number) { return PAD + innerH - ((v - min) / range) * innerH; }
+  // Format data for Recharts
+  const data = traj.map((p: any) => {
+    const val = p.point_estimate ?? p.value ?? 0;
+    const dateStr = p.day !== undefined 
+      ? `Day ${p.day}` 
+      : (p.date ? new Date(p.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'Unknown');
+      
+    return {
+      date: dateStr,
+      rawDate: p.date ?? p.day,
+      value: Number(formatNum(val, 2)),
+      band: [
+        fc.confidence_band?.lower !== undefined ? Number(formatNum(fc.confidence_band.lower, 2)) : Number(formatNum(val, 2)),
+        fc.confidence_band?.upper !== undefined ? Number(formatNum(fc.confidence_band.upper, 2)) : Number(formatNum(val, 2)),
+      ]
+    };
+  });
 
-  const pts = traj.map((p, i) => `${toSvgX(i)},${toSvgY(p.value)}`).join(' ');
-  const bandLower = toSvgY(fc.confidence_band?.lower ?? min);
-  const bandUpper = toSvgY(fc.confidence_band?.upper ?? max);
-  const todayX    = PAD + (0 / (traj.length - 1)) * innerW;
+  const minVal = data.length > 0 ? Math.min(...data.map(d => d.band[0])) * 0.95 : 0;
+  const maxVal = data.length > 0 ? Math.max(...data.map(d => d.band[1])) * 1.05 : 100;
 
   return (
-    <div style={{ position: 'relative', height: 224, background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4, overflow: 'hidden' }}>
-      <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-        {/* Grid lines */}
-        <path d={`M${PAD},${PAD} L${W-PAD},${PAD} M${PAD},${PAD+innerH/3} L${W-PAD},${PAD+innerH/3} M${PAD},${PAD+innerH*2/3} L${W-PAD},${PAD+innerH*2/3} M${PAD},${H-PAD} L${W-PAD},${H-PAD}`}
-          stroke="#1e293b" strokeWidth={1} fill="none" />
-        {/* Confidence band */}
-        <rect x={todayX} y={bandUpper} width={W - PAD - todayX} height={Math.abs(bandLower - bandUpper)}
-          fill="#0d9488" fillOpacity={0.12} />
-        {/* Trajectory line */}
-        <polyline points={pts} fill="none" stroke="var(--accent)" strokeWidth={2.2} />
-        {/* Today marker */}
-        <circle cx={todayX} cy={toSvgY(traj[0].value)} r={4} fill="var(--accent)" />
-        <text x={todayX + 6} y={toSvgY(traj[0].value) - 6} fill="#94a3b8" fontSize={10} fontFamily="monospace">today</text>
-      </svg>
-      {/* Date labels */}
-      <div style={{ position: 'absolute', bottom: 4, left: 8, right: 8, display: 'flex', justifyContent: 'space-between', fontSize: 9, fontFamily: 'var(--f-mono)', color: 'var(--sail-500)' }}>
-        {traj.filter((_, i) => i === 0 || i === Math.floor(traj.length / 2) || i === traj.length - 1).map(p => (
-          <span key={p.date}>{new Date(p.date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}</span>
-        ))}
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8px' }}>
+        <div style={{ display: 'flex', background: 'var(--sail-900)', borderRadius: '6px', border: '1px solid var(--sail-800)', overflow: 'hidden' }}>
+          <button
+            onClick={() => setView('chart')}
+            style={{ padding: '4px 12px', fontSize: '11px', background: view === 'chart' ? 'var(--sail-700)' : 'transparent', color: view === 'chart' ? '#fff' : 'var(--sail-400)', border: 'none', cursor: 'pointer' }}
+          >
+            Chart View
+          </button>
+          <button
+            onClick={() => setView('table')}
+            style={{ padding: '4px 12px', fontSize: '11px', background: view === 'table' ? 'var(--sail-700)' : 'transparent', color: view === 'table' ? '#fff' : 'var(--sail-400)', border: 'none', cursor: 'pointer' }}
+          >
+            Table View
+          </button>
+        </div>
       </div>
+
+      {view === 'chart' ? (
+        <div style={{ height: 260, background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4, padding: '16px 16px 0 0' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickMargin={8} minTickGap={20} />
+              <YAxis domain={[minVal, maxVal]} stroke="#64748b" fontSize={11} tickFormatter={(v) => `$${formatNum(v, 0)}`} width={50} />
+              <Tooltip
+                contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', fontSize: '12px' }}
+                itemStyle={{ color: '#fff' }}
+                labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
+                formatter={(value: any, name: any) => {
+                  if (name === 'band') {
+                    if (Array.isArray(value) && value.length === 2) {
+                      return [`$${value[0]} - $${value[1]}`, 'Confidence Band'];
+                    }
+                    return ['...', 'Confidence Band'];
+                  }
+                  return [`$${value}`, 'Expected Rate'];
+                }}
+              />
+              <Area type="monotone" dataKey="band" fill="#0d9488" stroke="none" fillOpacity={0.15} />
+              <Line type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2} dot={{ r: 3, fill: 'var(--accent)' }} activeDot={{ r: 5 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <div style={{ height: 260, overflowY: 'auto', background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4 }}>
+          <table style={{ width: '100%', fontSize: '12px', textAlign: 'right', borderCollapse: 'collapse' }}>
+            <thead style={{ position: 'sticky', top: 0, background: 'var(--sail-900)' }}>
+              <tr>
+                <th style={{ padding: '8px 16px', textAlign: 'left', borderBottom: '1px solid var(--sail-800)' }}>Date</th>
+                <th style={{ padding: '8px 16px', borderBottom: '1px solid var(--sail-800)' }}>Lower Band</th>
+                <th style={{ padding: '8px 16px', borderBottom: '1px solid var(--sail-800)' }}>Expected Rate</th>
+                <th style={{ padding: '8px 16px', borderBottom: '1px solid var(--sail-800)' }}>Upper Band</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((row, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid rgba(51,65,85,0.3)' }}>
+                  <td style={{ padding: '8px 16px', textAlign: 'left', color: 'var(--sail-300)' }}>{row.date}</td>
+                  <td style={{ padding: '8px 16px', color: 'var(--sail-400)', fontFamily: 'var(--f-mono)' }}>${formatNum(row.band[0], 2)}</td>
+                  <td style={{ padding: '8px 16px', color: 'var(--accent-hi)', fontFamily: 'var(--f-mono)', fontWeight: 600 }}>${formatNum(row.value, 2)}</td>
+                  <td style={{ padding: '8px 16px', color: 'var(--sail-400)', fontFamily: 'var(--f-mono)' }}>${formatNum(row.band[1], 2)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
 
-// ── Pair coverage row — calls /forecast for each pair to check status ─────────
 interface PairStatus {
   origin: string;
   dest:   string;
@@ -93,27 +150,21 @@ interface PairStatus {
   model?: string;
 }
 
-// ── Main ForecastExplorerPage ─────────────────────────────────────────────────
 const ForecastExplorerPage: React.FC = () => {
-  // ── Scope state ──
-  const [scope, setScope]       = useState<ScopeResponse | null>(null);
+  const [scope, setScope] = useState<ScopeResponse | null>(null);
   const [scopeError, setScopeError] = useState<string | null>(null);
 
-  // ── Selector state ──
   const [selectedOrigin,  setSelectedOrigin]  = useState('');
   const [selectedDest,    setSelectedDest]    = useState('');
   const [selectedVessel,  setSelectedVessel]  = useState('');
   const [selectedHorizon, setSelectedHorizon] = useState(14);
 
-  // ── Forecast state ──
   const [forecast,  setForecast]  = useState<ForecastResponse | null>(null);
   const [fcLoading, setFcLoading] = useState(false);
   const [fcError,   setFcError]   = useState<string | null>(null);
 
-  // ── Pair coverage state ──
   const [pairStatuses, setPairStatuses] = useState<PairStatus[]>([]);
 
-  // ── Load scope on mount ──
   useEffect(() => {
     (async () => {
       const { data, error } = await getScope();
@@ -128,7 +179,6 @@ const ForecastExplorerPage: React.FC = () => {
     })();
   }, []);
 
-  // ── Fetch forecast whenever selector changes ──
   const fetchForecast = useCallback(async () => {
     if (!selectedOrigin || !selectedDest || !selectedVessel) return;
     setFcLoading(true);
@@ -139,7 +189,7 @@ const ForecastExplorerPage: React.FC = () => {
     setFcLoading(false);
     if (error) {
       if (error.status === 404) {
-        setFcError('no-forecast'); // special sentinel
+        setFcError('no-forecast');
       } else {
         setFcError(error.message);
       }
@@ -150,56 +200,87 @@ const ForecastExplorerPage: React.FC = () => {
 
   useEffect(() => { if (scope) fetchForecast(); }, [scope, selectedOrigin, selectedDest, selectedVessel, selectedHorizon, fetchForecast]);
 
-  // ── Probe pair coverage (fire off calls for all scope×vessel combinations) ──
+  // Probe pair coverage to build the availability map
   useEffect(() => {
     if (!scope) return;
     const pairs: PairStatus[] = [];
-    // Limit: first 3 origins × first 3 dests × first 2 vessel classes to avoid rate limits
-    const origins  = scope.origins.slice(0, 3);
-    const dests    = scope.dest_ports.slice(0, 3);
-    const vessels  = scope.vessel_classes.slice(0, 2);
-
-    for (const o of origins) {
-      for (const d of dests) {
-        for (const v of vessels) {
+    
+    // Check ALL scope combinations to enable smart dropdowns
+    for (const o of scope.origins) {
+      for (const d of scope.dest_ports) {
+        for (const v of scope.vessel_classes) {
           pairs.push({ origin: o, dest: d, vessel: v, status: 'checking' });
         }
       }
     }
     setPairStatuses(pairs);
 
-    // Fire off all probes
+    // Fire off probes in chunks to prevent browser connection exhaustion
     (async () => {
       const updated = [...pairs];
-      await Promise.all(pairs.map(async (p, i) => {
-        const { data, error } = await getForecast(buildRoute(p.origin, p.dest), p.vessel, 14);
-        if (!data && error?.status === 404) {
-          updated[i] = { ...p, status: 'no-data' };
-        } else if (data) {
-          updated[i] = { ...p, status: data.is_high_uncertainty ? 'high-uncertainty' : 'serving', model: data.model_used };
-        } else {
-          updated[i] = { ...p, status: 'no-data' };
-        }
-      }));
-      setPairStatuses([...updated]);
+      const CHUNK_SIZE = 5;
+      for (let i = 0; i < pairs.length; i += CHUNK_SIZE) {
+        const chunk = pairs.slice(i, i + CHUNK_SIZE);
+        await Promise.all(chunk.map(async (p, j) => {
+          const idx = i + j;
+          try {
+            const { data, error } = await getForecast(buildRoute(p.origin, p.dest), p.vessel, 14);
+            if (!data && error?.status === 404) {
+              updated[idx] = { ...p, status: 'no-data' };
+            } else if (data) {
+              updated[idx] = { ...p, status: data.is_high_uncertainty ? 'high-uncertainty' : 'serving', model: data.model_used };
+            } else {
+              updated[idx] = { ...p, status: 'no-data' };
+            }
+          } catch (e) {
+            updated[idx] = { ...p, status: 'no-data' };
+          }
+        }));
+        // Update UI incrementally
+        setPairStatuses([...updated]);
+      }
     })();
   }, [scope]);
 
-  // ── Status badge helper ──
-  function statusColor(s: PairStatus['status']): string {
-    if (s === 'serving')          return 'var(--accent-hi)';
-    if (s === 'high-uncertainty') return 'var(--warn)';
-    if (s === 'no-data')          return 'var(--sail-500)';
-    return 'var(--sail-600)';
-  }
-  function statusLabel(s: PairStatus['status']): string {
-    if (s === 'serving')          return 'serving';
-    if (s === 'high-uncertainty') return 'damped*';
-    if (s === 'no-data')         return 'no data';
-    return '...';
-  }
+  // ── Smart Dropdown Helpers ──
+  // Check if a specific origin/dest/vessel has data in the pairStatuses table
+  const hasData = (o: string, d: string, v: string) => {
+    if (pairStatuses.length === 0) return true;
+    const pair = pairStatuses.find(p => p.origin === o && p.dest === d && p.vessel === v);
+    if (!pair) return true;
+    return pair.status !== 'no-data'; // allow 'checking', 'serving', 'high-uncertainty'
+  };
 
-  // ── Conditions monitor label ──
+  // Get available destinations for a given origin (must have at least one vessel class with data)
+  const availableDestsForOrigin = (o: string) => {
+    if (pairStatuses.length === 0) return scope?.dest_ports ?? [];
+    return (scope?.dest_ports ?? []).filter(d => 
+      (scope?.vessel_classes ?? []).some(v => hasData(o, d, v))
+    );
+  };
+
+  // Get available vessels for a given origin and dest
+  const availableVesselsForRoute = (o: string, d: string) => {
+    if (pairStatuses.length === 0) return scope?.vessel_classes ?? [];
+    return (scope?.vessel_classes ?? []).filter(v => hasData(o, d, v));
+  };
+
+  const currentAvailableDests = availableDestsForOrigin(selectedOrigin);
+  const currentAvailableVessels = availableVesselsForRoute(selectedOrigin, selectedDest);
+
+  // Auto-correct selections if they become invalid
+  useEffect(() => {
+    if (pairStatuses.length > 0 && currentAvailableDests.length > 0 && !currentAvailableDests.includes(selectedDest)) {
+      setSelectedDest(currentAvailableDests[0]);
+    }
+  }, [selectedOrigin, currentAvailableDests, selectedDest, pairStatuses]);
+
+  useEffect(() => {
+    if (pairStatuses.length > 0 && currentAvailableVessels.length > 0 && !currentAvailableVessels.includes(selectedVessel)) {
+      setSelectedVessel(currentAvailableVessels[0]);
+    }
+  }, [selectedOrigin, selectedDest, currentAvailableVessels, selectedVessel, pairStatuses]);
+
   const isHighUncertainty = forecast?.is_high_uncertainty ?? false;
   const modelUsed         = forecast?.model_used ?? '—';
 
@@ -207,12 +288,9 @@ const ForecastExplorerPage: React.FC = () => {
     <div className="page-grid">
       {/* ── LEFT col-3 ── */}
       <div className="col-3 col-space">
-
-        {/* Forecast pair selector */}
         <section className="panel">
           <div className="panel-hd">
-            <span className="panel-title">Forecast pair</span>
-            <span className="panel-meta">route × vessel × horizon</span>
+            <span className="panel-title">Forecast Configuration</span>
           </div>
           <div className="panel-body flex-col gap-3" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {scopeError && <p className="infer" style={{ color: 'var(--warn)' }}>Scope unavailable: {scopeError}</p>}
@@ -220,24 +298,37 @@ const ForecastExplorerPage: React.FC = () => {
             <div className="form-group">
               <label className="form-label">Origin</label>
               <select className="input-field" value={selectedOrigin} onChange={e => setSelectedOrigin(e.target.value)}>
-                {(scope?.origins ?? []).map(o => <option key={o}>{o}</option>)}
+                {(scope?.origins ?? []).map(o => (
+                  <option key={o} value={o}>{o}</option>
+                ))}
               </select>
             </div>
 
             <div className="form-group">
               <label className="form-label">Discharge port</label>
               <select className="input-field" value={selectedDest} onChange={e => setSelectedDest(e.target.value)}>
-                {(scope?.dest_ports ?? []).map(d => <option key={d}>{d}</option>)}
+                {currentAvailableDests.length > 0 
+                  ? currentAvailableDests.map(d => <option key={d} value={d}>{d}</option>)
+                  : <option disabled>No valid routes available</option>}
               </select>
             </div>
 
             <div className="form-group">
               <label className="form-label">Vessel class</label>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
-                {(scope?.vessel_classes ?? ['Supramax/Ultramax', 'Panamax/Kamsarmax', 'Capesize']).map(v => (
-                  <button key={v} className={`v-btn ${selectedVessel === v ? 'active' : ''}`}
-                    onClick={() => setSelectedVessel(v)}>{v}</button>
-                ))}
+                {(scope?.vessel_classes ?? ['Supramax/Ultramax', 'Panamax/Kamsarmax', 'Capesize']).map(v => {
+                  const isValid = currentAvailableVessels.includes(v) || pairStatuses.length === 0;
+                  return (
+                    <button 
+                      key={v} 
+                      className={`v-btn ${selectedVessel === v ? 'active' : ''}`}
+                      disabled={!isValid}
+                      style={{ opacity: isValid ? 1 : 0.3, cursor: isValid ? 'pointer' : 'not-allowed' }}
+                      onClick={() => setSelectedVessel(v)}>
+                      {v}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -252,13 +343,11 @@ const ForecastExplorerPage: React.FC = () => {
             </div>
 
             <p className="infer">
-              One model set per pair. Forecasting is scheduled (weekly retrain, daily refresh) and decoupled from cargo requests.
-              Decision Engine only <em>reads</em> the stored <span className="mono">forecast_object</span>.
+              Only routes and vessels with sufficient historical observation data are available for selection.
             </p>
           </div>
         </section>
 
-        {/* Serving model */}
         <section className="panel">
           <div className="panel-hd">
             <span className="panel-title">Serving model</span>
@@ -270,32 +359,22 @@ const ForecastExplorerPage: React.FC = () => {
             ) : forecast ? (
               <>
                 {[
-                  ['Primary',          forecast.model_used],
                   ['Currently serving', forecast.model_used],
                   ['Generated',         new Date(forecast.generated_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }) + ' IST'],
                   ['Horizon',           `${forecast.horizon_days} days`],
-                  ['Route',             forecast.route],
-                  ['Vessel class',      forecast.vessel_class],
                 ].map(([k, v]) => (
                   <div key={k} className="flex-between" style={{ fontSize: 12 }}>
                     <span className="text-sail-400">{k}</span>
                     <span className="mono text-sail-100" style={{ maxWidth: '60%', textAlign: 'right', wordBreak: 'break-all', fontSize: 11 }}>{v}</span>
                   </div>
                 ))}
-                <div style={{ borderTop: '1px solid var(--sail-800)', paddingTop: 10, marginTop: 4 }}>
-                  <p className="infer">
-                    ARIMA and naive exist only inside the evaluation gate — they never populate a <span className="mono">forecast_object</span>.
-                    Damped trend substitutes when the conditions monitor trips.
-                  </p>
-                </div>
               </>
             ) : (
-              <p className="infer">Select a route and vessel class to see serving model details.</p>
+              <p className="infer">Select a configuration to see serving model details.</p>
             )}
           </div>
         </section>
 
-        {/* Conditions monitor */}
         <section className="panel">
           <div className="panel-hd">
             <span className="panel-title">Conditions monitor</span>
@@ -328,9 +407,6 @@ const ForecastExplorerPage: React.FC = () => {
                 {forecast.driver_explanation && (
                   <p className="infer" style={{ fontSize: 10.5 }}>{forecast.driver_explanation}</p>
                 )}
-                <p className="infer">
-                  Either check failing → flag = high-uncertainty, damped trend served, band widened.
-                </p>
               </>
             ) : (
               <p className="infer">Conditions monitor status appears after forecast loads.</p>
@@ -341,8 +417,6 @@ const ForecastExplorerPage: React.FC = () => {
 
       {/* ── CENTER col-6 ── */}
       <div className="col-6 col-space">
-
-        {/* Main forecast card */}
         <div className="panel accent-left">
           <div style={{ padding: 16 }}>
             {fcLoading ? (
@@ -365,42 +439,37 @@ const ForecastExplorerPage: React.FC = () => {
                 <div className="flex-between">
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                      <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--accent-hi)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>forecast_object</span>
                       <span className={`badge badge-${forecast.provenance}`}>{forecast.provenance.toUpperCase()}</span>
                       {forecast.is_high_uncertainty && <span className="badge badge-assumed">HIGH UNCERTAINTY</span>}
                     </div>
                     <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--sail-100)' }}>
                       {forecast.route} · {forecast.vessel_class} · {forecast.horizon_days}d
                     </div>
-                    <p style={{ fontSize: 13, color: 'var(--sail-400)', marginTop: 4 }}>
-                      Point estimate with {forecast.is_high_uncertainty ? 'widened' : '80%'} band. Trajectory re-evaluated at event dates.
-                    </p>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <div style={{ fontSize: 10, color: 'var(--sail-500)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Point · {forecast.horizon_days}d</div>
                     <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--sail-100)', fontFamily: 'var(--f-mono)' }}>
-                      ${forecast.point_estimate.toFixed(2)}
+                      ${formatNum(forecast.point_estimate, 2)}
                     </div>
-                    {forecast.confidence_band && (
+                    {forecast.confidence_band && forecast.confidence_band.lower !== undefined && forecast.confidence_band.upper !== undefined && (
                       <div style={{ fontSize: 12, fontFamily: 'var(--f-mono)', color: 'var(--sail-400)' }}>
-                        band ${forecast.confidence_band.lower.toFixed(2)} – ${forecast.confidence_band.upper.toFixed(2)} <span style={{ color: 'var(--sail-500)' }}>/t</span>
+                        band ${formatNum(forecast.confidence_band.lower, 2)} – ${formatNum(forecast.confidence_band.upper, 2)} <span style={{ color: 'var(--sail-500)' }}>/t</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Multi-horizon summary cards */}
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, marginTop: 14 }}>
                   {HORIZON_OPTIONS.map(h => (
                     <div key={h.days} className={`horizon-card ${selectedHorizon === h.days ? 'selected' : ''}`}
                       onClick={() => setSelectedHorizon(h.days)} style={{ cursor: 'pointer' }}>
                       <div style={{ fontSize: 11, color: selectedHorizon === h.days ? 'var(--accent-hi)' : 'var(--sail-500)' }}>{h.label}</div>
                       <div className="mono" style={{ color: 'var(--sail-100)', fontSize: 13, fontWeight: 500 }}>
-                        {selectedHorizon === h.days ? `$${forecast.point_estimate.toFixed(2)}` : '—'}
+                        {selectedHorizon === h.days ? `$${formatNum(forecast.point_estimate, 2)}` : '—'}
                       </div>
                       <div style={{ fontSize: 10, color: 'var(--sail-500)' }}>
-                        {selectedHorizon === h.days && forecast.confidence_band
-                          ? `${forecast.confidence_band.lower.toFixed(1)}–${forecast.confidence_band.upper.toFixed(1)}`
+                        {selectedHorizon === h.days && forecast.confidence_band && forecast.confidence_band.lower !== undefined && forecast.confidence_band.upper !== undefined
+                          ? `${formatNum(forecast.confidence_band.lower, 1)}–${formatNum(forecast.confidence_band.upper, 1)}`
                           : 'select to load'}
                       </div>
                     </div>
@@ -413,60 +482,17 @@ const ForecastExplorerPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Rate history + trajectory chart */}
         <div className="panel">
           <div className="panel-hd">
-            <span className="panel-title">Trajectory</span>
-            <div className="flex-center gap-3" style={{ fontSize: 10 }}>
-              <span className="flex-center gap-1"><span style={{ display: 'inline-block', width: 12, height: 2, background: 'var(--accent)' }} />Trajectory</span>
-              <span className="flex-center gap-1"><span style={{ display: 'inline-block', width: 12, height: 8, background: 'rgba(13,148,136,0.12)', border: '1px solid rgba(13,148,136,0.3)' }} />Band</span>
-              <span className="panel-meta">/forecast trajectory</span>
-            </div>
+            <span className="panel-title">Forecast Trajectory</span>
           </div>
           <div className="panel-body">
             {fcLoading ? <Skel h={224} w="100%" /> : forecast ? (
-              <>
-                <TrajectoryChart fc={forecast} />
-                <p className="infer">
-                  Trajectory is the model's point estimate re-evaluated at event-based τ dates.
-                  Band is the {forecast.is_high_uncertainty ? 'widened (high-uncertainty)' : '80%'} confidence interval.
-                </p>
-              </>
+              <InteractiveTrajectory fc={forecast} />
             ) : fcError === 'no-forecast' ? null : (
               <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4 }}>
-                <span style={{ fontSize: 12, color: 'var(--sail-500)' }}>Select a route and vessel class to see the trajectory chart.</span>
+                <span style={{ fontSize: 12, color: 'var(--sail-500)' }}>Select a valid configuration to view trajectory.</span>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Walk-forward eval — not exposed via API, explains why */}
-        <div className="panel">
-          <div className="panel-hd">
-            <span className="panel-title">Walk-forward evaluation gate</span>
-            <span className="panel-meta">§6.2 · rolling backtest · never a random split</span>
-          </div>
-          <div className="panel-body">
-            {fcLoading ? <Skel h={80} w="100%" /> : forecast ? (
-              <>
-                <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
-                  <span style={{
-                    padding: '4px 10px', borderRadius: 6, fontSize: 11, fontFamily: 'var(--f-mono)',
-                    background: 'rgba(13,148,136,0.1)', border: '1px solid rgba(13,148,136,0.25)', color: 'var(--accent-hi)',
-                  }}>
-                    ✓ Gate passed · {forecast.model_used} selected as primary
-                  </span>
-                </div>
-                <p className="infer">
-                  Detailed evaluation metrics (MAE, RMSE, MAPE, R², directional accuracy) are computed during the weekly retrain cycle
-                  and stored in the warehouse. They are not exposed via the <span className="mono">/forecast</span> API endpoint —
-                  the gate pass/fail result is surfaced in <span className="mono">model_used</span>: if you see <span className="mono">{forecast.model_used}</span>
-                  here, the gate passed with that model winning the walk-forward backtest against naive and ARIMA.
-                  {forecast.is_high_uncertainty && ' The conditions monitor tripped — damped trend is currently serving even though XGBoost passed the gate.'}
-                </p>
-              </>
-            ) : (
-              <p className="infer">Evaluation gate status will appear when a forecast is loaded.</p>
             )}
           </div>
         </div>
@@ -474,12 +500,74 @@ const ForecastExplorerPage: React.FC = () => {
 
       {/* ── RIGHT col-3 ── */}
       <div className="col-3 col-space">
+        <section className="panel">
+          <div className="panel-hd">
+            <span className="panel-title">Pair Coverage Availability</span>
+          </div>
+          <div className="panel-body" style={{ overflowX: 'auto' }}>
+            {pairStatuses.length === 0 ? (
+              <p className="infer">Scanning system for available models…</p>
+            ) : (() => {
+              const origins  = [...new Set(pairStatuses.map(p => p.origin))];
+              const vessels  = [...new Set(pairStatuses.map(p => p.vessel))];
+              const byKey    = Object.fromEntries(pairStatuses.map(p => [`${p.origin}|${p.dest}|${p.vessel}`, p]));
+              const dests    = [...new Set(pairStatuses.map(p => p.dest))];
 
-        {/* Driver explanation */}
+              function statusColor(s: string) {
+                if (s === 'serving') return 'var(--accent-hi)';
+                if (s === 'high-uncertainty') return 'var(--warn)';
+                if (s === 'no-data') return 'var(--sail-700)';
+                return 'var(--sail-600)';
+              }
+
+              return (
+                <table style={{ width: '100%', fontSize: 10, fontFamily: 'var(--f-mono)', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ color: 'var(--sail-500)' }}>
+                      <th style={{ textAlign: 'left', padding: '4px 0' }}>Route</th>
+                      {vessels.map(v => <th key={v} style={{ textAlign: 'center', padding: '4px 2px' }}>{v.split('/')[0].slice(0,5)}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {origins.flatMap(o => dests.map(d => {
+                      const hasAnyModel = vessels.some(v => {
+                        const p = byKey[`${o}|${d}|${v}`];
+                        return p && p.status !== 'no-data';
+                      });
+                      if (!hasAnyModel) return null; // Hide routes with completely zero models
+                      return (
+                        <tr key={`${o}|${d}`} style={{ borderBottom: '1px solid rgba(51,65,85,0.2)' }}>
+                          <td style={{ padding: '6px 0', color: 'var(--sail-300)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {o.split('(')[0].trim().slice(0,6)}➔{d.slice(0,6)}
+                          </td>
+                          {vessels.map(v => {
+                            const p = byKey[`${o}|${d}|${v}`];
+                            if (!p) return <td key={v} />;
+                            return <td key={v} style={{ textAlign: 'center', fontSize: '12px', color: statusColor(p.status) }}>
+                              {p.status !== 'no-data' ? '●' : '○'}
+                            </td>;
+                          })}
+                        </tr>
+                      );
+                    }))}
+                  </tbody>
+                </table>
+              );
+            })()}
+            <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--sail-400)' }}>
+                <span style={{ color: 'var(--accent-hi)', fontSize: '14px' }}>●</span> Model Trained & Serving
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--sail-400)' }}>
+                <span style={{ color: 'var(--warn)', fontSize: '14px' }}>●</span> High Uncertainty (Damped)
+              </div>
+            </div>
+          </div>
+        </section>
+        
         <section className="panel">
           <div className="panel-hd">
             <span className="panel-title">Rate driver explanation</span>
-            <span className="panel-meta">from model</span>
           </div>
           <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {fcLoading ? <Skel h={80} w="100%" /> : forecast?.driver_explanation ? (
@@ -491,65 +579,6 @@ const ForecastExplorerPage: React.FC = () => {
             ) : (
               <p className="infer">Driver explanation appears after a forecast is loaded.</p>
             )}
-          </div>
-        </section>
-
-        {/* Pair coverage */}
-        <section className="panel">
-          <div className="panel-hd">
-            <span className="panel-title">Pair coverage</span>
-            <span className="panel-meta">live probe · 14-day horizon</span>
-          </div>
-          <div className="panel-body" style={{ overflowX: 'auto' }}>
-            {pairStatuses.length === 0 ? (
-              <p className="infer">Loading pair coverage…</p>
-            ) : (() => {
-              // Group by origin
-              const origins  = [...new Set(pairStatuses.map(p => p.origin))];
-              const vessels  = [...new Set(pairStatuses.map(p => p.vessel))];
-              const byKey    = Object.fromEntries(pairStatuses.map(p => [`${p.origin}|${p.dest}|${p.vessel}`, p]));
-              const dests    = [...new Set(pairStatuses.map(p => p.dest))];
-
-              return (
-                <table style={{ width: '100%', fontSize: 10, fontFamily: 'var(--f-mono)', borderCollapse: 'collapse' }}>
-                  <thead>
-                    <tr style={{ color: 'var(--sail-500)' }}>
-                      <th style={{ textAlign: 'left', padding: '4px 0' }}>Origin</th>
-                      <th style={{ textAlign: 'left', padding: '4px 0' }}>Dest</th>
-                      {vessels.map(v => <th key={v} style={{ textAlign: 'center', padding: '4px 2px' }}>{v.split('/')[0].slice(0,5)}</th>)}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {origins.flatMap(o => dests.map(d => (
-                      <tr key={`${o}|${d}`}>
-                        <td style={{ padding: '3px 0', color: 'var(--sail-400)', maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{o.split('(')[0].trim().slice(0,10)}</td>
-                        <td style={{ color: 'var(--sail-400)' }}>{d.slice(0,8)}</td>
-                        {vessels.map(v => {
-                          const p = byKey[`${o}|${d}|${v}`];
-                          if (!p) return <td key={v} />;
-                          return <td key={v} style={{ textAlign: 'center', color: statusColor(p.status) }}>{statusLabel(p.status)}</td>;
-                        })}
-                      </tr>
-                    )))}
-                  </tbody>
-                </table>
-              );
-            })()}
-            <p className="infer">* Conditions monitor tripped — damped trend serving.</p>
-            <p className="infer">no data — below min-observation threshold or no retrain yet.</p>
-          </div>
-        </section>
-
-        {/* What this is not */}
-        <section className="panel">
-          <div className="panel-hd"><span className="panel-title">What this is not</span></div>
-          <div className="panel-body">
-            <ul style={{ fontSize: 11, color: 'var(--sail-400)', display: 'flex', flexDirection: 'column', gap: 6, lineHeight: 1.4, paddingLeft: 14 }}>
-              <li>Not a live retrain on each cargo request.</li>
-              <li>Not a deep-learning ensemble (Stage 3, needs ~7,000 obs).</li>
-              <li>Not a stochastic tree — Scenario Generator uses three paths only.</li>
-              <li>Prophet does not pick the number; {forecast?.model_used ?? 'the gated model'} does.</li>
-            </ul>
           </div>
         </section>
       </div>

@@ -209,10 +209,7 @@ const ChatPanel: React.FC<Props> = ({ cargoContext, onDashboardUpdate }) => {
             fontSize: 13, flexShrink: 0,
           }}>✦</div>
           <div>
-            <div className="panel-title">Decision Assistant</div>
-            <div className="panel-meta" style={{ marginTop: 1 }}>
-              Powered by Claude · tool-calling · server-side key
-            </div>
+            <div className="panel-title">Chartering Agent</div>
           </div>
         </div>
         {isThinking && (
@@ -338,17 +335,7 @@ const ChatPanel: React.FC<Props> = ({ cargoContext, onDashboardUpdate }) => {
         </button>
       </div>
 
-      {/* Honesty footer */}
-      <div style={{
-        padding: '5px 14px 7px',
-        fontSize: 10,
-        color: 'var(--sail-600)',
-        fontFamily: 'var(--f-mono)',
-        borderTop: '1px solid var(--sail-900)',
-        flexShrink: 0,
-      }}>
-        Every number in the reply is from a tool call · never estimated
-      </div>
+
 
       {/* Typing animation keyframes */}
       <style>{`
