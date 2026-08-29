@@ -1,9 +1,8 @@
-# Render Infrastructure as Code Blueprint
-# Declares the 4 backend resources: Web API, AIS Worker, Retrain Cron, and PostgreSQL Database.
+# Render 100% Free-Tier Infrastructure Blueprint (No Credit Card Required)
 # Reference: DOC3 §4 & DOC4 Step 14
 
 services:
-  # ─── 1. FastAPI Web API Service (Free Tier) ──────────────────────────────────
+  # ─── 1. FastAPI Web API Service (100% Free, Zero Card Required) ─────────────
   - type: web
     name: freightcast-api
     runtime: python
@@ -13,10 +12,6 @@ services:
     startCommand: uvicorn backend.api.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: freightcast-db
-          property: connectionString
       - key: PYTHONPATH
         value: .
       - key: FRONTEND_ORIGINS
@@ -43,49 +38,3 @@ services:
         sync: false
       - key: OILPRICEAPI_API_KEY
         sync: false
-
-  # ─── 2. AIS Persistent Ingestion Worker ───────────────────────────────────────
-  - type: worker
-    name: freightcast-ais-listener
-    runtime: python
-    rootDir: freight-system
-    plan: starter
-    buildCommand: pip install -r requirements.txt
-    startCommand: python backend/ingestion/ais_listener.py
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: freightcast-db
-          property: connectionString
-      - key: PYTHONPATH
-        value: .
-      - key: AISSTREAM_API_KEY
-        sync: false
-      - key: MYSHIPTRACKING_API_KEY
-        sync: false
-
-  # ─── 3. Scheduled Model Retraining & Ingestion Cron ──────────────────────────
-  - type: cron
-    name: freightcast-retrain
-    runtime: python
-    rootDir: freight-system
-    plan: starter
-    schedule: "0 2 * * 0" # Weekly every Sunday at 02:00 UTC
-    buildCommand: pip install -r requirements.txt
-    startCommand: python backend/ingestion/scheduler.py
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: freightcast-db
-          property: connectionString
-      - key: PYTHONPATH
-        value: .
-      - key: OILPRICEAPI_API_KEY
-        sync: false
-
-databases:
-  # ─── 4. Managed PostgreSQL Database (Free Tier) ──────────────────────────────
-  - name: freightcast-db
-    plan: free
-    databaseName: freight_db
-    user: freight_user

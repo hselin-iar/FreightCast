@@ -55,9 +55,14 @@ def get_engine(database_url: str | None = None) -> Engine:
 
     url = database_url or os.environ.get("DATABASE_URL", "")
     if not url:
-        raise WarehouseUnavailableError(
-            "DATABASE_URL is not set. Cannot connect to the warehouse."
-        )
+        if os.path.exists("freight_dev.db"):
+            url = "sqlite:///freight_dev.db"
+        elif os.path.exists("freight-system/freight_dev.db"):
+            url = "sqlite:///freight-system/freight_dev.db"
+        else:
+            raise WarehouseUnavailableError(
+                "DATABASE_URL is not set. Cannot connect to the warehouse."
+            )
 
     if _engine is None or (database_url is not None):
         # For SQLite (tests) use check_same_thread=False
