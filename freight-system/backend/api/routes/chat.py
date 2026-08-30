@@ -476,34 +476,40 @@ def _is_constraint_change(
 # Multi-Provider LLM Calling
 # ---------------------------------------------------------------------------
 
-def _get_provider_config() -> Tuple[str, str, str, str]:
+def _get_provider_config() -> Tuple[str, List[str], str, str]:
     """
     Detect configured LLM provider and credentials.
-    Returns (provider_name, api_key, base_url, model_name).
+    Returns (provider_name, api_keys, base_url, model_name).
     """
     # 1. Groq
-    groq_key = os.environ.get("GROQ_API_KEY")
-    if groq_key:
+    groq_keys = [
+        k for k in (
+            os.environ.get("GROQ_API_KEY"),
+            os.environ.get("GROQ_API_KEY_2"),
+            os.environ.get("GROQ_API_KEY_3"),
+        ) if k and k.strip()
+    ]
+    if groq_keys:
         model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
-        return ("groq", groq_key, "https://api.groq.com/openai/v1", model)
+        return ("groq", groq_keys, "https://api.groq.com/openai/v1", model)
 
     # 2. Nvidia NIM
     nvidia_key = os.environ.get("NVIDIA_API_KEY") or os.environ.get("NVIDIA_NIM_API_KEY")
     if nvidia_key:
         model = os.environ.get("NVIDIA_MODEL", "meta/llama-3.3-70b-instruct")
-        return ("nvidia", nvidia_key, "https://integrate.api.nvidia.com/v1", model)
+        return ("nvidia", [nvidia_key], "https://integrate.api.nvidia.com/v1", model)
 
     # 3. Anthropic Claude
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
     if anthropic_key:
         model = os.environ.get("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022")
-        return ("anthropic", anthropic_key, "https://api.anthropic.com/v1", model)
+        return ("anthropic", [anthropic_key], "https://api.anthropic.com/v1", model)
 
     # 4. OpenAI
     openai_key = os.environ.get("OPENAI_API_KEY")
     if openai_key:
         model = os.environ.get("OPENAI_MODEL", "gpt-4o")
-        return ("openai", openai_key, "https://api.openai.com/v1", model)
+        return ("openai", [openai_key], "https://api.openai.com/v1", model)
 
     raise HTTPException(
         status_code=503,
@@ -515,16 +521,12 @@ def _get_provider_config() -> Tuple[str, str, str, str]:
 
 
 def _call_openai_compatible(
-    api_key: str,
+    api_keys: List[str],
     base_url: str,
     model: str,
     messages: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
     """Call OpenAI-compatible chat completions endpoint (Groq, Nvidia, OpenAI)."""
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-    }
     payload = {
         "model": model,
         "messages": messages,
@@ -536,6 +538,11 @@ def _call_openai_compatible(
 
     with httpx.Client(timeout=45.0) as client:
         for attempt in range(4):
+            key_to_use = api_keys[attempt % len(api_keys)]
+            headers = {
+                "Authorization": f"Bearer {key_to_use}",
+                "Content-Type": "application/json",
+            }
             resp = client.post(f"{base_url}/chat/completions", headers=headers, json=payload)
             if resp.status_code == 429 and attempt < 3:
                 time.sleep(2.5 * (attempt + 1))
@@ -560,17 +567,12 @@ def _call_openai_compatible(
 
 
 def _call_anthropic(
-    api_key: str,
+    api_keys: List[str],
     model: str,
     messages: List[Dict[str, Any]],
     system_prompt: str = _SYSTEM_PROMPT_BASE,
 ) -> Dict[str, Any]:
     """Call Anthropic messages endpoint."""
-    headers = {
-        "x-api-key": api_key,
-        "anthropic-version": "2023-06-01",
-        "Content-Type": "application/json",
-    }
     payload = {
         "model": model,
         "system": system_prompt,
@@ -580,7 +582,24 @@ def _call_anthropic(
     }
 
     with httpx.Client(timeout=30.0) as client:
-        resp = client.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload)
+        for attempt in range(4):
+            key_to_use = api_keys[attempt % len(api_keys)]
+            headers = {
+                "x-api-key": key_to_use,
+                "anthropic-version": "2023-06-01",
+                "Content-Type": "application/json",
+            }
+            resp = client.post("https://api.anthropic.com/v1/messages", headers=headers, json=payload)
+            if resp.status_code == 429 and attempt < 3:
+                time.sleep(2.5 * (attempt + 1))
+                continue
+            if resp.status_code == 429:
+                return {
+                    "content": [{
+                        "type": "text",
+                        "text": "I'm currently experiencing very high traffic and have reached my rate limit. Please wait a few minutes and try again."
+                    }]
+                }
         if resp.status_code != 200:
             logger.error("Anthropic error %d: %s", resp.status_code, resp.text)
             raise HTTPException(
@@ -599,7 +618,7 @@ def chat(req: ChatRequest) -> ChatResponse:
     """
     Universal LLM tool-calling proxy (Groq, Nvidia, Anthropic, OpenAI).
     """
-    provider, api_key, base_url, model = _get_provider_config()
+    provider, api_keys, base_url, model = _get_provider_config()
 
     tool_called = False
     updated_rec: Optional[RecommendationResponse] = None
@@ -626,7 +645,7 @@ def chat(req: ChatRequest) -> ChatResponse:
         messages.append({"role": "user", "content": req.message})
 
         # Turn 1: Check for tool calls
-        llm_resp = _call_openai_compatible(api_key, base_url, model, messages)
+        llm_resp = _call_openai_compatible(api_keys, base_url, model, messages)
         choice = llm_resp.get("choices", [{}])[0]
         msg_obj = choice.get("message", {})
 
@@ -673,7 +692,7 @@ def chat(req: ChatRequest) -> ChatResponse:
             })
 
             # Turn 2: Get final assistant synthesis
-            final_resp = _call_openai_compatible(api_key, base_url, model, messages)
+            final_resp = _call_openai_compatible(api_keys, base_url, model, messages)
             final_choice = final_resp.get("choices", [{}])[0]
             reply = final_choice.get("message", {}).get("content", "").strip()
 
@@ -686,17 +705,18 @@ def chat(req: ChatRequest) -> ChatResponse:
         # Build live-scope system prompt for Anthropic too
         live_system_prompt = _build_system_prompt()
         messages = [
+        user_msgs = [
             {"role": m.role, "content": m.content}
             for m in req.conversation_history
         ]
-        messages.append({"role": "user", "content": req.message})
+        user_msgs.append({"role": "user", "content": req.message})
 
-        resp = _call_anthropic(api_key, model, messages, system_prompt=live_system_prompt)
-        stop_reason = resp.get("stop_reason")
+        llm_resp = _call_anthropic(api_keys, model, user_msgs, system_prompt=live_system_prompt)
+        stop_reason = llm_resp.get("stop_reason")
 
         if stop_reason == "tool_use":
             tool_called = True
-            content_blocks = resp.get("content", [])
+            content_blocks = llm_resp.get("content", [])
             tool_use_block = next((b for b in content_blocks if b.get("type") == "tool_use"), None)
 
             if tool_use_block:
@@ -717,8 +737,8 @@ def chat(req: ChatRequest) -> ChatResponse:
                     default=str,
                 )
 
-                messages.append({"role": "assistant", "content": content_blocks})
-                messages.append({
+                user_msgs.append({"role": "assistant", "content": content_blocks})
+                user_msgs.append({
                     "role": "user",
                     "content": [{
                         "type": "tool_result",
@@ -727,11 +747,11 @@ def chat(req: ChatRequest) -> ChatResponse:
                     }],
                 })
 
-                final_resp = _call_anthropic(api_key, model, messages, system_prompt=live_system_prompt)
+                final_resp = _call_anthropic(api_keys, model, user_msgs, system_prompt=live_system_prompt)
                 final_blocks = final_resp.get("content", [])
                 reply = " ".join(b.get("text", "") for b in final_blocks if b.get("text")).strip()
         else:
-            content_blocks = resp.get("content", [])
+            content_blocks = llm_resp.get("content", [])
             reply = " ".join(b.get("text", "") for b in content_blocks if b.get("text")).strip()
 
     # ── Echo updated history back to caller ────────────────────────────────

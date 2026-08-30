@@ -91,8 +91,14 @@ async def narrate(req: NarrateRequest) -> NarrateResponse:
     This endpoint is called on-demand when the user opens the Rate Driver panel.
     The API key is never exposed to the frontend.
     """
-    api_key = os.environ.get("GROQ_API_KEY", "")
-    if not api_key:
+    api_keys = [
+        k for k in (
+            os.environ.get("GROQ_API_KEY"),
+            os.environ.get("GROQ_API_KEY_2"),
+            os.environ.get("GROQ_API_KEY_3"),
+        ) if k and k.strip()
+    ]
+    if not api_keys:
         logger.debug("/narrate: GROQ_API_KEY not set — using template")
         return NarrateResponse(narrative=_template(req), source="template")
 
@@ -132,22 +138,33 @@ async def narrate(req: NarrateRequest) -> NarrateResponse:
     )
 
     try:
+        import asyncio
         async with httpx.AsyncClient(timeout=15.0) as client:
-            resp = await client.post(
-                "https://api.groq.com/openai/v1/chat/completions",
-                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
-                json={
-                    "model": "groq/compound-mini",
-                    "messages": [{"role": "user", "content": prompt}],
-                    "max_tokens": 130,
-                    "temperature": 0.4,
-                    "top_p": 0.9,
-                },
-            )
-            resp.raise_for_status()
-            text = resp.json()["choices"][0]["message"]["content"].strip()
-            if len(text) < 20:
-                raise ValueError(f"Suspiciously short response: {text!r}")
+            for attempt in range(4):
+                key_to_use = api_keys[attempt % len(api_keys)]
+                resp = await client.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {key_to_use}", "Content-Type": "application/json"},
+                    json={
+                        "model": "groq/compound-mini",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 130,
+                        "temperature": 0.4,
+                        "top_p": 0.9,
+                    },
+                )
+                if resp.status_code == 429 and attempt < 3:
+                    await asyncio.sleep(2.5 * (attempt + 1))
+                    continue
+                
+                resp.raise_for_status()
+                text = resp.json()["choices"][0]["message"]["content"].strip()
+                if len(text) < 20:
+                    raise ValueError(f"Suspiciously short response: {text!r}")
+                return NarrateResponse(narrative=text, source="groq")
+            
+            # Should never reach here due to raise_for_status, but just in case
+            return NarrateResponse(narrative=_template(req), source="template")
             logger.info("/narrate: Groq narrative generated (%d chars)", len(text))
             return NarrateResponse(narrative=text, source="groq")
 
