@@ -9,8 +9,8 @@ import {
   ComposedChart,
   Area,
 } from 'recharts';
-import { getForecast, getScope } from '../lib/apiClient';
-import type { ForecastResponse, ScopeResponse } from '../lib/types';
+import { getForecast, getScope, postNarrate } from '../lib/apiClient';
+import type { ForecastResponse, ScopeResponse, ParsedDriverExplanation } from '../lib/types';
 
 // ── Horizon options matching backend FORECAST_HORIZONS_DAYS = [7, 14, 30] ──
 const HORIZON_OPTIONS = [
@@ -164,6 +164,10 @@ const ForecastExplorerPage: React.FC = () => {
   const [fcError,   setFcError]   = useState<string | null>(null);
 
   const [pairStatuses, setPairStatuses] = useState<PairStatus[]>([]);
+  const [driversExpanded, setDriversExpanded] = useState(false);
+  // Groq-generated narrative — fetched on first panel expand, cached per forecast
+  const [groqNarrative, setGroqNarrative] = useState<string | null>(null);
+  const [narrativeLoading, setNarrativeLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -199,6 +203,41 @@ const ForecastExplorerPage: React.FC = () => {
   }, [selectedOrigin, selectedDest, selectedVessel, selectedHorizon]);
 
   useEffect(() => { if (scope) fetchForecast(); }, [scope, selectedOrigin, selectedDest, selectedVessel, selectedHorizon, fetchForecast]);
+
+  // Reset groq narrative whenever the forecast changes
+  useEffect(() => {
+    setGroqNarrative(null);
+    setDriversExpanded(false);
+  }, [selectedOrigin, selectedDest, selectedVessel, selectedHorizon]);
+
+  const handleToggleDrivers = async () => {
+    const isExpanding = !driversExpanded;
+    setDriversExpanded(isExpanding);
+    
+    if (isExpanding && forecast && !groqNarrative && !narrativeLoading) {
+      try {
+        const expl = forecast.driver_explanation ? JSON.parse(forecast.driver_explanation) : null;
+        if (expl && expl.prophet_decomposition) {
+          const pd = expl.prophet_decomposition;
+          setNarrativeLoading(true);
+          const { data, error } = await postNarrate({
+            horizon_days: forecast.horizon_days,
+            trend_delta: pd.trend_delta,
+            trend_direction: pd.trend_direction as 'rising' | 'falling' | 'flat',
+            weekly_seasonality_amplitude: pd.weekly_seasonality_amplitude,
+            regressor_effects: pd.regressor_effects,
+            available_regressors: Object.keys(pd.regressor_effects),
+          });
+          setNarrativeLoading(false);
+          if (!error && data) {
+            setGroqNarrative(data.narrative);
+          }
+        }
+      } catch (e) {
+        setNarrativeLoading(false);
+      }
+    }
+  };
 
   // Probe pair coverage to build the availability map
   useEffect(() => {
@@ -284,12 +323,25 @@ const ForecastExplorerPage: React.FC = () => {
   const isHighUncertainty = forecast?.is_high_uncertainty ?? false;
   const modelUsed = forecast?.model_used || '—';
 
-  let parsedExplanation: any = null;
+  let parsedExplanation: ParsedDriverExplanation | null = null;
   if (forecast?.driver_explanation) {
     try {
-      parsedExplanation = JSON.parse(forecast.driver_explanation);
-    } catch (e) {}
+      const attempt = JSON.parse(forecast.driver_explanation);
+      // If it parsed but isn't an object with a text field, treat as plain text
+      if (attempt && typeof attempt === 'object' && 'text' in attempt) {
+        parsedExplanation = attempt as ParsedDriverExplanation;
+      } else if (typeof attempt === 'string') {
+        parsedExplanation = { text: attempt, importances: {} };
+      }
+    } catch (e) {
+      // Old plain-string format — wrap it so the UI renders immediately
+      parsedExplanation = { text: forecast.driver_explanation, importances: {} };
+    }
   }
+  const prophetDecomp = parsedExplanation?.prophet_decomposition ?? null;
+  const hasImportances = Object.keys(parsedExplanation?.importances ?? {}).length > 0;
+  const hasProphet = prophetDecomp !== null;
+
 
   return (
     <div className="page-grid">
@@ -575,42 +627,175 @@ const ForecastExplorerPage: React.FC = () => {
         <section className="panel">
           <div className="panel-hd">
             <span className="panel-title">Rate driver explanation</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {hasProphet && (
+                <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4,
+                  background: 'rgba(59,130,246,0.15)', color: '#1d4ed8',
+                  fontFamily: 'var(--f-mono)' }}>
+                  PROPHET · ACTIVE
+                </span>
+              )}
+              <button
+                onClick={handleToggleDrivers}
+                style={{ fontSize: 11, color: 'var(--sail-500)', background: 'none',
+                  border: '1px solid var(--sail-700)', borderRadius: 4,
+                  padding: '2px 7px', cursor: 'pointer', lineHeight: 1.4 }}>
+                {driversExpanded ? '▴ collapse' : '▾ details'}
+              </button>
+            </div>
           </div>
-          <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {fcLoading ? <Skel h={80} w="100%" /> : forecast?.driver_explanation ? (
-              parsedExplanation?.importances ? (
-                <>
-                  <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--sail-300)', marginBottom: 8 }}>
+          <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {fcLoading ? <Skel h={80} w="100%" /> : forecast && parsedExplanation ? (
+              <>
+                {/* ── Prophet Trend Headline (always shown) ── */}
+                {hasProphet && prophetDecomp ? (
+                  <div style={{ padding: '10px 12px', borderRadius: 8,
+                    background: 'color-mix(in srgb, var(--sail-800) 60%, transparent)',
+                    border: '1px solid var(--sail-700)' }}>
+                    {/* Trend headline stat */}
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+                      <span style={{
+                        fontSize: 20, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                        color: prophetDecomp.trend_direction === 'rising' ? '#ef4444'
+                             : prophetDecomp.trend_direction === 'falling' ? '#22c55e'
+                             : 'var(--sail-300)',
+                      }}>
+                        {prophetDecomp.trend_direction === 'rising' ? '▲' :
+                         prophetDecomp.trend_direction === 'falling' ? '▼' : '→'}
+                        {' '}{prophetDecomp.trend_delta >= 0 ? '+' : ''}${prophetDecomp.trend_delta.toFixed(0)}/day
+                      </span>
+                      <span style={{ fontSize: 11, color: 'var(--sail-500)' }}>over {forecast.horizon_days}d horizon</span>
+                    </div>
+                    {/* Seasonality stat */}
+                    {prophetDecomp.weekly_seasonality_amplitude > 0 && (
+                      <div style={{ fontSize: 11, color: 'var(--sail-400)', marginBottom: 6 }}>
+                        Weekly swing ±${(prophetDecomp.weekly_seasonality_amplitude / 2).toFixed(0)}/day
+                      </div>
+                    )}
+                    {/* Narrative text */}
+                    <div style={{ fontSize: 12, color: 'var(--sail-300)', lineHeight: 1.5, margin: 0, position: 'relative' }}>
+                      <p style={{ margin: 0, opacity: narrativeLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+                        {groqNarrative || prophetDecomp.narrative}
+                      </p>
+                      {narrativeLoading && (
+                        <div style={{ position: 'absolute', top: 0, right: 0, fontSize: 10, color: 'var(--sail-400)' }}>
+                          writing...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : (
+                  /* Fallback: simple narrative when no Prophet decomposition available */
+                  <p style={{ fontSize: 12, lineHeight: 1.7, color: 'var(--sail-300)',
+                    padding: '10px 12px', background: 'color-mix(in srgb, var(--sail-800) 40%, transparent)',
+                    borderLeft: '2px solid var(--sail-700)', borderRadius: '0 4px 4px 0', margin: 0 }}>
                     {parsedExplanation.text}
                   </p>
-                  {(() => {
-                    const entries = Object.entries(parsedExplanation.importances) as [string, number][];
-                    entries.sort((a, b) => b[1] - a[1]);
-                    const maxV = entries.length > 0 ? entries[0][1] : 1;
-                    return entries.map(([key, val]) => (
-                      <div key={key} className="flex-between" style={{ fontSize: 12 }}>
-                        <span style={{ textTransform: 'capitalize' }}>{key.replace(/_/g, ' ')}</span>
-                        <div className="flex-center gap-2">
-                          <div style={{ width: 100, height: 6, background: 'var(--sail-800)', borderRadius: 3, overflow: 'hidden' }}>
-                            <div style={{ width: `${(val / maxV) * 100}%`, height: '100%', background: 'var(--text-accent)' }} />
-                          </div>
-                          <span className="mono text-sail-300" style={{ minWidth: 28, textAlign: 'right', fontSize: 11 }}>
-                            {val.toFixed(2)}
-                          </span>
+                )}
+
+                {/* ── Collapsible detail section ── */}
+                {driversExpanded && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 10,
+                    borderTop: '1px solid var(--sail-800)' }}>
+
+                    {/* Prophet macro regressor $/day bars */}
+                    {hasProphet && prophetDecomp && Object.keys(prophetDecomp.regressor_effects).length > 0 && (
+                      <div>
+                        <div style={{ fontSize: 11, color: 'var(--sail-500)', marginBottom: 12,
+                          display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--sail-800)', paddingBottom: 6 }}>
+                          <span style={{ padding: '2px 6px', borderRadius: 4,
+                            background: 'rgba(59,130,246,0.15)', color: '#3b82f6',
+                            fontWeight: 600, fontFamily: 'var(--f-mono)', fontSize: 9 }}>PROPHET</span>
+                          <span style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Macro Drivers ($/day)</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {(() => {
+                            const entries = Object.entries(prophetDecomp.regressor_effects)
+                              .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+                            const maxAbs = entries.length > 0 ? Math.max(...entries.map(e => Math.abs(e[1])), 1) : 1;
+                            return entries.map(([key, val]) => (
+                              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <span style={{ width: 85, fontSize: 11, color: 'var(--sail-300)',
+                                  textTransform: 'capitalize', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </span>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <div style={{ flex: 1, height: 5, background: 'var(--sail-800)', borderRadius: 3, overflow: 'hidden' }}>
+                                    <div style={{
+                                      height: '100%', borderRadius: 3,
+                                      background: val >= 0 ? '#ef4444' : '#22c55e',
+                                      width: `${(Math.abs(val) / maxAbs) * 100}%`,
+                                    }} />
+                                  </div>
+                                  <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11, minWidth: 50, textAlign: 'right',
+                                    color: val >= 0 ? '#ef4444' : '#22c55e' }}>
+                                    {val >= 0 ? '+' : ''}${val.toFixed(0)}
+                                  </span>
+                                </div>
+                              </div>
+                            ));
+                          })()}
                         </div>
                       </div>
-                    ));
-                  })()}
-                </>
-              ) : (
-                <div style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--sail-300)', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {(parsedExplanation?.text || forecast.driver_explanation).split('. ').filter(Boolean).map((sentence: string, i: number) => (
-                    <div key={i} style={{ padding: '6px 10px', background: 'color-mix(in srgb, var(--sail-900) 40%, transparent)', borderLeft: '2px solid var(--sail-700)', borderRadius: '0 4px 4px 0' }}>
-                      {sentence.trim()}{sentence.endsWith('.') ? '' : '.'}
-                    </div>
-                  ))}
-                </div>
-              )
+                    )}
+
+                    {/* XGBoost feature importances */}
+                    {hasImportances && (
+                      <div>
+                        <div style={{ fontSize: 11, color: 'var(--sail-500)', marginBottom: 12,
+                          display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--sail-800)', paddingBottom: 6 }}>
+                          <span style={{ padding: '2px 6px', borderRadius: 4,
+                            background: 'rgba(245,158,11,0.15)', color: '#f59e0b',
+                            fontWeight: 600, fontFamily: 'var(--f-mono)', fontSize: 9 }}>XGBOOST</span>
+                          <span style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Feature Importance</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                          {(() => {
+                            const entries = Object.entries(parsedExplanation!.importances).sort((a, b) => b[1] - a[1]);
+                            const maxV = entries.length > 0 ? entries[0][1] : 1;
+                            return entries.slice(0, 8).map(([key, val]) => (
+                              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                <span style={{ width: 85, fontSize: 11, color: 'var(--sail-400)',
+                                  textTransform: 'capitalize', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {key.replace(/_/g, ' ')}
+                                </span>
+                                <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                  <div style={{ flex: 1, height: 5, background: 'var(--sail-800)', borderRadius: 3, overflow: 'hidden' }}>
+                                    <div style={{ width: `${(val / maxV) * 100}%`, height: '100%',
+                                      background: 'rgba(245,158,11,0.8)' }} />
+                                  </div>
+                                  <span className="mono" style={{ minWidth: 35, textAlign: 'right',
+                                    fontSize: 10, color: 'var(--sail-500)' }}>{val.toFixed(2)}</span>
+                                </div>
+                              </div>
+                            ));
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
+                    {!hasImportances && !hasProphet && (
+                      <p className="infer" style={{ fontSize: 11 }}>
+                        Detailed breakdown requires a fresh retrain with exogenous data (BDI, crude, iron ore).
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Click-to-expand hint when collapsed */}
+                {!driversExpanded && (
+                  <button
+                    onClick={() => setDriversExpanded(true)}
+                    style={{
+                      alignSelf: 'flex-start', fontSize: 11, color: 'var(--sail-500)',
+                      background: 'none', border: '1px solid var(--sail-700)',
+                      borderRadius: 4, padding: '3px 8px', cursor: 'pointer',
+                    }}
+                  >
+                    Show {hasProphet ? 'macro drivers + ' : ''}XGBoost importances ▾
+                  </button>
+                )}
+              </>
             ) : forecast ? (
               <p className="infer">No driver explanation available for this forecast object. It will be populated during the next retrain cycle.</p>
             ) : (

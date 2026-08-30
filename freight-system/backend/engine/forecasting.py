@@ -54,6 +54,15 @@ _ENRICHED_EXOG_KEYS: frozenset[str] = frozenset({
 })
 
 # ---------------------------------------------------------------------------
+# Prophet regressor keys — ALL available exog is passed to Prophet for maximum
+# explainability. Prophet handles missing series gracefully (skips add_regressor).
+# Per user confirmation: ingest as much data as we have — more = better.
+# ---------------------------------------------------------------------------
+_PROPHET_EXOG_KEYS: tuple[str, ...] = (
+    "brent", "wti", "iron_ore", "bdry", "gscpi", "bunker_vlsfo", "bunker_mgo",
+)
+
+# ---------------------------------------------------------------------------
 # Typed exception — API converts to 422 (DOC3 §FEATURE: Forecasting Engine)
 # ---------------------------------------------------------------------------
 
@@ -63,6 +72,35 @@ class ForecastUnavailableError(Exception):
     vessel_class, horizon_days). The API layer converts this to HTTP 422.
     """
     pass
+
+
+# ---------------------------------------------------------------------------
+# ProphetDecomposition — typed output of _fit_prophet()
+# DOC2 §7: Prophet's role is additive explainability, NOT prediction gating.
+# ---------------------------------------------------------------------------
+
+from dataclasses import dataclass, field
+
+@dataclass
+class ProphetDecomposition:
+    """Additive component decomposition produced by _fit_prophet().
+
+    yhat: raw Prophet point forecasts (logged, never gated).
+    trend_delta: $/day change in Prophet's trend component over the horizon
+                 (positive = rising, negative = falling).
+    trend_direction: human-readable direction string.
+    weekly_seasonality_amplitude: peak-to-trough swing of the weekly seasonality
+                                  component in $/day (zero if not fitted).
+    regressor_effects: {source_name: avg additive $/day contribution over horizon}.
+                       Positive = adds to rate, negative = suppresses rate.
+    narrative: human-readable English sentence summarising key findings.
+    """
+    yhat: List[float]
+    trend_delta: float
+    trend_direction: str           # "rising" | "falling" | "flat"
+    weekly_seasonality_amplitude: float
+    regressor_effects: Dict[str, float]
+    narrative: str
 
 
 # ---------------------------------------------------------------------------
@@ -535,33 +573,273 @@ def _fit_xgboost_enriched(
     return preds, importances
 
 
-def _fit_prophet(history: List[float], horizon: int) -> List[float]:
-    """Fit Prophet and return horizon-step ahead point forecasts."""
+
+# ---------------------------------------------------------------------------
+# _groq_narrative() — LLM-generated analyst prose for Prophet decomposition
+# Called at retrain time only (never at API serve time). Zero user latency.
+# Gracefully falls back to _template_narrative() if Groq is unavailable.
+# ---------------------------------------------------------------------------
+
+def _groq_narrative(
+    horizon: int,
+    trend_delta: float,
+    trend_direction: str,
+    weekly_amp: float,
+    regressor_effects: Dict[str, float],
+    available_regressors: List[str],
+) -> str:
+    """Call Groq LLM to generate analyst-quality narrative from Prophet numbers.
+
+    All numbers are injected as hard structured facts — the LLM interprets them,
+    it does NOT invent or hallucinate any data. Returns a 2-3 sentence paragraph.
+    Falls back to _template_narrative() if GROQ_API_KEY is absent or call fails.
+    """
+    import os
+    api_key = os.environ.get("GROQ_API_KEY", "")
+    if not api_key:
+        logger.debug("_groq_narrative: GROQ_API_KEY not set — using template fallback")
+        return _template_narrative(horizon, trend_delta, trend_direction, weekly_amp,
+                                   regressor_effects, available_regressors)
+    try:
+        import httpx
+        # groq/compound-mini: the only non-reasoning model available on this account.
+        # All gpt-oss-* models use internal chain-of-thought and return empty content.
+        model = "groq/compound-mini"
+
+        # Build structured fact block — LLM must interpret, not invent
+        _reg_labels = {
+            "bdry": "BDI (Baltic Dry Index)",
+            "brent": "Brent crude oil",
+            "wti": "WTI crude oil",
+            "iron_ore": "Iron ore price",
+            "bunker_vlsfo": "Bunker fuel (VLSFO)",
+            "bunker_mgo": "Bunker fuel (MGO)",
+            "gscpi": "Global Supply Chain Pressure Index",
+        }
+        facts: list[str] = [
+            f"- Forecast horizon: {horizon} days",
+            f"- Trend direction: {trend_direction}",
+            f"- Trend magnitude: {'+' if trend_delta >= 0 else ''}{trend_delta:.1f} $/day over the horizon",
+        ]
+        if weekly_amp > 1.0:
+            facts.append(f"- Weekly seasonality amplitude (peak-to-trough): {weekly_amp:.1f} $/day")
+        if regressor_effects:
+            facts.append("- Macro driver effects ($/day additive, from Prophet decomposition):")
+            for name, eff in sorted(regressor_effects.items(), key=lambda x: abs(x[1]), reverse=True):
+                label = _reg_labels.get(name, name.replace("_", " ").title())
+                sign = "+" if eff >= 0 else ""
+                facts.append(f"  * {label}: {sign}{eff:.1f} $/day")
+        else:
+            facts.append("- No macro regressors available (trend and seasonality decomposed only)")
+
+        fact_block = "\n".join(facts)
+
+        prompt = (
+            "You are a senior dry-bulk freight analyst writing a brief market commentary "
+            "for a live chartering dashboard.\n\n"
+            "Below are exact numbers from a Prophet time-series decomposition model for a specific "
+            "vessel route. Turn these into a clear, natural 2-3 sentence analytical paragraph that "
+            "a trader can read at a glance.\n\n"
+            "RULES:\n"
+            "- Use only the numbers given. Do not invent or assume anything extra.\n"
+            "- Specific $/day figures must appear where they add insight.\n"
+            "- Active voice, present tense, plain English. No bullet points or markdown.\n"
+            "- Do NOT open with 'Freight rates are' or 'The freight rates'. Vary your opener.\n"
+            "- Maximum 70 words.\n\n"
+            f"Facts (use exactly as given):\n{fact_block}\n\n"
+            "Analyst commentary:"
+        )
+
+        resp = httpx.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            json={
+                "model": model,
+                "messages": [{"role": "user", "content": prompt}],
+                "max_tokens": 130,
+                "temperature": 0.4,
+                "top_p": 0.9,
+            },
+            timeout=15.0,
+        )
+        resp.raise_for_status()
+        text = resp.json()["choices"][0]["message"]["content"].strip()
+        if len(text) < 20:
+            raise ValueError(f"Groq returned suspiciously short narrative: {text!r}")
+        logger.info("_groq_narrative: generated %d chars via Groq model=%s", len(text), model)
+        return text
+
+    except Exception as exc:
+        logger.warning("_groq_narrative: Groq call failed (%s) — using template fallback", exc)
+        return _template_narrative(horizon, trend_delta, trend_direction, weekly_amp,
+                                   regressor_effects, available_regressors)
+
+
+def _template_narrative(
+    horizon: int,
+    trend_delta: float,
+    trend_direction: str,
+    weekly_amp: float,
+    regressor_effects: Dict[str, float],
+    available_regressors: List[str],
+) -> str:
+    """Template fallback narrative — used when Groq is unavailable."""
+    _reg_labels = {
+        "bdry": "BDI", "brent": "Brent", "wti": "WTI",
+        "iron_ore": "iron ore", "bunker_vlsfo": "bunker fuel", "gscpi": "supply chain pressure",
+    }
+    if trend_direction == "rising":
+        trend_str = f"Rates up {abs(trend_delta):.0f} $/day over the {horizon}d window"
+    elif trend_direction == "falling":
+        trend_str = f"Rates easing {abs(trend_delta):.0f} $/day over the {horizon}d window"
+    else:
+        trend_str = f"Rates flat over the {horizon}d window"
+
+    parts = [trend_str + "."]
+    if weekly_amp > 1.0:
+        parts.append(f"Weekly seasonality: ±{weekly_amp/2:.0f} $/day.")
+    if regressor_effects:
+        top = sorted(regressor_effects.items(), key=lambda x: abs(x[1]), reverse=True)
+        drivers = []
+        for name, eff in top[:4]:
+            if abs(eff) < 0.5:
+                continue
+            label = _reg_labels.get(name, name.replace("_", " "))
+            sign = "+" if eff > 0 else ""
+            drivers.append(f"{label} ({sign}{eff:.0f} $/day)")
+        if drivers:
+            parts.append("Drivers: " + ", ".join(drivers) + ".")
+    if not available_regressors:
+        parts.append("No macro data — trend and seasonality only.")
+    return " ".join(parts)
+
+
+def _fit_prophet(
+    history: List[float],
+    horizon: int,
+    exog: Optional[Dict[str, List[float]]] = None,
+) -> "ProphetDecomposition":
+    """Fit Prophet with all available exogenous regressors and return a
+    ProphetDecomposition containing additive component breakdowns.
+
+    Per DOC2 §7: Prophet's role is explainability (trend + seasonality + shock
+    drivers), NOT prediction gating. It always runs in parallel after the
+    walk-forward winner is selected — it never influences model_used.
+
+    Exogenous regressors added: all keys from _PROPHET_EXOG_KEYS that are
+    present in the exog dict with full coverage (no NaN). More regressors = more
+    informative $/day attribution — per user confirmation: ingest everything.
+    """
     try:
         from prophet import Prophet
         import pandas as pd
+        import logging as _logging
+        _logging.getLogger("prophet").setLevel(_logging.WARNING)
+        _logging.getLogger("cmdstanpy").setLevel(_logging.WARNING)
 
-        # Prophet requires a datetime index
+        # Build base dataframe — Prophet needs a datetime ds column
         start = datetime(2000, 1, 1)
         ds = [start + timedelta(days=i) for i in range(len(history))]
         df = pd.DataFrame({"ds": ds, "y": history})
 
-        m = Prophet(yearly_seasonality=False, weekly_seasonality=True, daily_seasonality=False)
-        import logging as _logging
-        _logging.getLogger("prophet").setLevel(_logging.WARNING)
+        # Determine which regressors are fully available
+        available_regressors: List[str] = []
+        if exog and isinstance(exog, dict):
+            for key in _PROPHET_EXOG_KEYS:
+                if key in exog and len(exog[key]) == len(history):
+                    vals = exog[key]
+                    # Only include if no NaN/None in the series
+                    if not any(v is None or (isinstance(v, float) and v != v) for v in vals):
+                        df[key] = vals
+                        available_regressors.append(key)
+
+        # Build and fit model
+        m = Prophet(
+            yearly_seasonality=True,
+            weekly_seasonality=True,
+            daily_seasonality=False,
+            changepoint_prior_scale=0.05,   # conservative — freight rates change slowly
+            seasonality_prior_scale=5.0,
+        )
+        for reg in available_regressors:
+            m.add_regressor(reg, standardize=True)
+
         m.fit(df)
 
-        future_ds = [start + timedelta(days=len(history) + i) for i in range(horizon)]
-        future_df = pd.DataFrame({"ds": future_ds})
+        # Build future frame including the last known regressor values
+        future_ds_list = [start + timedelta(days=len(history) + i) for i in range(horizon)]
+        future_df = pd.DataFrame({"ds": future_ds_list})
+        for reg in available_regressors:
+            last_val = df[reg].iloc[-1]
+            future_df[reg] = last_val   # hold last-known forward (standard convention)
+
         forecast_df = m.predict(future_df)
-        return list(forecast_df["yhat"].values)
+        yhat = list(forecast_df["yhat"].values)
+
+        # ── Extract trend component ──
+        # fit on training data to get the in-sample trend at the last observed point
+        in_sample = m.predict(df)
+        trend_start = float(in_sample["trend"].iloc[-min(7, len(in_sample))]) if len(in_sample) >= 2 else float(in_sample["trend"].iloc[0])
+        trend_end   = float(forecast_df["trend"].iloc[-1])
+        trend_delta = trend_end - trend_start
+        if abs(trend_delta) < 5.0:   # $/day — treat sub-$5 as flat
+            trend_direction = "flat"
+        elif trend_delta > 0:
+            trend_direction = "rising"
+        else:
+            trend_direction = "falling"
+
+        # ── Extract weekly seasonality amplitude ──
+        weekly_amp = 0.0
+        if "weekly" in forecast_df.columns:
+            weekly_amp = float(forecast_df["weekly"].max() - forecast_df["weekly"].min())
+
+        # ── Extract regressor effects ──
+        # Prophet decomposes each regressor's additive contribution per day.
+        # We report the mean contribution over the forecast horizon in $/day.
+        regressor_effects: Dict[str, float] = {}
+        for reg in available_regressors:
+            col = f"{reg}_extra_regressors" if f"{reg}_extra_regressors" in forecast_df.columns else reg
+            # Prophet stores each regressor's effect in a column named after the regressor
+            if reg in forecast_df.columns:
+                mean_effect = float(forecast_df[reg].mean())
+                regressor_effects[reg] = round(mean_effect, 2)
+            elif col in forecast_df.columns:
+                mean_effect = float(forecast_df[col].mean())
+                regressor_effects[reg] = round(mean_effect, 2)
+
+        # ── Build narrative — template only at retrain time.
+        # Groq-powered narratives are generated on-demand via /api/narrate
+        # when a user opens the Rate Driver panel (zero cost until viewed).
+        narrative = _template_narrative(
+            horizon=horizon,
+            trend_delta=trend_delta,
+            trend_direction=trend_direction,
+            weekly_amp=weekly_amp,
+            regressor_effects=regressor_effects,
+            available_regressors=available_regressors,
+        )
+
+        logger.info(
+            "Prophet decomp: horizon=%dd trend=%s delta=%.1f regressors=%s narrative=%r",
+            horizon, trend_direction, trend_delta, list(regressor_effects.keys()), narrative[:80],
+        )
+
+        return ProphetDecomposition(
+            yhat=yhat,
+            trend_delta=round(trend_delta, 2),
+            trend_direction=trend_direction,
+            weekly_seasonality_amplitude=round(weekly_amp, 2),
+            regressor_effects=regressor_effects,
+            narrative=narrative,
+        )
 
     except ImportError:
-        logger.warning("prophet not installed — falling back to damped_trend")
-        return damped_trend(history, horizon)
+        logger.warning("prophet not installed — Prophet explainability skipped")
+        raise
     except Exception as exc:
-        logger.warning("Prophet fit failed: %s — falling back to damped_trend", exc)
-        return damped_trend(history, horizon)
+        logger.warning("Prophet decomposition failed: %s", exc)
+        raise
 
 
 # ---------------------------------------------------------------------------
@@ -709,9 +987,22 @@ def _retrain_pair(route: str, vessel_class: str, horizons: List[int]) -> None:
         if best_model_name == "xgboost":
             _log_ablation("xgboost", best_mae, history, horizon, exog_series_legacy)
 
+        # --- Prophet explainability: ALWAYS runs in parallel, never competes in gate ---
+        # Per DOC2 §7 and user confirmation: Prophet is an explainability layer, not a
+        # prediction model. model_used is unaffected; this runs regardless of winner.
+        prophet_decomp: Optional[ProphetDecomposition] = None
+        if len(history) >= 20:   # minimum viable input for meaningful decomposition
+            try:
+                prophet_decomp = _fit_prophet(history, horizon, exog=aligned_exog)
+            except Exception as _pe:
+                logger.debug("Prophet explainability skipped for (%s,%s,h=%d): %s",
+                             route, vessel_class, horizon, _pe)
+
         # --- Build and write ForecastObject ---
         forecast_obj = _build_forecast_object(
-            route, vessel_class, horizon, best_preds, history, best_model_name, feature_importances=best_importances
+            route, vessel_class, horizon, best_preds, history, best_model_name,
+            feature_importances=best_importances,
+            prophet_decomp=prophet_decomp,
         )
         repository.write_forecast(forecast_obj)
         logger.info(
@@ -810,8 +1101,25 @@ def _build_forecast_object(
     history: List[float],
     model_name: str,
     feature_importances: Optional[Dict[str, float]] = None,
+    prophet_decomp: Optional["ProphetDecomposition"] = None,
 ) -> dict:
-    """Build a ForecastObject dict ready for repository.write_forecast()."""
+    """Build a ForecastObject dict ready for repository.write_forecast().
+
+    driver_explanation JSON schema (v2, with Prophet):
+    {
+      "text": str,                     # lead narrative sentence
+      "importances": {feat: float},    # XGBoost feature importances (normalised 0–1)
+      "prophet_decomposition": {       # present only when Prophet ran successfully
+        "trend_delta": float,          # $/day change over horizon
+        "trend_direction": str,        # "rising" | "falling" | "flat"
+        "weekly_seasonality_amplitude": float,  # peak-to-trough $/day
+        "regressor_effects": {src: float},      # $/day additive contribution per exog
+        "narrative": str,              # full human-readable explanation
+      }
+    }
+    """
+    import json
+
     # Clamp horizon: never extrapolate beyond what predictions covers
     clamped_preds = predictions[:horizon]
 
@@ -839,18 +1147,44 @@ def _build_forecast_object(
     # High-uncertainty flag: residual CoV > 20%
     is_high_uncertainty = (margin / max(point_estimate, 1.0)) > 0.20
 
-    # Driver explanation: simple heuristic for now (extended in Step 7 with SHAP)
-    trend_dir = "rising" if (clamped_preds[-1] > history[-1] if history else False) else "falling or stable"
-    
-    driver_dict = {
-        "text": (
-            f"Model: {model_name}. Horizon: {horizon}d. Trend: {trend_dir}. "
-            f"Confidence interval: [{confidence_band['lower']:.0f}, {confidence_band['upper']:.0f}] USD/day. "
-            f"Provenance: modeled."
-        ),
-        "importances": feature_importances or {}
+    # --- Build enriched driver_explanation JSON ---
+    # Lead text: human-first, conversational prose — NOT a machine dump.
+    # Confidence band in readable format.
+    ci_lo = confidence_band['lower']
+    ci_hi = confidence_band['upper']
+    ci_str = f"${ci_lo:,.0f}–${ci_hi:,.0f}/day"
+    model_label = {"xgboost": "XGBoost", "arima": "ARIMA", "naive": "statistical baseline", "damped_trend": "damped-trend fallback"}.get(model_name, model_name)
+
+    if prophet_decomp is not None:
+        # Use Prophet's narrative as the human headline — it's already meaningful prose.
+        # Append the CI so the reader can assess forecast range without hunting for it.
+        trend_arrow = "rising" if prophet_decomp.trend_direction == "rising" else ("easing" if prophet_decomp.trend_direction == "falling" else "flat")
+        lead_text = (
+            f"{prophet_decomp.narrative} "
+            f"Forecast range over the {horizon}-day window: {ci_str} ({model_label} model)."
+        )
+    else:
+        trend_dir_str = "rising" if (clamped_preds[-1] > history[-1] if history else False) else "easing or stable"
+        lead_text = (
+            f"The {horizon}-day rate outlook is {trend_dir_str} based on recent momentum. "
+            f"Forecast range: {ci_str} ({model_label} model). No macro decomposition available — "
+            f"retrain with active exogenous data to enable Prophet-driven explainability."
+        )
+
+    driver_dict: Dict[str, Any] = {
+        "text": lead_text,
+        "importances": feature_importances or {},
     }
-    import json
+
+    if prophet_decomp is not None:
+        driver_dict["prophet_decomposition"] = {
+            "trend_delta": prophet_decomp.trend_delta,
+            "trend_direction": prophet_decomp.trend_direction,
+            "weekly_seasonality_amplitude": prophet_decomp.weekly_seasonality_amplitude,
+            "regressor_effects": prophet_decomp.regressor_effects,
+            "narrative": prophet_decomp.narrative,
+        }
+
     driver_explanation = json.dumps(driver_dict)
 
     return {

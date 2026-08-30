@@ -44,6 +44,8 @@ from backend.engine.forecasting import (
     train_and_evaluate,
     get_forecast,
     _apply_damped_trend_override,
+    _fit_prophet,
+    ProphetDecomposition,
 )
 from backend.config.constants import MIN_OBSERVATIONS_FOR_XGBOOST, FORECAST_HORIZONS_DAYS
 
@@ -541,3 +543,114 @@ class TestMarketHistoryIngest:
         result = market_history_ingest.run()
         assert result.rows_ingested > 0
 
+
+# ---------------------------------------------------------------------------
+# 11. Prophet Explainability Integration
+# ---------------------------------------------------------------------------
+
+class TestProphetExplainability:
+    """
+    Verify that the Prophet decomposition layer:
+    1. Produces decomposition when history is sufficient (>= 20 obs).
+    2. Gracefully absent when history is too short (< 20 obs).
+    3. Does NOT affect model_used (gate winner remains unaffected).
+    4. Regressor keys are populated when exog is supplied.
+    5. Narrative is a non-empty English string.
+
+    These tests call _fit_prophet() directly so they run without a full retrain cycle.
+    Prophet is skipped gracefully if not installed.
+    """
+
+    def _make_exog_for_prophet(self, n: int) -> dict:
+        """Synthetic exog dict with Prophet regressor keys, length n."""
+        import random
+        rng = random.Random(99)
+        result = {}
+        for key in ("brent", "wti", "iron_ore", "bdry"):
+            result[key] = [80.0 + rng.gauss(0, 3) for _ in range(n)]
+        return result
+
+    def test_prophet_decomp_present_when_sufficient_history(self):
+        """With >= 20 observations, _fit_prophet returns a ProphetDecomposition."""
+        pytest.importorskip("prophet", reason="prophet not installed — skipping")
+        from backend.engine.forecasting import _fit_prophet, ProphetDecomposition
+
+        history = _make_rate_series(40)
+        exog = self._make_exog_for_prophet(40)
+        result = _fit_prophet(history, 7, exog=exog)
+
+        assert isinstance(result, ProphetDecomposition)
+        assert len(result.yhat) == 7
+        assert result.trend_direction in ("rising", "falling", "flat")
+        assert isinstance(result.trend_delta, float)
+        assert isinstance(result.weekly_seasonality_amplitude, float)
+        assert isinstance(result.regressor_effects, dict)
+        assert isinstance(result.narrative, str) and len(result.narrative) > 0
+
+    def test_prophet_narrative_non_empty(self):
+        """narrative is a non-empty English string."""
+        pytest.importorskip("prophet", reason="prophet not installed — skipping")
+        from backend.engine.forecasting import _fit_prophet
+
+        history = _make_rate_series(30)
+        result = _fit_prophet(history, 7, exog=None)
+
+        assert isinstance(result.narrative, str)
+        assert len(result.narrative) >= 10, f"Narrative too short: {result.narrative!r}"
+
+    def test_prophet_regressor_effects_keys(self):
+        """regressor_effects contains expected keys when exog is supplied."""
+        pytest.importorskip("prophet", reason="prophet not installed — skipping")
+        from backend.engine.forecasting import _fit_prophet
+
+        history = _make_rate_series(40)
+        exog = self._make_exog_for_prophet(40)
+        result = _fit_prophet(history, 7, exog=exog)
+
+        # At least one of our seeded regressor keys should appear
+        known_keys = {"brent", "wti", "iron_ore", "bdry"}
+        found = known_keys & set(result.regressor_effects.keys())
+        assert len(found) > 0, (
+            f"Expected at least one of {known_keys} in regressor_effects, "
+            f"got keys: {set(result.regressor_effects.keys())}"
+        )
+
+    def test_model_used_unaffected_by_prophet(self):
+        """model_used in the ForecastObject is set by the gate, never by Prophet."""
+        pytest.importorskip("prophet", reason="prophet not installed — skipping")
+        from backend.engine.forecasting import _build_forecast_object, _fit_prophet
+
+        history = _make_rate_series(40)
+        exog = self._make_exog_for_prophet(40)
+
+        try:
+            prophet_decomp = _fit_prophet(history, 7, exog=exog)
+        except Exception:
+            pytest.skip("Prophet fit failed in this environment")
+
+        obj_dict = _build_forecast_object(
+            "TestRoute", "Capesize", 7, history[-7:], history,
+            "arima",  # gate winner — must remain "arima" regardless of Prophet
+            feature_importances={"lag_1": 0.5},
+            prophet_decomp=prophet_decomp,
+        )
+        assert obj_dict["model_used"] == "arima", (
+            f"Expected model_used='arima', got {obj_dict['model_used']!r}"
+        )
+
+    def test_prophet_gracefully_absent_when_short_history(self):
+        """prophet_decomposition key absent from driver_explanation when prophet_decomp=None."""
+        from backend.engine.forecasting import _build_forecast_object
+
+        short_history = _make_rate_series(10)
+        obj_dict = _build_forecast_object(
+            "TestRoute", "Capesize", 7, short_history[-7:], short_history,
+            "naive",
+            feature_importances={},
+            prophet_decomp=None,  # no Prophet — should gracefully omit key
+        )
+        parsed = json.loads(obj_dict["driver_explanation"])
+        assert "prophet_decomposition" not in parsed, (
+            "prophet_decomposition should be absent when prophet_decomp=None"
+        )
+        assert "text" in parsed

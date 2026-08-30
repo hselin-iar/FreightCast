@@ -34,6 +34,7 @@ from backend.api.routes import (
     fleet_schedule,
     forecast,
     health,
+    narrate,
     port_status,
     recommendation,
     scenario,
@@ -150,6 +151,7 @@ app.include_router(recommendation.router, tags=["Recommendation"])
 app.include_router(chat.router,           tags=["Chat"])
 app.include_router(scenario.router,       tags=["Scenario"])
 app.include_router(forecast.router,       tags=["Forecast"])
+app.include_router(narrate.router,        tags=["Narrate"])
 app.include_router(compatible_vessels.router, tags=["Compatible Vessels"])
 app.include_router(port_status.router,    tags=["Port Status"])
 app.include_router(scope.router,          tags=["Scope"])

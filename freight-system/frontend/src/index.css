@@ -9,7 +9,7 @@
 
 :root {
   /* LIGHT MODE (Forced Default) */
-  --sail-950: #F4F4F5; /* background */
+  --sail-950: #e4e4e7; /* background */
   --sail-900: #FAFAFA; /* panels */
   --sail-800: color-mix(in srgb, #1A1A1A 5%, transparent); /* borders */
   --sail-700: color-mix(in srgb, #1A1A1A 10%, transparent); /* input borders */

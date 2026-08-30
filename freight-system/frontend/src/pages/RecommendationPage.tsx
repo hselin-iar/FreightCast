@@ -16,6 +16,7 @@ import {
   getRecommendation,
   getForecast,
   getScope,
+  postNarrate,
 } from '../lib/apiClient';
 import type {
   HealthResponse,
@@ -353,63 +354,231 @@ function FeasibleOptions({ rec }: { rec: Strategy }) {
   );
 }
 
-/* ── Right: Rate Drivers ───────────────────────────────────── */
-const STATIC_DRIVERS = [
-  { label: 'Bunker price (exog.)', weight: 0.31, width: 72 },
-  { label: 'BDI change',          weight: 0.24, width: 58 },
-  { label: 'Lagged rate (t-1)',   weight: 0.19, width: 45 },
-  { label: 'Fleet supply',        weight: 0.12, width: 28 },
-  { label: 'Port congestion',     weight: 0.08, width: 18 },
-  { label: 'Seasonality',         weight: 0.06, width: 14 },
-];
 
+/* ── Right: Rate Drivers ───────────────────────────────────── */
 function RateDrivers({ driverNote }: { driverNote: string | null }) {
-  let explanationText = driverNote ?? 'XGBoost feature importance · Prophet trend/seasonal decomposition attached. Conditions monitor: level & volatility checks passed → uncertainty = normal.';
-  let drivers = STATIC_DRIVERS;
+  const [expanded, setExpanded] = useState(false);
+  const [groqNarrative, setGroqNarrative] = useState<string | null>(null);
+  const [narrativeLoading, setNarrativeLoading] = useState(false);
+
+  // Parse driver explanation — handle both old plain-string and new JSON formats
+  let explanationText = driverNote ?? 'Driver context will populate after the next retrain cycle.';
+  let importances: Record<string, number> = {};
+  let prophetDecomp: {
+    trend_delta: number;
+    trend_direction: 'rising' | 'falling' | 'flat';
+    weekly_seasonality_amplitude: number;
+    regressor_effects: Record<string, number>;
+    narrative: string;
+  } | null = null;
 
   if (driverNote) {
     try {
       const parsed = JSON.parse(driverNote);
-      if (parsed.text) explanationText = parsed.text;
-      if (parsed.importances && Object.keys(parsed.importances).length > 0) {
-        const sorted = Object.entries(parsed.importances as Record<string, number>)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 6);
-        const maxWeight = sorted[0][1];
-        drivers = sorted.map(([label, weight]) => ({
-          label: label.replace(/_/g, ' '),
-          weight,
-          width: maxWeight > 0 ? (weight / maxWeight) * 100 : 0
-        }));
+      if (parsed && typeof parsed === 'object' && 'text' in parsed) {
+        if (parsed.text) explanationText = parsed.text;
+        if (parsed.importances) importances = parsed.importances;
+        if (parsed.prophet_decomposition) prophetDecomp = parsed.prophet_decomposition;
+      } else if (typeof parsed === 'string') {
+        explanationText = parsed;
       }
     } catch (e) {
-      // not JSON, fallback to plain string
+      // Old plain-string format — use as-is
+      explanationText = driverNote;
     }
   }
+
+  const hasProphet = prophetDecomp !== null;
+  const hasImportances = Object.keys(importances).length > 0;
 
   return (
     <section className="panel">
       <div className="panel-hd">
         <span className="panel-title">Rate Drivers</span>
-        <ProvenanceBadge provenance="modeled" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {hasProphet && (
+            <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4,
+              background: 'rgba(59,130,246,0.15)', color: '#1d4ed8',
+              fontFamily: 'var(--f-mono)' }}>
+              PROPHET · ACTIVE
+            </span>
+          )}
+          <ProvenanceBadge provenance="modeled" />
+          <button
+            onClick={async () => {
+              const isExpanding = !expanded;
+              setExpanded(isExpanding);
+              
+              if (isExpanding && prophetDecomp && !groqNarrative && !narrativeLoading) {
+                setNarrativeLoading(true);
+                try {
+                  const { data, error } = await postNarrate({
+                    horizon_days: 14, // Fallback, recommendations generally use the 14-day forecast
+                    trend_delta: prophetDecomp.trend_delta,
+                    trend_direction: prophetDecomp.trend_direction,
+                    weekly_seasonality_amplitude: prophetDecomp.weekly_seasonality_amplitude,
+                    regressor_effects: prophetDecomp.regressor_effects,
+                    available_regressors: Object.keys(prophetDecomp.regressor_effects),
+                  });
+                  if (!error && data) {
+                    setGroqNarrative(data.narrative);
+                  }
+                } finally {
+                  setNarrativeLoading(false);
+                }
+              }
+            }}
+            style={{ fontSize: 11, color: 'var(--sail-500)', background: 'none',
+              border: '1px solid var(--sail-700)', borderRadius: 4,
+              padding: '2px 7px', cursor: 'pointer', lineHeight: 1.4 }}>
+            {expanded ? '▴ collapse' : '▾ details'}
+          </button>
+        </div>
       </div>
-      <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {drivers.map(d => (
-          <div key={d.label} className="flex-between" style={{ fontSize: 12 }}>
-            <span style={{ textTransform: 'capitalize' }}>{d.label}</span>
-            <div className="flex-center gap-2">
-              <div className="driver-bar">
-                <div className="driver-fill" style={{ width: `${d.width}%` }} />
-              </div>
-              <span className="mono text-sail-300" style={{ minWidth: 28, textAlign: 'right', fontSize: 11 }}>
-                {d.weight.toFixed(2)}
+      <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {/* ── Prophet trend headline (always visible when available) ── */}
+        {hasProphet && prophetDecomp ? (
+          <div style={{ padding: '10px 12px', borderRadius: 8,
+            background: 'color-mix(in srgb, var(--sail-800) 60%, transparent)',
+            border: '1px solid var(--sail-700)' }}>
+            <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+              <span style={{
+                fontSize: 20, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                color: prophetDecomp.trend_direction === 'rising' ? '#ef4444'
+                     : prophetDecomp.trend_direction === 'falling' ? '#22c55e'
+                     : 'var(--sail-300)',
+              }}>
+                {prophetDecomp.trend_direction === 'rising' ? '▲' :
+                 prophetDecomp.trend_direction === 'falling' ? '▼' : '→'}
+                {' '}{prophetDecomp.trend_delta >= 0 ? '+' : ''}${prophetDecomp.trend_delta.toFixed(0)}/day
               </span>
+              <span style={{ fontSize: 11, color: 'var(--sail-500)' }}>trend component</span>
+            </div>
+            {prophetDecomp.weekly_seasonality_amplitude > 0 && (
+              <div style={{ fontSize: 11, color: 'var(--sail-400)', marginBottom: 6 }}>
+                Weekly swing ±${(prophetDecomp.weekly_seasonality_amplitude / 2).toFixed(0)}/day
+              </div>
+            )}
+            <div style={{ fontSize: 12, color: 'var(--sail-300)', lineHeight: 1.5, margin: 0, position: 'relative' }}>
+              <p style={{ margin: 0, opacity: narrativeLoading ? 0.5 : 1, transition: 'opacity 0.2s' }}>
+                {groqNarrative || prophetDecomp.narrative}
+              </p>
+              {narrativeLoading && (
+                <div style={{ position: 'absolute', top: 0, right: 0, fontSize: 10, color: 'var(--sail-400)' }}>
+                  writing...
+                </div>
+              )}
             </div>
           </div>
-        ))}
-        <p className="infer">
-          {explanationText}
-        </p>
+        ) : (
+          /* Fallback: styled prose card (same look as Prophet headline) */
+          <div style={{ padding: '10px 12px', borderRadius: 8,
+            background: 'color-mix(in srgb, var(--sail-800) 60%, transparent)',
+            border: '1px solid var(--sail-700)' }}>
+            <p style={{ fontSize: 12, color: 'var(--sail-300)', lineHeight: 1.7, margin: 0 }}>
+              {explanationText}
+            </p>
+          </div>
+        )}
+
+        {/* ── Collapsible detail section ── */}
+        {expanded && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16,
+            paddingTop: 10, borderTop: '1px solid var(--sail-800)' }}>
+
+            {/* Prophet macro regressor $/day bars */}
+            {hasProphet && prophetDecomp && Object.keys(prophetDecomp.regressor_effects).length > 0 && (
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--sail-500)', marginBottom: 12,
+                  display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--sail-800)', paddingBottom: 6 }}>
+                  <span style={{ padding: '2px 6px', borderRadius: 4,
+                    background: 'rgba(59,130,246,0.15)', color: '#3b82f6',
+                    fontWeight: 600, fontFamily: 'var(--f-mono)', fontSize: 9 }}>PROPHET</span>
+                  <span style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Macro Drivers ($/day)</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {(() => {
+                    const entries = Object.entries(prophetDecomp!.regressor_effects)
+                      .sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]));
+                    const maxAbs = entries.length > 0 ? Math.max(...entries.map(e => Math.abs(e[1])), 1) : 1;
+                    return entries.map(([key, val]) => (
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ width: 85, fontSize: 11, color: 'var(--sail-300)',
+                          textTransform: 'capitalize', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </span>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ flex: 1, height: 5, background: 'var(--sail-800)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{
+                              height: '100%', borderRadius: 3,
+                              background: val >= 0 ? '#ef4444' : '#22c55e',
+                              width: `${(Math.abs(val) / maxAbs) * 100}%`,
+                            }} />
+                          </div>
+                          <span style={{ fontFamily: 'var(--f-mono)', fontSize: 11, minWidth: 40, textAlign: 'right',
+                            color: val >= 0 ? '#ef4444' : '#22c55e' }}>
+                            {val >= 0 ? '+' : ''}${val.toFixed(0)}
+                          </span>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {/* XGBoost feature importances */}
+            {hasImportances && (
+              <div>
+                <div style={{ fontSize: 11, color: 'var(--sail-500)', marginBottom: 12,
+                  display: 'flex', alignItems: 'center', gap: 6, borderBottom: '1px solid var(--sail-800)', paddingBottom: 6 }}>
+                  <span style={{ padding: '2px 6px', borderRadius: 4,
+                    background: 'rgba(245,158,11,0.15)', color: '#f59e0b',
+                    fontWeight: 600, fontFamily: 'var(--f-mono)', fontSize: 9 }}>XGBOOST</span>
+                  <span style={{ textTransform: 'uppercase', letterSpacing: '0.05em' }}>Feature Importance</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {(() => {
+                    const entries = Object.entries(importances).sort((a, b) => b[1] - a[1]);
+                    const maxV = entries.length > 0 ? entries[0][1] : 1;
+                    return entries.slice(0, 8).map(([key, val]) => (
+                      <div key={key} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <span style={{ width: 85, fontSize: 11, color: 'var(--sail-400)',
+                          textTransform: 'capitalize', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {key.replace(/_/g, ' ')}
+                        </span>
+                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <div style={{ flex: 1, height: 5, background: 'var(--sail-800)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${(val / maxV) * 100}%`, height: '100%',
+                              background: 'rgba(245,158,11,0.8)' }} />
+                          </div>
+                          <span className="mono" style={{ minWidth: 35, textAlign: 'right',
+                            fontSize: 10, color: 'var(--sail-500)' }}>{val.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+            )}
+
+            {!hasImportances && !hasProphet && (
+              <p className="infer" style={{ fontSize: 11 }}>
+                Detailed driver breakdown will appear after the next retrain cycle with Prophet + XGBoost installed.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Show details button when collapsed */}
+        {!expanded && (hasImportances || hasProphet) && (
+          <button onClick={() => setExpanded(true)} style={{
+            alignSelf: 'flex-start', fontSize: 11, color: 'var(--sail-500)',
+            background: 'none', border: '1px solid var(--sail-700)',
+            borderRadius: 4, padding: '3px 8px', cursor: 'pointer' }}>
+            Show {hasProphet ? 'macro drivers + ' : ''}XGBoost importances ▾
+          </button>
+        )}
       </div>
     </section>
   );

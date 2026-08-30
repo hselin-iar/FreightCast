@@ -94,11 +94,18 @@ SCOPE — USE EXACT NAMES ONLY:
 {origins_list}
 """
 
+_SYSTEM_PROMPT_MARKET_TEMPLATE = """
+CURRENT MARKET DRIVER CONTEXT (from Prophet decomposition — use to answer 'why is the rate this way' questions):
+{market_context}
+"""
+
 
 def _build_system_prompt() -> str:
     """
-    Build the system prompt with live-injected scope (vessel classes, ports, origins).
-    Called once per request so names are always current.
+    Build the system prompt with live-injected scope (vessel classes, ports, origins)
+    AND Prophet decomposition narrative from the latest available ForecastObjects.
+
+    Called once per request so scope and market context are always current.
     Falls back to the base prompt if scope cannot be fetched.
     """
     try:
@@ -116,10 +123,72 @@ def _build_system_prompt() -> str:
             ports_list=ports_list,
             origins_list=origins_list,
         )
-        return _SYSTEM_PROMPT_BASE + scope_block
+
+        # --- Inject Prophet market context (Phase 7) ---
+        # Pull driver_explanation from the most recent ForecastObjects across
+        # routes and extract Prophet narratives so the chatbot can reference them.
+        market_context = _build_prophet_market_context()
+        if market_context:
+            market_block = _SYSTEM_PROMPT_MARKET_TEMPLATE.format(market_context=market_context)
+        else:
+            market_block = ""
+
+        return _SYSTEM_PROMPT_BASE + scope_block + market_block
     except Exception:
         logger.warning("_build_system_prompt: could not fetch live scope — using base prompt")
         return _SYSTEM_PROMPT_BASE
+
+
+def _build_prophet_market_context() -> str:
+    """Extract Prophet narratives from the latest ForecastObjects for all routes.
+
+    Returns a formatted string block for injection into the chatbot system prompt,
+    or empty string if no Prophet decompositions are available.
+    """
+    import json
+    try:
+        from backend.warehouse import repository
+        from backend.warehouse.db import get_session
+        from backend.warehouse.models import ForecastObject
+        from sqlalchemy import select, desc
+
+        narratives: list[str] = []
+        routes = repository.get_valid_routes() or []
+        vessel_classes = repository.get_valid_vessel_classes() or []
+
+        # Sample a representative set — cap at 6 to avoid prompt bloat
+        combos_checked = 0
+        with get_session() as session:
+            for route in routes[:3]:
+                for vc in vessel_classes[:2]:
+                    if combos_checked >= 6:
+                        break
+                    row = session.execute(
+                        select(ForecastObject.driver_explanation)
+                        .where(
+                            ForecastObject.route == route,
+                            ForecastObject.vessel_class == vc,
+                            ForecastObject.horizon_days == 30,
+                        )
+                        .order_by(desc(ForecastObject.generated_at))
+                        .limit(1)
+                    ).scalar_one_or_none()
+                    if row:
+                        try:
+                            parsed = json.loads(row)
+                            prophet = parsed.get("prophet_decomposition")
+                            if prophet and prophet.get("narrative"):
+                                narratives.append(
+                                    f"  [{route} · {vc}]: {prophet['narrative']}"
+                                )
+                                combos_checked += 1
+                        except Exception:
+                            pass
+
+        return "\n".join(narratives) if narratives else ""
+    except Exception as exc:
+        logger.debug("_build_prophet_market_context failed (non-blocking): %s", exc)
+        return ""
 
 
 # Keep backward-compatible module-level alias (used by Anthropic handler which
@@ -471,6 +540,16 @@ def _call_openai_compatible(
             if resp.status_code == 429 and attempt < 3:
                 time.sleep(2.5 * (attempt + 1))
                 continue
+            if resp.status_code == 429:
+                logger.warning("LLM provider rate limit exceeded (429): %s", resp.text)
+                return {
+                    "choices": [{
+                        "message": {
+                            "role": "assistant",
+                            "content": "I'm currently experiencing very high traffic and have reached my rate limit. Please wait a few minutes and try again."
+                        }
+                    }]
+                }
             if resp.status_code != 200:
                 logger.error("LLM provider error %d: %s", resp.status_code, resp.text)
                 raise HTTPException(

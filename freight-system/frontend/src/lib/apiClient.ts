@@ -165,3 +165,33 @@ export async function getFleetSchedule(
 export async function getVesselPositions(): Promise<Result<Record<string, any>>> {
   return apiFetch<Record<string, any>>('/vessel-positions');
 }
+
+/**
+ * POST /narrate — On-demand Groq narrative from Prophet decomposition numbers.
+ * Called only when the user opens the Rate Driver panel. Zero cost until viewed.
+ * API key stays server-side.
+ */
+export interface NarrateRequest {
+  horizon_days: number;
+  trend_delta: number;
+  trend_direction: 'rising' | 'falling' | 'flat';
+  weekly_seasonality_amplitude: number;
+  regressor_effects: Record<string, number>;
+  available_regressors: string[];
+}
+
+export interface NarrateResponse {
+  narrative: string;
+  source: 'groq' | 'template';
+}
+
+export async function postNarrate(
+  req: NarrateRequest,
+  signal?: AbortSignal,
+): Promise<Result<NarrateResponse>> {
+  return apiFetch<NarrateResponse>(
+    '/narrate',
+    { method: 'POST', body: JSON.stringify(req) },
+    signal,
+  );
+}

@@ -23,6 +23,24 @@ export interface TrajectoryPoint {
   value: number;
 }
 
+/** Additive decomposition produced by Prophet — present in driver_explanation JSON
+ *  when Prophet ran successfully during retrain. Per DOC2 §7: explainability only,
+ *  never influences model_used. */
+export interface ProphetDecomposition {
+  trend_delta:                    number;   // $/day change over forecast horizon
+  trend_direction:                'rising' | 'falling' | 'flat';
+  weekly_seasonality_amplitude:   number;   // peak-to-trough $/day
+  regressor_effects:              Record<string, number>;  // {source: $/day additive contribution}
+  narrative:                      string;   // human-readable summary
+}
+
+/** Parsed shape of ForecastResponse.driver_explanation (JSON string). */
+export interface ParsedDriverExplanation {
+  text:                   string;
+  importances:            Record<string, number>;  // XGBoost feature importances 0–1
+  prophet_decomposition?: ProphetDecomposition;    // present when Prophet ran
+}
+
 export interface ForecastResponse {
   route:               string;
   vessel_class:        string;
@@ -36,6 +54,7 @@ export interface ForecastResponse {
   model_used:          string;
   provenance:          Provenance;
 }
+
 
 export interface VoyageDetail {
   port:                string;
