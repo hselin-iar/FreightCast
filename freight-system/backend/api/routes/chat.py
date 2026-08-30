@@ -704,7 +704,6 @@ def chat(req: ChatRequest) -> ChatResponse:
     elif provider == "anthropic":
         # Build live-scope system prompt for Anthropic too
         live_system_prompt = _build_system_prompt()
-        messages = [
         user_msgs = [
             {"role": m.role, "content": m.content}
             for m in req.conversation_history
