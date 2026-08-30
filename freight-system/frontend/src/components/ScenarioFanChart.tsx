@@ -99,7 +99,7 @@ const ScenarioFanChart: React.FC<Props> = ({ result, origin }) => {
               type="monotone"
               dataKey="bandHi"
               stroke="none"
-              fill="rgba(13,148,136,0.10)"
+              fill="color-mix(in srgb, var(--accent) 10%, transparent)"
               fillOpacity={1}
               legendType="none"
               activeDot={false}
@@ -114,20 +114,20 @@ const ScenarioFanChart: React.FC<Props> = ({ result, origin }) => {
               activeDot={false}
             />
             {/* Pessimistic */}
-            <Line type="monotone" dataKey="pessimistic" stroke="rgba(251,191,36,0.65)"
+            <Line type="monotone" dataKey="pessimistic" stroke="var(--warn)"
               strokeWidth={1.5} strokeDasharray="4 2" dot={false} name="Pessimistic" />
             {/* Base */}
-            <Line type="monotone" dataKey="base" stroke="var(--accent)"
+            <Line type="monotone" dataKey="base" stroke="var(--text-accent)"
               strokeWidth={2} dot={false} name="Base" />
             {/* Optimistic */}
-            <Line type="monotone" dataKey="optimistic" stroke="rgba(52,211,153,0.65)"
+            <Line type="monotone" dataKey="optimistic" stroke="var(--emerald)"
               strokeWidth={1.5} strokeDasharray="4 2" dot={false} name="Optimistic" />
             {/* Fix markers */}
             {fixDays.map((d, i) => {
               const entry = data.find(pt => pt.day >= d) ?? data[data.length - 1];
               return entry ? (
                 <ReferenceLine key={i} x={entry.label}
-                  stroke="var(--accent)" strokeDasharray="2 3" strokeWidth={1.5}
+                  stroke="var(--text-accent)" strokeDasharray="2 3" strokeWidth={1.5}
                   label={{ value: `Fix V${i + 1}`, fontSize: 9, fill: 'var(--sail-400)', fontFamily: 'var(--f-mono)' }}
                 />
               ) : null;
@@ -138,14 +138,14 @@ const ScenarioFanChart: React.FC<Props> = ({ result, origin }) => {
         {/* Legend */}
         <div className="chart-legend">
           {[
-            { color: 'var(--accent)',             label: 'Base' },
-            { color: 'rgba(52,211,153,0.65)',      label: 'Optimistic', dash: true },
-            { color: 'rgba(251,191,36,0.65)',      label: 'Pessimistic', dash: true },
-            { color: 'rgba(13,148,136,0.15)',      label: '80% band', band: true },
+            { color: 'var(--text-accent)',             label: 'Base' },
+            { color: 'var(--emerald)',      label: 'Optimistic', dash: true },
+            { color: 'var(--warn)',      label: 'Pessimistic', dash: true },
+            { color: 'color-mix(in srgb, var(--accent) 15%, transparent)',      label: '80% band', band: true },
           ].map(l => (
             <span key={l.label} className="legend-entry">
               {l.band ? (
-                <span style={{ width: 12, height: 8, background: l.color, border: '1px solid rgba(13,148,136,0.3)', borderRadius: 2, display: 'inline-block' }} />
+                <span style={{ width: 12, height: 8, background: l.color, border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)', borderRadius: 2, display: 'inline-block' }} />
               ) : (
                 <span className="legend-line" style={{ background: l.color, borderTop: l.dash ? '2px dashed' : undefined }} />
               )}

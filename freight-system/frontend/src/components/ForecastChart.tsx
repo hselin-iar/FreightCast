@@ -125,7 +125,7 @@ const ForecastChart: React.FC<Props> = ({ forecast }) => {
 
             <CartesianGrid
               strokeDasharray="2 4"
-              stroke="rgba(255,255,255,0.05)"
+              stroke="color-mix(in srgb, #ffffff 5%, transparent)"
               vertical={false}
             />
 

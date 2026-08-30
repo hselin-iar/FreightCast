@@ -34,9 +34,9 @@ function CostDiffRow({ label, winner, challenger }: CostDiffRowProps) {
   const sign = diff > 0 ? '+' : '';
   const color = diff > 0 ? 'var(--warn)' : diff < 0 ? 'var(--emerald-4)' : 'var(--sail-400)';
   return (
-    <tr style={{ borderBottom: '1px solid rgba(30,41,59,0.6)' }}>
+    <tr style={{ borderBottom: '1px solid color-mix(in srgb, var(--sail-800) 60%, transparent)' }}>
       <td style={{ padding: '7px 0', fontSize: 12, color: 'var(--sail-400)' }}>{label}</td>
-      <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--accent-hi)' }}>
+      <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--text-accent)' }}>
         {fmtK(winner)}
       </td>
       <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12 }}>
@@ -75,23 +75,23 @@ function StrategyRow({ strategy, isWinner, isSelected, onClick }: {
     <tr
       onClick={onClick}
       style={{
-        borderBottom: '1px solid rgba(30,41,59,0.6)',
+        borderBottom: '1px solid color-mix(in srgb, var(--sail-800) 60%, transparent)',
         cursor: isWinner ? 'default' : 'pointer',
-        background: isWinner ? 'rgba(13,148,136,0.05)' : isSelected ? 'rgba(13,148,136,0.08)' : undefined,
+        background: isWinner ? 'color-mix(in srgb, var(--accent) 5%, transparent)' : isSelected ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : undefined,
         transition: 'background 0.1s',
       }}
     >
-      <td style={{ padding: '9px 0', color: isWinner ? 'var(--accent-hi)' : 'var(--sail-200)', fontWeight: isWinner ? 600 : undefined }}>
+      <td style={{ padding: '9px 12px 9px 0', color: isWinner ? 'var(--text-accent)' : 'var(--sail-200)', fontWeight: isWinner ? 600 : undefined }}>
         {isWinner ? '★ ' : isSelected ? '▶ ' : ''}
         {primaryLabel}
         {isWinner ? ' (selected)' : ''}
       </td>
-      <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12 }}>{strategy.voyage_count}</td>
-      <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12 }}>{modeMix}</td>
-      <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--sail-100)' }}>
+      <td style={{ padding: '9px 12px', textAlign: 'center', fontFamily: 'var(--f-mono)', fontSize: 12 }}>{strategy.voyage_count}</td>
+      <td style={{ padding: '9px 12px', textAlign: 'center', fontFamily: 'var(--f-mono)', fontSize: 12, whiteSpace: 'nowrap' }}>{modeMix}</td>
+      <td style={{ padding: '9px 12px', textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--sail-100)' }}>
         {fmtM(strategy.total_cost_worst_case)}
       </td>
-      <td style={{ paddingLeft: 12, fontSize: 11, color: strategy.infeasible_reason ? 'var(--warn)' : 'var(--sail-400)', fontFamily: 'var(--f-sans)' }}>
+      <td style={{ padding: '9px 0 9px 12px', fontSize: 11, color: strategy.infeasible_reason ? 'var(--warn)' : 'var(--sail-400)', fontFamily: 'var(--f-sans)' }}>
         {strategy.infeasible_reason
           ? `Infeasible: ${strategy.infeasible_reason}`
           : strategy.voyages.some(v => v.lightening_required) ? 'Lightening req.' : 
@@ -112,7 +112,7 @@ const WhyNotComparator: React.FC<Props> = ({ result }) => {
   const challBD    = challenger?.cost_breakdown;
 
   return (
-    <section className="panel" style={{ marginTop: 16 }}>
+    <section className="panel" style={{ marginTop: 16, flex: 1, display: 'flex', flexDirection: 'column' }}>
       <div className="panel-hd">
         <span className="panel-title">Ranked Alternatives</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -120,15 +120,15 @@ const WhyNotComparator: React.FC<Props> = ({ result }) => {
           <span className="panel-meta">click row to compare</span>
         </div>
       </div>
-      <div className="panel-body" style={{ overflowX: 'auto' }}>
+      <div className="panel-body" style={{ overflowX: 'auto', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
             <tr style={{ color: 'var(--sail-500)', borderBottom: '1px solid var(--sail-800)' }}>
-              <th style={{ padding: '8px 0', fontWeight: 500, textAlign: 'left' }}>Strategy</th>
-              <th style={{ padding: '8px 0', fontWeight: 500, textAlign: 'right' }}>Voyages</th>
-              <th style={{ padding: '8px 0', fontWeight: 500, textAlign: 'right' }}>Mode</th>
-              <th style={{ padding: '8px 0', fontWeight: 500, textAlign: 'right' }}>Worst-case</th>
-              <th style={{ padding: '8px 0', fontWeight: 500, textAlign: 'left', paddingLeft: 12 }}>Notes</th>
+              <th style={{ padding: '8px 12px 8px 0', fontWeight: 500, textAlign: 'left' }}>Strategy</th>
+              <th style={{ padding: '8px 12px', fontWeight: 500, textAlign: 'center' }}>Voyages</th>
+              <th style={{ padding: '8px 12px', fontWeight: 500, textAlign: 'center' }}>Mode</th>
+              <th style={{ padding: '8px 12px', fontWeight: 500, textAlign: 'right' }}>Worst-case</th>
+              <th style={{ padding: '8px 0 8px 12px', fontWeight: 500, textAlign: 'left' }}>Notes</th>
             </tr>
           </thead>
           <tbody className="mono">
@@ -146,19 +146,19 @@ const WhyNotComparator: React.FC<Props> = ({ result }) => {
         {challenger && challBD && (
           <div style={{
             marginTop: 12, padding: 12,
-            background: 'rgba(13,148,136,0.04)',
-            border: '1px solid rgba(13,148,136,0.18)',
+            background: 'color-mix(in srgb, var(--accent) 4%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)',
             borderRadius: 6,
           }}>
             <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--sail-300)', marginBottom: 8 }}>
-              Why <em style={{ color: 'var(--accent-hi)' }}>{winner.commitment_mode} (winner)</em> beats{' '}
+              Why <em style={{ color: 'var(--text-accent)' }}>{winner.commitment_mode} (winner)</em> beats{' '}
               <em>{challenger.commitment_mode}</em> — same cost engine, not a re-solve
             </div>
             <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
               <thead>
                 <tr style={{ color: 'var(--sail-500)', borderBottom: '1px solid var(--sail-800)' }}>
                   <th style={{ textAlign: 'left', padding: '6px 0', fontWeight: 500 }}>Bucket</th>
-                  <th style={{ textAlign: 'right', padding: '6px 0', fontWeight: 500, color: 'var(--accent-hi)' }}>Winner</th>
+                  <th style={{ textAlign: 'right', padding: '6px 0', fontWeight: 500, color: 'var(--text-accent)' }}>Winner</th>
                   <th style={{ textAlign: 'right', padding: '6px 0', fontWeight: 500 }}>Challenger</th>
                   <th style={{ textAlign: 'right', padding: '6px 0', fontWeight: 500, paddingLeft: 8 }}>Δ</th>
                 </tr>
@@ -173,7 +173,7 @@ const WhyNotComparator: React.FC<Props> = ({ result }) => {
               </tbody>
             </table>
             {challenger.infeasible_reason && (
-              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warn)', background: 'rgba(217,119,6,0.05)', padding: '6px 8px', borderRadius: 4, border: '1px solid rgba(217,119,6,0.2)' }}>
+              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warn)', background: 'color-mix(in srgb, var(--warn) 5%, transparent)', padding: '6px 8px', borderRadius: 4, border: '1px solid color-mix(in srgb, var(--warn) 20%, transparent)' }}>
                 ⚠ Infeasible: {challenger.infeasible_reason}
               </div>
             )}
@@ -181,7 +181,7 @@ const WhyNotComparator: React.FC<Props> = ({ result }) => {
         )}
 
         {!selected && others.length > 0 && (
-          <p className="infer">Click a non-winning row to see a cost breakdown diff against the winner.</p>
+          <p className="infer" style={{ marginTop: 'auto' }}>Click a non-winning row to see a cost breakdown diff against the winner.</p>
         )}
       </div>
     </section>

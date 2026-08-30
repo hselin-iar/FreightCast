@@ -85,14 +85,14 @@ const AISRouteMap: React.FC<Props> = ({ origin, dischargePorts, portStatuses }) 
         {/* Map SVG */}
         <div style={{
           position: 'relative', height: 200,
-          background: 'rgba(15,23,42,0.7)',
+          background: 'color-mix(in srgb, var(--ink-700) 8%, var(--sail-900))',
           border: '1px solid var(--sail-800)',
           borderRadius: 4, overflow: 'hidden',
         }}>
           {/* Grid dots */}
           <div style={{
             position: 'absolute', inset: 0, opacity: 0.15,
-            backgroundImage: 'radial-gradient(circle, #0d9488 1px, transparent 1px)',
+            backgroundImage: 'radial-gradient(circle, var(--sail-700) 1px, transparent 1px)',
             backgroundSize: '24px 24px',
           }} />
 
@@ -132,7 +132,7 @@ const AISRouteMap: React.FC<Props> = ({ origin, dischargePorts, portStatuses }) 
                     />
                   )}
                   <circle cx={coord.x} cy={coord.y} r={r}
-                    fill={color} stroke="rgba(255,255,255,0.4)" strokeWidth={1.5}
+                    fill={color} stroke="color-mix(in srgb, #FAFAFA 40%, transparent)" strokeWidth={1.5}
                   />
                   {/* Label */}
                   <text x={coord.x} y={coord.y - r - 4}

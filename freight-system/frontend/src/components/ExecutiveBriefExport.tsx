@@ -50,14 +50,14 @@ const ExecutiveBriefExport: React.FC<Props> = ({ result, origin, dischargePorts 
       lineHeight: 1.6,
     }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #0d9488', paddingBottom: 12, marginBottom: 20 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid var(--accent)', paddingBottom: 12, marginBottom: 20 }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 700, color: '#0f172a' }}>SAIL Freight Intelligence</div>
-          <div style={{ fontSize: 12, color: '#64748b' }}>Executive Chartering Brief — {today()}</div>
+          <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--sail-100)' }}>SAIL Freight Intelligence</div>
+          <div style={{ fontSize: 12, color: 'var(--sail-500)' }}>Executive Chartering Brief — {today()}</div>
         </div>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: 11, color: '#64748b' }}>Worst-case total</div>
-          <div style={{ fontSize: 24, fontWeight: 700, color: '#0f172a', fontFamily: 'monospace' }}>
+          <div style={{ fontSize: 11, color: 'var(--sail-500)' }}>Worst-case total</div>
+          <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--sail-100)', fontFamily: 'monospace' }}>
             {fmtM(rec.total_cost_worst_case)}
           </div>
         </div>
@@ -65,10 +65,10 @@ const ExecutiveBriefExport: React.FC<Props> = ({ result, origin, dischargePorts 
 
       {/* Recommended Plan */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-accent)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 6 }}>
           Recommended Plan
         </div>
-        <div style={{ fontSize: 16, fontWeight: 600, color: '#0f172a' }}>
+        <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--sail-100)' }}>
           {rec.voyage_count}-voyage {rec.commitment_mode} strategy
         </div>
         <div style={{ fontSize: 13, color: '#475569', marginTop: 4 }}>
@@ -82,19 +82,19 @@ const ExecutiveBriefExport: React.FC<Props> = ({ result, origin, dischargePorts 
             rec.solved_via === 'milp' ? 'MILP optimised' : 'Heuristic fallback',
             !rec.voyages.some(v => v.lightening_required) ? 'No lightening required' : 'Lightening required',
           ].map(t => (
-            <span key={t} style={{ padding: '2px 8px', borderRadius: 4, background: '#f1f5f9', color: '#334155', fontSize: 11 }}>{t}</span>
+            <span key={t} style={{ padding: '2px 8px', borderRadius: 4, background: '#f1f5f9', color: 'var(--sail-700)', fontSize: 11 }}>{t}</span>
           ))}
         </div>
       </div>
 
       {/* Cost Breakdown */}
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 12, fontWeight: 600, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
+        <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-accent)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
           Cost Breakdown (5-bucket)
         </div>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #e2e8f0', color: '#64748b' }}>
+            <tr style={{ borderBottom: '1px solid #e2e8f0', color: 'var(--sail-500)' }}>
               {['Bucket', 'Amount', '% of Total'].map(h => (
                 <th key={h} style={{ textAlign: h === 'Bucket' ? 'left' : 'right', padding: '6px 0', fontWeight: 500 }}>{h}</th>
               ))}
@@ -109,9 +109,9 @@ const ExecutiveBriefExport: React.FC<Props> = ({ result, origin, dischargePorts 
               ['Risk buffer',         bd.risk_buffer ?? 0],
             ].map(([label, val]) => (
               <tr key={label as string} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                <td style={{ padding: '6px 0', fontFamily: 'sans-serif', color: '#334155' }}>{label}</td>
+                <td style={{ padding: '6px 0', fontFamily: 'sans-serif', color: 'var(--sail-700)' }}>{label}</td>
                 <td style={{ textAlign: 'right' }}>{fmtK(val as number)}</td>
-                <td style={{ textAlign: 'right', color: '#64748b' }}>
+                <td style={{ textAlign: 'right', color: 'var(--sail-500)' }}>
                   {bd.total > 0 ? Math.round(((val as number) / bd.total) * 100) + '%' : '—'}
                 </td>
               </tr>
@@ -128,12 +128,12 @@ const ExecutiveBriefExport: React.FC<Props> = ({ result, origin, dischargePorts 
       {/* Scenario comparison */}
       {result.scenario_comparison.length > 0 && (
         <div style={{ marginBottom: 20 }}>
-          <div style={{ fontSize: 12, fontWeight: 600, color: '#0d9488', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-accent)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: 10 }}>
             Scenario Comparison
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 11 }}>
             <thead>
-              <tr style={{ borderBottom: '1px solid #e2e8f0', color: '#64748b' }}>
+              <tr style={{ borderBottom: '1px solid #e2e8f0', color: 'var(--sail-500)' }}>
                 {['Strategy','Voyages','Worst-case','Status'].map(h => (
                   <th key={h} style={{ textAlign: h === 'Strategy' ? 'left' : 'right', padding: '5px 0', fontWeight: 500 }}>{h}</th>
                 ))}
@@ -211,7 +211,7 @@ const ExecutiveBriefExport: React.FC<Props> = ({ result, origin, dischargePorts 
           </div>
 
           {/* Brief content */}
-          <div style={{ width: '100%', maxWidth: 720, borderRadius: 8, overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.6)' }}>
+          <div style={{ width: '100%', maxWidth: 720, borderRadius: 8, overflow: 'hidden', boxShadow: '0 20px 60px color-mix(in srgb, #000000 60%, transparent)' }}>
             {BriefContent}
           </div>
         </div>

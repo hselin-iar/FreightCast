@@ -66,7 +66,7 @@ function VoyageExpandedRow({ strat }: { strat: Strategy }) {
                 {v.lightening_required && (
                   <span style={{
                     fontSize: 10, padding: '1px 6px', borderRadius: 3,
-                    background: 'var(--red-bg)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--red)'
+                    background: 'var(--red-bg)', border: '1px solid color-mix(in srgb, var(--error, #ef4444) 20%, transparent)', color: 'var(--red)'
                   }}>
                     lightening → {v.lightening_port ?? '?'}
                   </span>

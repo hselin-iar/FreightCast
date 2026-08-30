@@ -80,8 +80,8 @@ const PortConstraintsPage: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       
       {/* ── TOP MAP PANEL ── */}
-      <div className="panel" style={{ border: '1px solid var(--sail-800)', position: 'relative', overflow: 'hidden' }}>
-        <div className="panel-hd" style={{ padding: '16px 20px', borderBottom: '1px solid var(--sail-800)', zIndex: 10, background: 'rgba(15,23,42,0.8)', position: 'absolute', top: 0, left: 0, right: 0 }}>
+      <div className="panel panel-tinted" style={{ position: 'relative', overflow: 'hidden' }}>
+        <div className="panel-hd" style={{ padding: '16px 20px', borderBottom: '1px solid var(--sail-800)', zIndex: 10, background: 'color-mix(in srgb, var(--sail-900) 80%, transparent)', position: 'absolute', top: 0, left: 0, right: 0 }}>
           <span className="panel-title" style={{ fontSize: 16 }}>Live AIS Vessel Tracking</span>
           <span className="panel-meta">live · aisstream.io</span>
         </div>
@@ -98,7 +98,7 @@ const PortConstraintsPage: React.FC = () => {
           >-</button>
         </div>
 
-        <div style={{ width: '100%', height: 350, background: '#020617', marginTop: 50, cursor: 'grab' }}>
+        <div style={{ width: '100%', height: 350, marginTop: 50, cursor: 'grab' }}>
           <ComposableMap projection="geoMercator" projectionConfig={{ scale: 180 }} width={800} height={350}>
             <ZoomableGroup 
               zoom={mapPosition.zoom} 
@@ -107,12 +107,7 @@ const PortConstraintsPage: React.FC = () => {
               maxZoom={8}
             >
               <defs>
-                <radialGradient id="heat" cx="50%" cy="50%" r="50%">
-                  <stop offset="0%" stopColor="rgba(239, 68, 68, 0.95)" />
-                  <stop offset="15%" stopColor="rgba(245, 158, 11, 0.85)" />
-                  <stop offset="40%" stopColor="rgba(245, 158, 11, 0.4)" />
-                  <stop offset="100%" stopColor="rgba(245, 158, 11, 0)" />
-                </radialGradient>
+
               </defs>
 
               <Geographies geography={geoData}>
@@ -121,12 +116,12 @@ const PortConstraintsPage: React.FC = () => {
                     <Geography 
                       key={geo.rsmKey} 
                       geography={geo} 
-                      fill="#1e293b" 
-                      stroke="#334155" 
+                      fill="color-mix(in srgb, var(--sail-700) 15%, transparent)" 
+                      stroke="var(--sail-600)" 
                       strokeWidth={0.5}
                       style={{
                         default: { outline: "none" },
-                        hover: { fill: "#334155", outline: "none" },
+                        hover: { fill: "var(--sail-700)", outline: "none" },
                         pressed: { outline: "none" }
                       }}
                     />
@@ -141,9 +136,10 @@ const PortConstraintsPage: React.FC = () => {
                 const count = live ? live.vessel_count : (name in LOAD_PORT_CONSTRAINTS ? 5 : 2);
                 if (count === 0) return null;
                 const heatRadius = Math.min(25, 8 + (count * 2));
+                const color = count > 5 ? 'rgba(239, 68, 68, 0.4)' : count > 2 ? 'rgba(245, 158, 11, 0.4)' : 'rgba(16, 185, 129, 0.4)';
                 return (
                   <Marker key={`heat-${name}`} coordinates={[c.lon, c.lat]}>
-                    <circle r={heatRadius} fill="url(#heat)" style={{ mixBlendMode: 'screen', pointerEvents: 'none' }} />
+                    <circle r={heatRadius} fill={color} stroke={color.replace('0.4', '0.8')} strokeWidth={1} style={{ pointerEvents: 'none' }} />
                   </Marker>
                 );
               })}
@@ -152,8 +148,8 @@ const PortConstraintsPage: React.FC = () => {
               {allEntries.map(([name, c]) => (
                  <Marker key={name} coordinates={[c.lon, c.lat]}>
                    <g transform={`scale(${1 / mapPosition.zoom})`}>
-                     <rect x="-3" y="-3" width="6" height="6" fill={selectedPort === name ? "var(--accent-hi)" : "#cbd5e1"} />
-                     <text textAnchor="middle" y={-8} style={{ fontFamily: "var(--f-sans)", fontSize: 8, fontWeight: selectedPort === name ? 600 : 400, fill: selectedPort === name ? "#fff" : "#94a3b8" }}>
+                     <rect x="-3" y="-3" width="6" height="6" fill={selectedPort === name ? "var(--accent)" : "var(--sail-400)"} />
+                     <text textAnchor="middle" y={-8} style={{ fontFamily: "var(--f-sans)", fontSize: 8, fontWeight: selectedPort === name ? 600 : 500, fill: selectedPort === name ? "#1A1A1A" : "var(--sail-300)" }}>
                        {name}
                      </text>
                    </g>
@@ -184,7 +180,7 @@ const PortConstraintsPage: React.FC = () => {
       <div className="page-grid">
         {/* ── LEFT col-8 (The Ledger) ── */}
         <div className="col-8 col-space">
-          <div className="panel" style={{ height: '100%', border: '1px solid var(--sail-800)' }}>
+          <div className="panel panel-tinted" style={{ height: '100%' }}>
             <div className="panel-hd" style={{ padding: '16px 20px', borderBottom: '1px solid var(--sail-800)' }}>
               <span className="panel-title" style={{ fontSize: 16 }}>Port Constraints & Congestion Ledger</span>
               <div className="flex-center gap-2">
@@ -195,7 +191,7 @@ const PortConstraintsPage: React.FC = () => {
             <div className="panel-body" style={{ padding: 0, overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
-                  <tr style={{ color: 'var(--sail-500)', borderBottom: '1px solid var(--sail-800)', textAlign: 'left', backgroundColor: 'rgba(15,23,42,0.5)' }}>
+                  <tr style={{ color: 'var(--sail-900)', borderBottom: '1px solid var(--sail-800)', textAlign: 'left', backgroundColor: 'var(--sail-100)' }}>
                     <th style={{ padding: '12px 20px', fontWeight: 500 }}>Port Name</th>
                     <th style={{ padding: '12px 10px', fontWeight: 500 }}>Type</th>
                     <th style={{ padding: '12px 10px', fontWeight: 500 }}>Max Draft (m)</th>
@@ -226,20 +222,34 @@ const PortConstraintsPage: React.FC = () => {
                         key={port} 
                         onClick={() => setSelectedPort(port)}
                         style={{ 
-                          borderBottom: '1px solid rgba(30,41,59,0.5)', 
+                          borderBottom: '1px solid color-mix(in srgb, var(--sail-800) 50%, transparent)', 
                           cursor: 'pointer',
-                          backgroundColor: isSelected ? 'rgba(13,148,136,0.1)' : 'transparent',
+                          backgroundColor: isSelected ? 'color-mix(in srgb, var(--sail-800) 40%, transparent)' : 'transparent',
                           transition: 'background-color 0.2s'
                         }}
                       >
-                        <td style={{ padding: '16px 20px', color: isSelected ? 'var(--accent-hi)' : 'var(--sail-100)', fontFamily: 'var(--f-sans)', fontWeight: isSelected ? 500 : 400, whiteSpace: 'nowrap' }}>
+                        <td style={{ padding: '16px 20px', color: isSelected ? 'var(--text-accent)' : 'var(--sail-100)', fontFamily: 'var(--f-sans)', fontWeight: isSelected ? 500 : 400, whiteSpace: 'nowrap' }}>
                           {port}
                         </td>
-                        <td style={{ padding: '16px 10px', fontSize: 11, color: rowType === 'Discharge' ? 'var(--emerald-4)' : 'var(--sail-400)', fontFamily: 'var(--f-sans)' }}>
+                        <td style={{ padding: '16px 10px', fontSize: 11, color: rowType === 'Discharge' ? '#059669' : 'var(--sail-400)', fontFamily: 'var(--f-sans)' }}>
                           {rowType}
                         </td>
-                        <td style={{ padding: '16px 10px' }}>{c.maxDraft.toFixed(1)}</td>
-                        <td style={{ padding: '16px 10px' }}>{c.maxLoa}</td>
+                        <td style={{ padding: '16px 10px' }}>
+                          <div className="flex-center gap-2">
+                            <span>{c.maxDraft.toFixed(1)}</span>
+                            <div style={{ width: 40, height: 4, background: 'var(--sail-800)', borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{ width: `${(c.maxDraft / 20) * 100}%`, height: '100%', background: 'var(--text-accent)' }} />
+                            </div>
+                          </div>
+                        </td>
+                        <td style={{ padding: '16px 10px' }}>
+                          <div className="flex-center gap-2">
+                            <span>{c.maxLoa}</span>
+                            <div style={{ width: 40, height: 4, background: 'var(--sail-800)', borderRadius: 2, overflow: 'hidden' }}>
+                              <div style={{ width: `${(c.maxLoa / 400) * 100}%`, height: '100%', background: 'var(--sail-400)' }} />
+                            </div>
+                          </div>
+                        </td>
                         
                         {statusLoading ? (
                            <td colSpan={3} style={{ padding: '16px 10px' }}><div className="skel" style={{ height: 12, width: '100%' }} /></td>
@@ -253,7 +263,7 @@ const PortConstraintsPage: React.FC = () => {
                              </td>
                              <td style={{ padding: '16px 20px' }}>
                                 <svg width="60" height="20" style={{ overflow: 'visible' }}>
-                                   <polyline fill="none" stroke="var(--accent-hi)" strokeWidth="1.5" points={sparklinePoints} />
+                                   <polyline fill="none" stroke="#1A1A1A" strokeWidth="1.5" points={sparklinePoints} />
                                 </svg>
                              </td>
                            </>
@@ -312,8 +322,8 @@ const PortConstraintsPage: React.FC = () => {
                          Average turnaround time exceeds 24 hours. Consider buffering arrival windows.
                        </div>
                      ) : (
-                       <div style={{ padding: 12, background: 'rgba(13,148,136,0.1)', borderLeft: '2px solid var(--emerald-4)', color: 'var(--sail-200)', fontSize: 12, lineHeight: 1.5 }}>
-                         <strong style={{ color: 'var(--emerald-4)', display: 'block', marginBottom: 4 }}>Normal Operations</strong>
+                       <div style={{ padding: 12, background: 'color-mix(in srgb, var(--accent) 10%, transparent)', borderLeft: 'none', color: 'var(--sail-200)', fontSize: 12, lineHeight: 1.5 }}>
+                         <strong style={{ color: '#059669', display: 'block', marginBottom: 4 }}>Normal Operations</strong>
                          Port is operating within standard parameters.
                        </div>
                      )}

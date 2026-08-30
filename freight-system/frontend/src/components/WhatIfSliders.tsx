@@ -55,7 +55,7 @@ function SliderRow({ label, value, min, max, step, format, onChange, id }: Slide
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 5 }}>
         <label htmlFor={id} style={{ fontSize: 12, color: 'var(--sail-400)' }}>{label}</label>
-        <span style={{ fontSize: 14, fontFamily: 'var(--f-mono)', fontWeight: 600, color: 'var(--accent-hi)' }}>
+        <span style={{ fontSize: 14, fontFamily: 'var(--f-mono)', fontWeight: 600, color: 'var(--text-accent)' }}>
           {format(value)}
         </span>
       </div>

@@ -61,13 +61,7 @@ interface Props {
    Example prompts shown on empty state
 ═══════════════════════════════════════════════════════════ */
 
-const EXAMPLE_QUERIES = [
-  'What\'s the best vessel for 70,000 MT from Australia to Paradip?',
-  'Should I lock in three voyages or keep buying spot?',
-  'What if I can\'t use a Capesize and need this done in 12 days?',
-  'Why are you recommending Panamax?',
-  'What will the Panamax rate be in 2 weeks?',
-];
+
 
 /* ═══════════════════════════════════════════════════════════
    Helpers
@@ -104,6 +98,22 @@ const ChatPanel: React.FC<Props> = ({ cargoContext, onDashboardUpdate }) => {
   const bottomRef    = useRef<HTMLDivElement>(null);
   const abortRef     = useRef<AbortController | null>(null);
   const textareaRef  = useRef<HTMLTextAreaElement>(null);
+
+  const exampleQueries = cargoContext
+    ? [
+        `What's the best vessel for ${cargoContext.cargo_quantity.toLocaleString()} MT from ${cargoContext.origin_port} to ${cargoContext.discharge_ports[0] ?? 'destination'}?`,
+        `Should I lock in voyages or keep buying spot?`,
+        `What if I can't use a Capesize and need this done in ${cargoContext.timing_flexibility_days} days?`,
+        `Why are you recommending this vessel?`,
+        `What will the rate be in 2 weeks?`
+      ]
+    : [
+        'How do I use this dashboard?',
+        'What does the robustness score mean?',
+        'How is the predicted freight rate calculated?',
+        'What vessel classes are supported?',
+        'Where does the AIS data come from?'
+      ];
 
   /* Auto-scroll to bottom on new messages */
   useEffect(() => {
@@ -193,29 +203,37 @@ const ChatPanel: React.FC<Props> = ({ cargoContext, onDashboardUpdate }) => {
   /* ── Render ─────────────────────────────────────────────── */
 
   return (
-    <div className="panel" id="chat-panel" style={{
+    <div id="chat-panel" style={{
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
       minHeight: 420,
     }}>
-      {/* Header */}
-      <div className="panel-hd" style={{ flexShrink: 0 }}>
+      {/* Header — charcoal grey with yellow accent stripe */}
+      <div style={{
+        flexShrink: 0,
+        background: 'var(--ink-800)',
+        borderBottom: '1px solid var(--ink-600)',
+        padding: '14px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <div style={{
             width: 28, height: 28, borderRadius: '50%',
-            background: 'linear-gradient(135deg, var(--accent) 0%, var(--indigo-hi) 100%)',
+            background: 'var(--accent)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 13, flexShrink: 0,
+            fontSize: 13, flexShrink: 0, color: 'var(--accent-text)',
           }}>✦</div>
           <div>
-            <div className="panel-title">Chartering Agent</div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-hi)', letterSpacing: '-0.2px' }}>Chartering Agent</div>
           </div>
         </div>
         {isThinking && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
             <div className="spinner" />
-            <span style={{ fontSize: 11, color: 'var(--sail-400)', fontFamily: 'var(--f-mono)' }}>
+            <span style={{ fontSize: 11, color: 'var(--sail-500)', fontFamily: 'var(--f-mono)' }}>
               thinking…
             </span>
           </div>
@@ -234,31 +252,13 @@ const ChatPanel: React.FC<Props> = ({ cargoContext, onDashboardUpdate }) => {
         {/* Empty state */}
         {messages.length === 0 && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, padding: '8px 0' }}>
-            <p style={{ fontSize: 12, color: 'var(--sail-400)', margin: '0 0 4px' }}>
-              Ask about any cargo scenario — the assistant calls the same engine as the dashboard.
+            <p style={{ fontSize: 13, color: '#FAFAFA', margin: '0 0 4px', fontWeight: 500 }}>
+              Ask about any cargo scenario.
             </p>
-            {EXAMPLE_QUERIES.map(q => (
+            {exampleQueries.map(q => (
               <button key={q} onClick={() => handleExampleClick(q)}
                 className="example-query-btn"
-                style={{
-                  background: 'rgba(13,148,136,0.07)',
-                  border: '1px solid var(--sail-800)',
-                  borderRadius: 6,
-                  padding: '6px 10px',
-                  textAlign: 'left',
-                  fontSize: 11.5,
-                  color: 'var(--sail-300)',
-                  cursor: 'pointer',
-                  transition: 'background 0.15s, border-color 0.15s',
-                }}
-                onMouseEnter={e => {
-                  (e.target as HTMLButtonElement).style.background = 'rgba(13,148,136,0.14)';
-                  (e.target as HTMLButtonElement).style.borderColor = 'var(--accent-20)';
-                }}
-                onMouseLeave={e => {
-                  (e.target as HTMLButtonElement).style.background = 'rgba(13,148,136,0.07)';
-                  (e.target as HTMLButtonElement).style.borderColor = 'var(--sail-800)';
-                }}
+                style={{}}
               >
                 {q}
               </button>
@@ -276,13 +276,13 @@ const ChatPanel: React.FC<Props> = ({ cargoContext, onDashboardUpdate }) => {
 
       {/* Input area */}
       <div style={{
-        borderTop: '1px solid var(--sail-800)',
         padding: '10px 12px',
         display: 'flex',
         gap: 8,
         alignItems: 'flex-end',
         flexShrink: 0,
-        background: 'rgba(15,23,42,0.4)',
+        background: 'var(--ink-800)',
+        borderTop: '1px solid var(--ink-600)',
       }}>
         <textarea
           ref={textareaRef}
@@ -290,13 +290,13 @@ const ChatPanel: React.FC<Props> = ({ cargoContext, onDashboardUpdate }) => {
           value={input}
           onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Ask a chartering question… (Enter to send, Shift+Enter for newline)"
+          placeholder="Ask anything..."
           disabled={isThinking}
           rows={1}
           style={{
             flex: 1,
-            background: 'var(--sail-900)',
-            border: `1px solid ${isThinking ? 'var(--sail-800)' : 'var(--sail-700)'}`,
+            background: 'var(--ink-700)',
+            border: '1px solid var(--ink-600)',
             borderRadius: 8,
             padding: '8px 11px',
             fontSize: 13,
@@ -317,12 +317,12 @@ const ChatPanel: React.FC<Props> = ({ cargoContext, onDashboardUpdate }) => {
           disabled={isThinking || !input.trim()}
           style={{
             background: isThinking || !input.trim()
-              ? 'var(--sail-800)'
-              : 'linear-gradient(135deg, var(--accent) 0%, var(--indigo-hi) 100%)',
+              ? 'var(--ink-700)'
+              : 'var(--accent)',
             border: 'none',
             borderRadius: 8,
             padding: '9px 14px',
-            color: isThinking || !input.trim() ? 'var(--sail-500)' : '#fff',
+            color: isThinking || !input.trim() ? '#6b7280' : 'var(--accent-text)',
             cursor: isThinking || !input.trim() ? 'not-allowed' : 'pointer',
             fontSize: 15,
             lineHeight: 1,
@@ -369,17 +369,16 @@ const MessageBubble: React.FC<{ msg: UiMessage }> = ({ msg }) => {
         padding: '9px 13px',
         borderRadius: isUser ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
         background: isUser
-          ? 'linear-gradient(135deg, rgba(13,148,136,0.35) 0%, rgba(99,102,241,0.2) 100%)'
+          ? 'var(--accent)'
           : msg.error
-            ? 'rgba(239,68,68,0.12)'
-            : 'rgba(30,41,59,0.7)',
+            ? 'color-mix(in srgb, var(--error, #ef4444) 12%, transparent)'
+            : 'color-mix(in srgb, var(--ink-700) 8%, var(--sail-900))',
         border: `1px solid ${
-          isUser ? 'rgba(13,148,136,0.3)'
-          : msg.error ? 'rgba(239,68,68,0.3)'
+          isUser ? 'var(--accent-dim, var(--accent))'
+          : msg.error ? 'color-mix(in srgb, var(--error, #ef4444) 30%, transparent)'
           : 'var(--sail-800)'}`,
-        fontSize: 12.5,
         lineHeight: 1.55,
-        color: msg.error ? '#fca5a5' : 'var(--sail-100)',
+        color: isUser ? '#1A1A1A' : msg.error ? '#fca5a5' : 'var(--sail-100)',
         wordBreak: 'break-word',
       }}>
         {msg.loading ? (
@@ -402,11 +401,11 @@ const MessageBubble: React.FC<{ msg: UiMessage }> = ({ msg }) => {
           alignItems: 'center',
           gap: 5,
           padding: '3px 8px',
-          background: 'rgba(13,148,136,0.1)',
-          border: '1px solid rgba(13,148,136,0.25)',
+          background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+          border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
           borderRadius: 6,
           fontSize: 10.5,
-          color: 'var(--accent-hi)',
+          color: 'var(--text-accent)',
           fontFamily: 'var(--f-mono)',
           maxWidth: '88%',
         }}>

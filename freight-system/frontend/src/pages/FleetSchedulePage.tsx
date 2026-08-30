@@ -108,7 +108,7 @@ const FleetSchedulePage: React.FC = () => {
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table" style={{ width: '100%', fontSize: '13px', borderCollapse: 'collapse' }}>
             <thead>
-              <tr style={{ background: 'rgba(30,41,59,0.8)', borderBottom: '1px solid var(--sail-800)' }}>
+              <tr style={{ background: 'color-mix(in srgb, var(--sail-800) 80%, transparent)', borderBottom: '1px solid var(--sail-800)' }}>
                 <th style={{ padding: '12px 16px', textAlign: 'left' }}>Vessel</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left' }}>Assigned Contract</th>
                 <th style={{ padding: '12px 16px', textAlign: 'left' }}>Current Route</th>
@@ -129,20 +129,19 @@ const FleetSchedulePage: React.FC = () => {
                   <tr
                     key={`${v.imo}-${v.contract_id}-${idx}`}
                     style={{
-                      borderBottom: '1px solid rgba(51,65,85,0.4)',
-                      background: 'rgba(2,6,23,0.3)',
+                      borderBottom: '1px solid color-mix(in srgb, var(--sail-700) 40%, transparent)',
                       transition: 'background 0.15s',
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(30,41,59,0.5)';
+                      e.currentTarget.style.background = 'color-mix(in srgb, var(--sail-800) 50%, transparent)';
                     }}
                     onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(2,6,23,0.3)';
+                      e.currentTarget.style.background = 'transparent';
                     }}
                   >
                     {/* Vessel Details */}
                     <td style={{ padding: '12px 16px' }}>
-                      <div style={{ fontWeight: 700, color: 'var(--accent-hi)' }}>{v.vessel_name}</div>
+                      <div style={{ fontWeight: 700, color: 'var(--text-accent)' }}>{v.vessel_name}</div>
                       <div style={{ fontSize: '11px', color: 'var(--sail-500)', fontFamily: 'var(--f-mono)' }}>
                         IMO: {v.imo}
                       </div>

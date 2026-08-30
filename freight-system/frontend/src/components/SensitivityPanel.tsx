@@ -72,11 +72,11 @@ const SensitivityPanel: React.FC<Props> = ({ result }) => {
               {/* Tornado bar — centred, neg left, pos right */}
               <div style={{ height: 8, background: 'var(--sail-800)', borderRadius: 4, display: 'flex', overflow: 'hidden' }}>
                 <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-                  <div style={{ width: `${negPct}%`, background: 'rgba(217,119,6,0.75)', height: '100%', borderRadius: '3px 0 0 3px' }} />
+                  <div style={{ width: `${negPct}%`, background: 'color-mix(in srgb, var(--warn) 75%, transparent)', height: '100%', borderRadius: '3px 0 0 3px' }} />
                 </div>
                 <div style={{ width: 1, background: 'var(--sail-600)' }} />
                 <div style={{ flex: 1 }}>
-                  <div style={{ width: `${posPct}%`, background: 'rgba(13,148,136,0.7)', height: '100%', borderRadius: '0 3px 3px 0' }} />
+                  <div style={{ width: `${posPct}%`, background: 'color-mix(in srgb, var(--accent) 70%, transparent)', height: '100%', borderRadius: '0 3px 3px 0' }} />
                 </div>
               </div>
             </div>

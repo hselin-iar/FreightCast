@@ -170,11 +170,11 @@ function PortCongestionPanel({ portStatuses, loading }: { portStatuses: PortStat
   const textColor = (v: number) => v > 10 ? 'var(--warn)' : v > 5 ? '#f59e0b' : 'var(--emerald-4)';
 
   return (
-    <section className="panel">
+    <section className="panel" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <div className="panel-hd">
         <span className="panel-title">Port Congestion</span>
       </div>
-      <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
         {loading ? (
           [1,2,3].map(i => <div key={i} className="skel" style={{ height: 18 }} />)
         ) : portStatuses.length ? portStatuses.map(ps => (
@@ -198,7 +198,7 @@ function PortCongestionPanel({ portStatuses, loading }: { portStatuses: PortStat
         )) : (
           <p className="infer">AIS data not available (backend offline or cold start).</p>
         )}
-        <p className="infer">
+        <p className="infer" style={{ marginTop: 'auto' }}>
           <strong>Read this as:</strong> congestion is not a hard block — it adds a risk-buffer term and biases entry timing.
         </p>
       </div>
@@ -212,12 +212,13 @@ function WinningPlanBanner({ rec }: { rec: Strategy; ports?: Set<string> }) {
   void bd; // bd used in plan-tags below
   const robustness = 0.91; // derived from scenario comparison in full impl (Step 12)
 
-  const desc = rec.voyages.map((v, i) =>
-    `Voyage ${i + 1}: ${v.port} (${v.mode}, fix day ${v.fix_day})`
-  ).join(' · ');
+  const desc = rec.voyages.map((v, i) => {
+    const cargo = v.cargo_tonnes ? `${v.cargo_tonnes} MT ` : '';
+    return `Voyage ${i + 1}: ${v.port} (${v.vessel_class}, ${cargo}${v.mode}, fix day ${v.fix_day})`;
+  }).join(' · ');
 
   return (
-    <div className="panel accent-left">
+    <div className="panel panel-ink">
       <div className="plan-header">
         <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
@@ -242,10 +243,10 @@ function WinningPlanBanner({ rec }: { rec: Strategy; ports?: Set<string> }) {
         {rec.solved_via === 'milp' && <span className="plan-tag">MILP solve</span>}
         {!rec.voyages.some(v => v.lightening_required) && <span className="plan-tag">No lightening required</span>}
         {rec.contains_high_uncertainty_voyage
-          ? <span className="plan-tag" style={{ color: 'var(--warn)' }}>High uncertainty ⚠</span>
+          ? <span className="plan-tag warn">High uncertainty ⚠</span>
           : <span className="plan-tag">Uncertainty: normal</span>}
       </div>
-      {rec.provenance_note && <p className="infer" style={{ padding: '0 16px 12px' }}><strong>Why this plan:</strong> {rec.provenance_note}</p>}
+
     </div>
   );
 }
@@ -333,8 +334,8 @@ function FeasibleOptions({ rec }: { rec: Strategy }) {
         {rec.voyages.map((v, i) => (
           <div key={i} className="feas-card">
             <div className="feas-card-head">
-              <span>{v.vessel_class} → {v.port}</span>
-              <span style={{ color: v.lightening_required ? 'var(--warn)' : 'var(--emerald-4)', fontSize: 11 }}>
+              <span style={{ color: 'var(--sail-100)' }}>{v.vessel_class} → {v.port}</span>
+              <span style={{ color: v.lightening_required ? 'var(--warn)' : 'var(--emerald)', fontSize: 11 }}>
                 {v.lightening_required ? 'lightening' : 'clear'}
               </span>
             </div>
@@ -421,7 +422,7 @@ function RateDrivers({ driverNote }: { driverNote: string | null }) {
 /* ── Bottom: System Status & Provenance Strip ──────────────── */
 function SystemProvenanceStrip({ origin, ports, health }: { origin: string; ports: Set<string>; health: HealthResponse | null }) {
   return (
-    <div className="panel">
+    <div className="panel panel-tinted">
       <div className="panel-hd" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
         <span className="panel-title">System Status & Data Provenance</span>
         <div className="panel-meta" style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
@@ -612,8 +613,12 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
 
   return (
     <div className="page-grid">
-      {/* ── LEFT COL ── */}
-      <div className="col-3 col-space">
+      {/* ── LEFT & CENTER COMBINED ── */}
+      <div className="col-9" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: 16, flex: 1 }}>
+          
+          {/* ── LEFT COL ── */}
+          <div style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
         <CargoForm
           scope={scope} loading={loading}
           qty={qty} setQty={setQty}
@@ -634,8 +639,8 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
         <PortCongestionPanel portStatuses={portStatuses} loading={portLoading} />
       </div>
 
-      {/* ── CENTER COL ── */}
-      <div className="col-6 col-space">
+          {/* ── CENTER COL ── */}
+          <div style={{ gridColumn: 'span 6', display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
         {error && (
           <div className="error-bar" id="error-banner">
             <span>✕</span><span>{error}</span>
@@ -679,11 +684,11 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
               <div id="chat-update-banner" style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 padding: '8px 14px',
-                background: 'rgba(13,148,136,0.1)',
-                border: '1px solid rgba(13,148,136,0.3)',
+                background: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--accent) 30%, transparent)',
                 borderRadius: 8,
                 fontSize: 12,
-                color: 'var(--accent-hi)',
+                color: 'var(--text-accent)',
               }}>
                 <span style={{ fontSize: 14 }}>↗</span>
                 <span>
@@ -695,9 +700,24 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
             <WinningPlanBanner rec={rec} />
             <CostBreakdown bd={rec.cost_breakdown} />
             <ScenarioFanChart result={result!} origin={origin} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+              <WhyNotComparator result={result} />
+            </div>
           </>
         )}
+          </div>
+        </div>
 
+        {/* ── AIS ROUTE MAP spans full col-9 ── */}
+        {rec && !loading && (
+          <div>
+            <AISRouteMap
+              origin={origin}
+              dischargePorts={[...ports]}
+              portStatuses={portStatuses}
+            />
+          </div>
+        )}
       </div>
 
       {/* ── RIGHT COL ── */}
@@ -716,17 +736,10 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
         {result ? <SensitivityPanel result={result} /> : null}
         {result && <RobustnessReadout result={result} />}
         <SystemProvenanceStrip origin={origin} ports={ports} health={health} />
-      </div>
-
-      {/* ── BOTTOM ROW ── */}
-      <div className="col-12 col-space">
+        
+        {/* Export Button moved to Right Column */}
         {result && (
-          <div style={{ marginBottom: 16 }}>
-            <WhyNotComparator result={result} />
-          </div>
-        )}
-        {result && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
             <ExecutiveBriefExport
               result={result}
               origin={origin}
@@ -734,11 +747,10 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
             />
           </div>
         )}
-        <AISRouteMap
-          origin={origin}
-          dischargePorts={[...ports]}
-          portStatuses={portStatuses}
-        />
+      </div>
+
+      {/* ── BOTTOM ROW ── */}
+      <div className="col-12 col-space">
       </div>
 
     </div>

@@ -11,6 +11,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import ChatPanel from './components/ChatPanel';
 import { getHealth } from './lib/apiClient';
 import type { HealthResponse, RecommendationRequest, RecommendationResponse } from './lib/types';
+import faviconUrl from './assets/favicon.png';
 import ForecastExplorerPage from './pages/ForecastExplorerPage';
 import PortConstraintsPage from './pages/PortConstraintsPage';
 import RecommendationPage from './pages/RecommendationPage';
@@ -43,12 +44,12 @@ function PlaceholderView({ title, meta }: { title: string; meta: string }) {
 
 /* ── App shell ─────────────────────────────────────────── */
 const TABS: { id: View; label: string }[] = [
-  { id: 'recommendation', label: 'Recommendation'   },
-  { id: 'fleet',          label: 'Fleet Portfolio (Step 51V)' },
-  { id: 'forecast',       label: 'Forecast Explorer'},
-  { id: 'ports',          label: 'Port Constraints' },
-  { id: 'scenario',       label: 'Scenario Lab'     },
-  { id: 'provenance',     label: 'Data Provenance'  },
+  { id: 'recommendation', label: 'Recommendation' },
+  { id: 'fleet',          label: 'Fleet'           },
+  { id: 'forecast',       label: 'Forecast'        },
+  { id: 'ports',          label: 'Ports'           },
+  { id: 'scenario',       label: 'Scenarios'       },
+  { id: 'provenance',     label: 'Provenance'      },
 ];
 
 const App: React.FC = () => {
@@ -96,9 +97,9 @@ const App: React.FC = () => {
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* ── Top nav ── */}
       <header className="nav-bar">
-        <div className="nav-logo-mark">S</div>
+        <img src={faviconUrl} alt="FreightCast Logo" style={{ width: 32, height: 32, borderRadius: 8, flexShrink: 0, objectFit: 'contain' }} />
         <span className="nav-brand">
-          SAIL Freight Intelligence
+          FreightCast
         </span>
 
         <nav className="nav-tabs">
@@ -148,8 +149,9 @@ const App: React.FC = () => {
             chatConstraintNote={chatNote}
           />
           <div style={{
-            borderLeft: '1px solid var(--sail-800)',
-            padding: '12px 10px',
+            borderLeft: '1px solid var(--ink-600)',
+            background: 'var(--ink-700)',
+            padding: '0',
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,

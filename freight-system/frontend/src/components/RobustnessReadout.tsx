@@ -25,7 +25,7 @@ function computeRobustness(result: RecommendationResponse): number {
 
 function robustnessLabel(r: number): { label: string; color: string } {
   if (r >= 0.90) return { label: 'Strong',   color: 'var(--emerald-4)' };
-  if (r >= 0.75) return { label: 'Moderate', color: 'var(--accent-hi)' };
+  if (r >= 0.75) return { label: 'Moderate', color: 'var(--text-accent)' };
   if (r >= 0.60) return { label: 'Weak',     color: 'var(--warn)' };
   return              { label: 'Poor',      color: '#ef4444' };
 }
@@ -83,34 +83,34 @@ const RobustnessReadout: React.FC<Props> = ({ result }) => {
         </span>
       </div>
       <div className="panel-body">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{ flexShrink: 0 }}>
             <RobustnessGauge score={score} />
           </div>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-              <span style={{ color: 'var(--sail-400)' }}>Best scenario</span>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
+              <span style={{ color: 'var(--sail-400)' }}>Best case</span>
               <span style={{ fontFamily: 'var(--f-mono)', color: 'var(--emerald-4)' }}>
                 ${(best / 1e6).toFixed(2)}M
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-              <span style={{ color: 'var(--sail-400)' }}>Worst scenario</span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
+              <span style={{ color: 'var(--sail-400)' }}>Worst case</span>
               <span style={{ fontFamily: 'var(--f-mono)', color: 'var(--warn)' }}>
                 ${(worst / 1e6).toFixed(2)}M
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
               <span style={{ color: 'var(--sail-400)' }}>Max regret</span>
               <span style={{ fontFamily: 'var(--f-mono)', color: 'var(--sail-300)' }}>
                 ${((worst - best) / 1e3).toFixed(0)}k
               </span>
             </div>
             {rec.solved_via && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}>
-                <span style={{ color: 'var(--sail-400)' }}>Solved via</span>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11.5 }}>
+                <span style={{ color: 'var(--sail-400)' }}>Solver</span>
                 <span style={{ fontFamily: 'var(--f-mono)', color: 'var(--sail-300)' }}>
-                  {rec.solved_via}
+                  {rec.solved_via === 'hybrid_fallback' ? 'hybrid' : rec.solved_via}
                 </span>
               </div>
             )}

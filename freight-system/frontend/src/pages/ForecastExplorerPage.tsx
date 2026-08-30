@@ -41,7 +41,7 @@ function InteractiveTrajectory({ fc }: { fc: ForecastResponse }) {
     return (
       <div style={{
         height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4,
+        background: 'color-mix(in srgb, var(--sail-900) 60%, transparent)', border: '1px solid var(--sail-800)', borderRadius: 4,
       }}>
         <span style={{ fontSize: 12, color: 'var(--sail-500)' }}>No trajectory data in this forecast object</span>
       </div>
@@ -75,13 +75,13 @@ function InteractiveTrajectory({ fc }: { fc: ForecastResponse }) {
         <div style={{ display: 'flex', background: 'var(--sail-900)', borderRadius: '6px', border: '1px solid var(--sail-800)', overflow: 'hidden' }}>
           <button
             onClick={() => setView('chart')}
-            style={{ padding: '4px 12px', fontSize: '11px', background: view === 'chart' ? 'var(--sail-700)' : 'transparent', color: view === 'chart' ? '#fff' : 'var(--sail-400)', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '4px 12px', fontSize: '11px', background: view === 'chart' ? 'var(--sail-700)' : 'transparent', color: view === 'chart' ? 'var(--sail-100)' : 'var(--sail-400)', border: 'none', cursor: 'pointer' }}
           >
             Chart View
           </button>
           <button
             onClick={() => setView('table')}
-            style={{ padding: '4px 12px', fontSize: '11px', background: view === 'table' ? 'var(--sail-700)' : 'transparent', color: view === 'table' ? '#fff' : 'var(--sail-400)', border: 'none', cursor: 'pointer' }}
+            style={{ padding: '4px 12px', fontSize: '11px', background: view === 'table' ? 'var(--sail-700)' : 'transparent', color: view === 'table' ? 'var(--sail-100)' : 'var(--sail-400)', border: 'none', cursor: 'pointer' }}
           >
             Table View
           </button>
@@ -89,15 +89,15 @@ function InteractiveTrajectory({ fc }: { fc: ForecastResponse }) {
       </div>
 
       {view === 'chart' ? (
-        <div style={{ height: 260, background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4, padding: '16px 16px 0 0' }}>
+        <div style={{ height: 260, background: 'color-mix(in srgb, var(--sail-900) 60%, transparent)', border: '1px solid var(--sail-800)', borderRadius: 4, padding: '16px 16px 0 0' }}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={data}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
-              <XAxis dataKey="date" stroke="#64748b" fontSize={11} tickMargin={8} minTickGap={20} />
-              <YAxis domain={[minVal, maxVal]} stroke="#64748b" fontSize={11} tickFormatter={(v) => `$${formatNum(v, 0)}`} width={50} />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--sail-800)" vertical={false} />
+              <XAxis dataKey="date" stroke="var(--sail-500)" fontSize={11} tickMargin={8} minTickGap={20} />
+              <YAxis domain={[minVal, maxVal]} stroke="var(--sail-500)" fontSize={11} tickFormatter={(v) => `$${formatNum(v, 0)}`} width={50} />
               <Tooltip
-                contentStyle={{ background: '#0f172a', border: '1px solid #334155', borderRadius: '8px', fontSize: '12px' }}
-                itemStyle={{ color: '#fff' }}
+                contentStyle={{ background: 'var(--sail-900)', border: '1px solid var(--sail-700)', borderRadius: '8px', fontSize: '12px' }}
+                itemStyle={{ color: 'var(--sail-100)' }}
                 labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
                 formatter={(value: any, name: any) => {
                   if (name === 'band') {
@@ -109,13 +109,13 @@ function InteractiveTrajectory({ fc }: { fc: ForecastResponse }) {
                   return [`$${value}`, 'Expected Rate'];
                 }}
               />
-              <Area type="monotone" dataKey="band" fill="#0d9488" stroke="none" fillOpacity={0.15} />
-              <Line type="monotone" dataKey="value" stroke="var(--accent)" strokeWidth={2} dot={{ r: 3, fill: 'var(--accent)' }} activeDot={{ r: 5 }} />
+              <Area type="monotone" dataKey="band" fill="#1A1A1A" stroke="none" fillOpacity={0.05} />
+              <Line type="monotone" dataKey="value" stroke="#1A1A1A" strokeWidth={2} dot={{ r: 3, fill: '#1A1A1A' }} activeDot={{ r: 5 }} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
       ) : (
-        <div style={{ height: 260, overflowY: 'auto', background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4 }}>
+        <div style={{ height: 260, overflowY: 'auto', background: 'color-mix(in srgb, var(--sail-900) 60%, transparent)', border: '1px solid var(--sail-800)', borderRadius: 4 }}>
           <table style={{ width: '100%', fontSize: '12px', textAlign: 'right', borderCollapse: 'collapse' }}>
             <thead style={{ position: 'sticky', top: 0, background: 'var(--sail-900)' }}>
               <tr>
@@ -127,10 +127,10 @@ function InteractiveTrajectory({ fc }: { fc: ForecastResponse }) {
             </thead>
             <tbody>
               {data.map((row, i) => (
-                <tr key={i} style={{ borderBottom: '1px solid rgba(51,65,85,0.3)' }}>
+                <tr key={i} style={{ borderBottom: '1px solid color-mix(in srgb, var(--sail-700) 30%, transparent)' }}>
                   <td style={{ padding: '8px 16px', textAlign: 'left', color: 'var(--sail-300)' }}>{row.date}</td>
                   <td style={{ padding: '8px 16px', color: 'var(--sail-400)', fontFamily: 'var(--f-mono)' }}>${formatNum(row.band[0], 2)}</td>
-                  <td style={{ padding: '8px 16px', color: 'var(--accent-hi)', fontFamily: 'var(--f-mono)', fontWeight: 600 }}>${formatNum(row.value, 2)}</td>
+                  <td style={{ padding: '8px 16px', color: 'var(--text-accent)', fontFamily: 'var(--f-mono)', fontWeight: 600 }}>${formatNum(row.value, 2)}</td>
                   <td style={{ padding: '8px 16px', color: 'var(--sail-400)', fontFamily: 'var(--f-mono)' }}>${formatNum(row.band[1], 2)}</td>
                 </tr>
               ))}
@@ -424,7 +424,7 @@ const ForecastExplorerPage: React.FC = () => {
 
       {/* ── CENTER col-6 ── */}
       <div className="col-6 col-space">
-        <div className="panel accent-left">
+        <div className="panel panel-ink">
           <div style={{ padding: 16 }}>
             {fcLoading ? (
               <><Skel h={20} w="40%" /><Skel h={30} w="60%" /><Skel h={14} w="80%" /></>
@@ -449,13 +449,13 @@ const ForecastExplorerPage: React.FC = () => {
                       <span className={`badge badge-${forecast.provenance}`}>{forecast.provenance.toUpperCase()}</span>
                       {forecast.is_high_uncertainty && <span className="badge badge-assumed">HIGH UNCERTAINTY</span>}
                     </div>
-                    <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--sail-100)' }}>
+                    <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--ink-text)' }}>
                       {forecast.route} · {forecast.vessel_class} · {forecast.horizon_days}d
                     </div>
                   </div>
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
                     <div style={{ fontSize: 10, color: 'var(--sail-500)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Point · {forecast.horizon_days}d</div>
-                    <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--sail-100)', fontFamily: 'var(--f-mono)' }}>
+                    <div style={{ fontSize: 24, fontWeight: 600, color: 'var(--ink-text)', fontFamily: 'var(--f-mono)' }}>
                       ${formatNum(forecast.point_estimate, 2)}
                     </div>
                     {forecast.confidence_band && forecast.confidence_band.lower !== undefined && forecast.confidence_band.upper !== undefined && (
@@ -470,11 +470,11 @@ const ForecastExplorerPage: React.FC = () => {
                   {HORIZON_OPTIONS.map(h => (
                     <div key={h.days} className={`horizon-card ${selectedHorizon === h.days ? 'selected' : ''}`}
                       onClick={() => setSelectedHorizon(h.days)} style={{ cursor: 'pointer' }}>
-                      <div style={{ fontSize: 11, color: selectedHorizon === h.days ? 'var(--accent-hi)' : 'var(--sail-500)' }}>{h.label}</div>
-                      <div className="mono" style={{ color: 'var(--sail-100)', fontSize: 13, fontWeight: 500 }}>
-                        {selectedHorizon === h.days ? `$${formatNum(forecast.point_estimate, 2)}` : '—'}
+                      <div style={{ fontSize: 11, color: selectedHorizon === h.days ? '#1A1A1A' : 'var(--sail-500)' }}>{h.label}</div>
+                      <div className="mono" style={{ color: selectedHorizon === h.days ? '#1A1A1A' : 'var(--ink-text)', fontSize: 13, fontWeight: 500 }}>
+                        {selectedHorizon === h.days ? `$${formatNum(forecast.point_estimate, 2)}` : ''}
                       </div>
-                      <div style={{ fontSize: 10, color: 'var(--sail-500)' }}>
+                      <div style={{ fontSize: 10, color: selectedHorizon === h.days ? 'rgba(26,26,26,0.7)' : 'var(--sail-500)' }}>
                         {selectedHorizon === h.days && forecast.confidence_band && forecast.confidence_band.lower !== undefined && forecast.confidence_band.upper !== undefined
                           ? `${formatNum(forecast.confidence_band.lower, 1)}–${formatNum(forecast.confidence_band.upper, 1)}`
                           : 'select to load'}
@@ -497,7 +497,7 @@ const ForecastExplorerPage: React.FC = () => {
             {fcLoading ? <Skel h={224} w="100%" /> : forecast ? (
               <InteractiveTrajectory fc={forecast} />
             ) : fcError === 'no-forecast' ? null : (
-              <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.6)', border: '1px solid var(--sail-800)', borderRadius: 4 }}>
+              <div style={{ height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'color-mix(in srgb, var(--sail-900) 60%, transparent)', border: '1px solid var(--sail-800)', borderRadius: 4 }}>
                 <span style={{ fontSize: 12, color: 'var(--sail-500)' }}>Select a valid configuration to view trajectory.</span>
               </div>
             )}
@@ -507,7 +507,7 @@ const ForecastExplorerPage: React.FC = () => {
 
       {/* ── RIGHT col-3 ── */}
       <div className="col-3 col-space">
-        <section className="panel">
+        <section className="panel panel-tinted">
           <div className="panel-hd">
             <span className="panel-title">Pair Coverage Availability</span>
           </div>
@@ -521,7 +521,7 @@ const ForecastExplorerPage: React.FC = () => {
               const dests    = [...new Set(pairStatuses.map(p => p.dest))];
 
               function statusColor(s: string) {
-                if (s === 'serving') return 'var(--accent-hi)';
+                if (s === 'serving') return 'var(--text-accent)';
                 if (s === 'high-uncertainty') return 'var(--warn)';
                 if (s === 'no-data') return 'var(--sail-700)';
                 return 'var(--sail-600)';
@@ -543,7 +543,7 @@ const ForecastExplorerPage: React.FC = () => {
                       });
                       if (!hasAnyModel) return null; // Hide routes with completely zero models
                       return (
-                        <tr key={`${o}|${d}`} style={{ borderBottom: '1px solid rgba(51,65,85,0.2)' }}>
+                        <tr key={`${o}|${d}`} style={{ borderBottom: '1px solid color-mix(in srgb, var(--sail-700) 20%, transparent)' }}>
                           <td style={{ padding: '6px 0', color: 'var(--sail-300)', maxWidth: 100, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {o.split('(')[0].trim().slice(0,6)}➔{d.slice(0,6)}
                           </td>
@@ -563,7 +563,7 @@ const ForecastExplorerPage: React.FC = () => {
             })()}
             <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--sail-400)' }}>
-                <span style={{ color: 'var(--accent-hi)', fontSize: '14px' }}>●</span> Model Trained & Serving
+                <span style={{ color: 'var(--text-accent)', fontSize: '14px' }}>●</span> Model Trained & Serving
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--sail-400)' }}>
                 <span style={{ color: 'var(--warn)', fontSize: '14px' }}>●</span> High Uncertainty (Damped)
@@ -592,7 +592,7 @@ const ForecastExplorerPage: React.FC = () => {
                         <span style={{ textTransform: 'capitalize' }}>{key.replace(/_/g, ' ')}</span>
                         <div className="flex-center gap-2">
                           <div style={{ width: 100, height: 6, background: 'var(--sail-800)', borderRadius: 3, overflow: 'hidden' }}>
-                            <div style={{ width: `${(val / maxV) * 100}%`, height: '100%', background: 'var(--accent-hi)' }} />
+                            <div style={{ width: `${(val / maxV) * 100}%`, height: '100%', background: 'var(--text-accent)' }} />
                           </div>
                           <span className="mono text-sail-300" style={{ minWidth: 28, textAlign: 'right', fontSize: 11 }}>
                             {val.toFixed(2)}
@@ -603,9 +603,13 @@ const ForecastExplorerPage: React.FC = () => {
                   })()}
                 </>
               ) : (
-                <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--sail-300)' }}>
-                  {parsedExplanation?.text || forecast.driver_explanation}
-                </p>
+                <div style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--sail-300)', display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {(parsedExplanation?.text || forecast.driver_explanation).split('. ').filter(Boolean).map((sentence: string, i: number) => (
+                    <div key={i} style={{ padding: '6px 10px', background: 'color-mix(in srgb, var(--sail-900) 40%, transparent)', borderLeft: '2px solid var(--sail-700)', borderRadius: '0 4px 4px 0' }}>
+                      {sentence.trim()}{sentence.endsWith('.') ? '' : '.'}
+                    </div>
+                  ))}
+                </div>
               )
             ) : forecast ? (
               <p className="infer">No driver explanation available for this forecast object. It will be populated during the next retrain cycle.</p>
