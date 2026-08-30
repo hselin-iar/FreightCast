@@ -1025,12 +1025,12 @@ def solve(
 
     # max_voyages must track how many voyages the cargo physically NEEDS given
     # the feasible vessel classes — NOT a global max capacity.
-    # IMPORTANT: use the max capacity among FEASIBLE vessels only (not all classes).
-    # If only Panamax (75k) is feasible at the chosen port, 300k MT needs 4 voyages.
+    # IMPORTANT: use the MIN capacity among FEASIBLE vessels to allow smaller vessels to be selected.
+    # If Panamax (75k) is feasible alongside Capesize (180k), 120k MT needs 2 Panamax voyages.
     # We no longer hard-cap at 3: the MILP can use as many voyages as physically needed,
     # up to a practical limit of 6 to keep the solve fast.
-    feasible_cap = max(_VESSEL_CAPACITY_TONNES.get(o.vessel_class, 75_000.0) for o in truly_feasible)
-    needed_voyages = max(1, math.ceil(cargo_quantity / max(feasible_cap, 1.0)))
+    smallest_feasible_cap = min(_VESSEL_CAPACITY_TONNES.get(o.vessel_class, 75_000.0) for o in truly_feasible)
+    needed_voyages = max(1, math.ceil(cargo_quantity / max(smallest_feasible_cap, 1.0)))
     max_voyages = min(6, needed_voyages)  # practical upper bound to keep CBC fast
 
     # ── 11. MILP solve ────────────────────────────────────────────────────
@@ -1067,29 +1067,111 @@ def solve(
         origin_port=origin_port,
     )
 
-    # ── 13. Pure-spot / pure-locked baselines for scenario_comparison[] ───
+    # ── 13. Ranked Alternative Strategies for scenario_comparison[] ───────
     scenario_comparison: List[Strategy] = []
-    for baseline_mode in ("spot", "locked"):
-        base_assignments = []
-        for idx, opt in enumerate(truly_feasible[:1]):  # simplest single-voyage baseline
-            tau = tau_points.get(opt.vessel_class, [0])[0]
-            base_assignments.append({
-                "voyage": 1,
-                "vessel_class": opt.vessel_class,
-                "port": opt.port,
-                "tau_day": tau,
-                "mode": baseline_mode,
-            })
-        baseline = _assemble_strategy(
-            assignments=base_assignments,
+    
+    def _gen_alt(overrides_dict: dict, theme_label: str) -> Optional[Strategy]:
+        import dataclasses
+        if constraints:
+            merged = dataclasses.replace(constraints, **overrides_dict)
+        else:
+            merged = HumanOverrides(**overrides_dict)
+        
+        alt_assign, alt_solved_via = _build_and_solve_milp(
+            cargo_quantity=cargo_quantity,
+            feasible_opts=feasible_opts,
+            tau_points=tau_points,
+            coeffs=coeffs,
+            vessel_classes=list(dict.fromkeys(o.vessel_class for o in truly_feasible)),
+            ports=list(dict.fromkeys(o.port for o in truly_feasible)),
+            max_voyages=max_voyages,
+            commitment_benchmark_pct=commitment_benchmark_pct,
+            human_overrides=merged,
+        )
+        if not alt_assign:
+            return None
+            
+        strat = _assemble_strategy(
+            assignments=alt_assign,
             feasible_opts=feasible_opts,
             coeffs=coeffs,
             forecasts=forecasts,
-            solved_via="milp",
+            solved_via=alt_solved_via,
             commitment_benchmark_pct=commitment_benchmark_pct,
             is_default_benchmark=is_default_benchmark,
             origin_port=origin_port,
         )
-        scenario_comparison.append(baseline)
+        
+        # Inject theme label into provenance_note for the UI to read
+        existing_note = strat.provenance_note
+        strat.provenance_note = f"Theme: {theme_label}" + (f" ({existing_note})" if existing_note else "")
+        return strat
+
+    all_classes = list(dict.fromkeys(o.vessel_class for o in truly_feasible))
+    all_ports = list(dict.fromkeys(o.port for o in truly_feasible))
+    
+    # Generate dynamic counter-factual strategies based on optimal recommendation
+    themes = []
+    
+    if recommendation and recommendation.voyages:
+        opt_vessel = recommendation.voyages[0].vessel_class
+        opt_port   = recommendation.voyages[0].port
+        opt_mode   = recommendation.commitment_mode
+        opt_day    = recommendation.voyages[0].fix_day
+        
+        # 1. Mode Counter-Factual
+        if opt_mode == "spot" or opt_mode == "mixed":
+            themes.append(({"force_mode": "locked"}, "Hedge Market Risk (Lock)"))
+        if opt_mode == "locked" or opt_mode == "mixed":
+            themes.append(({"force_mode": "spot"}, "Float on Spot Market"))
+            
+        # 2. Timing Counter-Factual
+        if opt_day < 7:
+            themes.append(({"min_fix_day": opt_day + 7}, f"Delay Fixing (Wait >{opt_day + 7}d)"))
+        else:
+            themes.append(({"max_completion_day": max(0, opt_day - 7)}, "Fix Earlier (Urgent)"))
+            
+        # 3. Vessel Scarcity Counter-Factual
+        alt_classes = [c for c in all_classes if c != opt_vessel]
+        if alt_classes:
+            alt_v = alt_classes[0]
+            themes.append(({"require_vessel": alt_v}, f"What if no {opt_vessel}? Use {alt_v}"))
+            
+        # 4. Port Logistics Counter-Factual
+        alt_ports = [p for p in all_ports if p != opt_port]
+        if alt_ports:
+            alt_p = alt_ports[0]
+            themes.append(({"require_port": alt_p}, f"Discharge at {alt_p} instead"))
+    else:
+        # Fallback if no recommendation generated
+        themes = [
+            ({"max_completion_day": 0}, "Urgent Coverage"),
+            ({"min_fix_day": 14}, "Wait & See (Fix >14d)"),
+            ({"force_mode": "spot"}, "Pure Spot Exposure"),
+            ({"force_mode": "locked"}, "Pure Locked Contract"),
+        ]
+    
+    for overrides, label in themes:
+        alt = _gen_alt(overrides, label)
+        if alt: scenario_comparison.append(alt)
+        
+    # Deduplicate and sort
+    seen_sigs = set()
+    
+    def _sig(strat: Strategy) -> str:
+        return "|".join(sorted(f"{v.vessel_class}-{v.port}-{v.mode}-{v.fix_day}" for v in strat.voyages))
+    
+    if recommendation and recommendation.voyages:
+        seen_sigs.add(_sig(recommendation))
+        
+    unique_alts = []
+    for alt in scenario_comparison:
+        sig = _sig(alt)
+        if sig not in seen_sigs:
+            seen_sigs.add(sig)
+            unique_alts.append(alt)
+            
+    unique_alts.sort(key=lambda s: s.total_cost_worst_case)
+    scenario_comparison = unique_alts[:4]
 
     return recommendation, scenario_comparison

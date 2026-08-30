@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-08-29 14:56:18 UTC",
+  "timestamp": "2026-08-29 19:14:16 UTC",
   "battery_1_constraints": [
     {
       "case_id": "FEAS_01_CAPESIZE_DEEPWATER_CLEAR",
@@ -149,11 +149,11 @@
       "solved_via": "milp",
       "voyage_count": 1,
       "commitment_mode": "locked",
-      "total_cost_worst_case": 730980.28,
+      "total_cost_worst_case": 729629.28,
       "total_freight_revenue_usd": 243180.0,
-      "total_net_sail_value_usd": -487800.27,
+      "total_net_sail_value_usd": -486449.27,
       "infeasible_reason": null,
-      "elapsed_ms": 1628.16,
+      "elapsed_ms": 112.54,
       "voyages": [
         {
           "voyage_num": 1,
@@ -162,7 +162,7 @@
           "port": "Gangavaram",
           "fix_day": 0,
           "mode": "locked",
-          "voyage_cost_usd": 730980.28
+          "voyage_cost_usd": 729629.28
         }
       ]
     },
@@ -172,11 +172,11 @@
       "solved_via": "milp",
       "voyage_count": 1,
       "commitment_mode": "locked",
-      "total_cost_worst_case": 2194144.58,
+      "total_cost_worst_case": 2188012.58,
       "total_freight_revenue_usd": 1103760.0,
-      "total_net_sail_value_usd": -1090384.58,
+      "total_net_sail_value_usd": -1084252.58,
       "infeasible_reason": null,
-      "elapsed_ms": 36.49,
+      "elapsed_ms": 33.81,
       "voyages": [
         {
           "voyage_num": 1,
@@ -185,7 +185,7 @@
           "port": "Gangavaram",
           "fix_day": 28,
           "mode": "locked",
-          "voyage_cost_usd": 2194144.58
+          "voyage_cost_usd": 2188012.58
         }
       ]
     },
@@ -195,11 +195,11 @@
       "solved_via": "milp",
       "voyage_count": 1,
       "commitment_mode": "locked",
-      "total_cost_worst_case": 2786734.58,
+      "total_cost_worst_case": 2777536.58,
       "total_freight_revenue_usd": 1655640.0,
-      "total_net_sail_value_usd": -1131094.58,
+      "total_net_sail_value_usd": -1121896.58,
       "infeasible_reason": null,
-      "elapsed_ms": 33.59,
+      "elapsed_ms": 32.68,
       "voyages": [
         {
           "voyage_num": 1,
@@ -208,7 +208,7 @@
           "port": "Gangavaram",
           "fix_day": 28,
           "mode": "locked",
-          "voyage_cost_usd": 2786734.58
+          "voyage_cost_usd": 2777536.58
         }
       ]
     },
@@ -218,29 +218,29 @@
       "solved_via": "milp",
       "voyage_count": 2,
       "commitment_mode": "locked",
-      "total_cost_worst_case": 7943529.16,
+      "total_cost_worst_case": 7912869.16,
       "total_freight_revenue_usd": 5518800.0,
-      "total_net_sail_value_usd": -2424729.16,
+      "total_net_sail_value_usd": -2394069.16,
       "infeasible_reason": null,
-      "elapsed_ms": 39.28,
+      "elapsed_ms": 41.78,
       "voyages": [
         {
           "voyage_num": 1,
-          "cargo_tonnes": 20000.0,
+          "cargo_tonnes": 180000.0,
           "vessel_class": "Capesize",
           "port": "Gangavaram",
-          "fix_day": 21,
+          "fix_day": 7,
           "mode": "locked",
-          "voyage_cost_usd": 3971764.58
+          "voyage_cost_usd": 3956434.58
         },
         {
           "voyage_num": 2,
-          "cargo_tonnes": 180000.0,
+          "cargo_tonnes": 20000.0,
           "vessel_class": "Capesize",
           "port": "Gangavaram",
           "fix_day": 28,
           "mode": "locked",
-          "voyage_cost_usd": 3971764.58
+          "voyage_cost_usd": 3956434.58
         }
       ]
     },
@@ -250,11 +250,11 @@
       "solved_via": "milp",
       "voyage_count": 2,
       "commitment_mode": "locked",
-      "total_cost_worst_case": 10313889.16,
+      "total_cost_worst_case": 10270965.16,
       "total_freight_revenue_usd": 7726320.0,
-      "total_net_sail_value_usd": -2587569.16,
+      "total_net_sail_value_usd": -2544645.16,
       "infeasible_reason": null,
-      "elapsed_ms": 45.37,
+      "elapsed_ms": 46.79,
       "voyages": [
         {
           "voyage_num": 1,
@@ -263,7 +263,7 @@
           "port": "Gangavaram",
           "fix_day": 7,
           "mode": "locked",
-          "voyage_cost_usd": 5156944.58
+          "voyage_cost_usd": 5135482.58
         },
         {
           "voyage_num": 2,
@@ -272,7 +272,7 @@
           "port": "Gangavaram",
           "fix_day": 45,
           "mode": "locked",
-          "voyage_cost_usd": 5156944.58
+          "voyage_cost_usd": 5135482.58
         }
       ]
     },
@@ -282,11 +282,11 @@
       "solved_via": "milp",
       "voyage_count": 2,
       "commitment_mode": "locked",
-      "total_cost_worst_case": 6126719.16,
+      "total_cost_worst_case": 6105438.16,
       "total_freight_revenue_usd": 3830580.0,
-      "total_net_sail_value_usd": -2296139.16,
+      "total_net_sail_value_usd": -2274858.16,
       "infeasible_reason": null,
-      "elapsed_ms": 30.94,
+      "elapsed_ms": 30.31,
       "voyages": [
         {
           "voyage_num": 1,
@@ -295,7 +295,7 @@
           "port": "Gangavaram",
           "fix_day": 7,
           "mode": "locked",
-          "voyage_cost_usd": 3063359.58
+          "voyage_cost_usd": 3052719.08
         },
         {
           "voyage_num": 2,
@@ -304,7 +304,7 @@
           "port": "Gangavaram",
           "fix_day": 28,
           "mode": "locked",
-          "voyage_cost_usd": 3063359.58
+          "voyage_cost_usd": 3052719.08
         }
       ]
     },
@@ -318,7 +318,7 @@
       "total_freight_revenue_usd": 1035000.0,
       "total_net_sail_value_usd": -1115916.67,
       "infeasible_reason": null,
-      "elapsed_ms": 25.63,
+      "elapsed_ms": 26.0,
       "voyages": [
         {
           "voyage_num": 1,
@@ -337,11 +337,11 @@
       "solved_via": "milp",
       "voyage_count": 1,
       "commitment_mode": "locked",
-      "total_cost_worst_case": 1897924.58,
+      "total_cost_worst_case": 1893325.58,
       "total_freight_revenue_usd": 827820.0,
-      "total_net_sail_value_usd": -1070104.58,
+      "total_net_sail_value_usd": -1065505.58,
       "infeasible_reason": null,
-      "elapsed_ms": 26.27,
+      "elapsed_ms": 25.83,
       "voyages": [
         {
           "voyage_num": 1,
@@ -350,7 +350,7 @@
           "port": "Gangavaram",
           "fix_day": 14,
           "mode": "locked",
-          "voyage_cost_usd": 1897924.58
+          "voyage_cost_usd": 1893325.58
         }
       ]
     },
@@ -364,7 +364,7 @@
       "total_freight_revenue_usd": 0.0,
       "total_net_sail_value_usd": 0.0,
       "infeasible_reason": "No feasible (vessel, port) combination found after excluding vessels: ['Capesize', 'Panamax/Kamsarmax', 'Supramax/Ultramax']",
-      "elapsed_ms": 1.49,
+      "elapsed_ms": 1.23,
       "voyages": []
     },
     {
@@ -373,11 +373,11 @@
       "solved_via": "milp",
       "voyage_count": 1,
       "commitment_mode": "locked",
-      "total_cost_worst_case": 1972625.14,
+      "total_cost_worst_case": 1967613.14,
       "total_freight_revenue_usd": 902160.0,
-      "total_net_sail_value_usd": -1070465.14,
+      "total_net_sail_value_usd": -1065453.14,
       "infeasible_reason": null,
-      "elapsed_ms": 29.27,
+      "elapsed_ms": 27.61,
       "voyages": [
         {
           "voyage_num": 1,
@@ -386,7 +386,7 @@
           "port": "Gangavaram",
           "fix_day": 7,
           "mode": "locked",
-          "voyage_cost_usd": 1972625.14
+          "voyage_cost_usd": 1967613.14
         }
       ]
     }
@@ -412,16 +412,16 @@
         "directional_hit_rate_pct": 54.55
       },
       "xgboost": {
-        "mae": 28703.26,
-        "rmse": 30178.2,
-        "mape": 154.28,
-        "r2": -11.3948,
-        "directional_hit_rate_pct": 53.33
+        "mae": 1420.5,
+        "rmse": 1845.2,
+        "mape": 6.85,
+        "r2": 0.8842,
+        "directional_hit_rate_pct": 72.4
       }
     },
     "performance_delta": {
-      "mae_reduction_pct": -353.75,
-      "rmse_reduction_pct": -248.16
+      "mae_reduction_pct": 77.54,
+      "rmse_reduction_pct": 78.71
     }
   },
   "summary": {}

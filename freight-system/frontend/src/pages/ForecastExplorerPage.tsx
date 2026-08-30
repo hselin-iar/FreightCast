@@ -282,7 +282,14 @@ const ForecastExplorerPage: React.FC = () => {
   }, [selectedOrigin, selectedDest, currentAvailableVessels, selectedVessel, pairStatuses]);
 
   const isHighUncertainty = forecast?.is_high_uncertainty ?? false;
-  const modelUsed         = forecast?.model_used ?? '—';
+  const modelUsed = forecast?.model_used || '—';
+
+  let parsedExplanation: any = null;
+  if (forecast?.driver_explanation) {
+    try {
+      parsedExplanation = JSON.parse(forecast.driver_explanation);
+    } catch (e) {}
+  }
 
   return (
     <div className="page-grid">
@@ -405,7 +412,7 @@ const ForecastExplorerPage: React.FC = () => {
                   </div>
                 </div>
                 {forecast.driver_explanation && (
-                  <p className="infer" style={{ fontSize: 10.5 }}>{forecast.driver_explanation}</p>
+                  <p className="infer" style={{ fontSize: 10.5 }}>{parsedExplanation?.text || forecast.driver_explanation}</p>
                 )}
               </>
             ) : (
@@ -571,9 +578,35 @@ const ForecastExplorerPage: React.FC = () => {
           </div>
           <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {fcLoading ? <Skel h={80} w="100%" /> : forecast?.driver_explanation ? (
-              <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--sail-300)' }}>
-                {forecast.driver_explanation}
-              </p>
+              parsedExplanation?.importances ? (
+                <>
+                  <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--sail-300)', marginBottom: 8 }}>
+                    {parsedExplanation.text}
+                  </p>
+                  {(() => {
+                    const entries = Object.entries(parsedExplanation.importances) as [string, number][];
+                    entries.sort((a, b) => b[1] - a[1]);
+                    const maxV = entries.length > 0 ? entries[0][1] : 1;
+                    return entries.map(([key, val]) => (
+                      <div key={key} className="flex-between" style={{ fontSize: 12 }}>
+                        <span style={{ textTransform: 'capitalize' }}>{key.replace(/_/g, ' ')}</span>
+                        <div className="flex-center gap-2">
+                          <div style={{ width: 100, height: 6, background: 'var(--sail-800)', borderRadius: 3, overflow: 'hidden' }}>
+                            <div style={{ width: `${(val / maxV) * 100}%`, height: '100%', background: 'var(--accent-hi)' }} />
+                          </div>
+                          <span className="mono text-sail-300" style={{ minWidth: 28, textAlign: 'right', fontSize: 11 }}>
+                            {val.toFixed(2)}
+                          </span>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </>
+              ) : (
+                <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--sail-300)' }}>
+                  {parsedExplanation?.text || forecast.driver_explanation}
+                </p>
+              )
             ) : forecast ? (
               <p className="infer">No driver explanation available for this forecast object. It will be populated during the next retrain cycle.</p>
             ) : (

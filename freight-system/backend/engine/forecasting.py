@@ -369,7 +369,7 @@ def _fit_xgboost(
     history: List[float],
     horizon: int,
     exog: Optional[Any] = None,
-) -> List[float]:
+) -> Tuple[List[float], Dict[str, float]]:
     """
     Dispatch to the enriched or pure-AR XGBoost path.
 
@@ -396,10 +396,10 @@ def _fit_xgboost(
     except Exception as exc:
         logger.warning("XGBoost fit failed (%s path): %s — damped_trend fallback",
                        "enriched" if use_enriched else "AR", exc)
-        return damped_trend(history, horizon)
+        return damped_trend(history, horizon), {}
 
 
-def _fit_xgboost_ar(history: List[float], horizon: int) -> List[float]:
+def _fit_xgboost_ar(history: List[float], horizon: int) -> Tuple[List[float], Dict[str, float]]:
     """
     Pure autoregressive XGBoost with lags 1..10.
     Original behaviour — unchanged except extracted to a named function.
@@ -409,11 +409,11 @@ def _fit_xgboost_ar(history: List[float], horizon: int) -> List[float]:
         from xgboost import XGBRegressor
     except ImportError:
         logger.warning("xgboost not installed — falling back to damped_trend")
-        return damped_trend(history, horizon)
+        return damped_trend(history, horizon), {}
 
     n_lags = min(10, len(history) - horizon - 1)
     if n_lags < 3:
-        return damped_trend(history, horizon)
+        return damped_trend(history, horizon), {}
 
     X_list, y_list = [], []
     for i in range(n_lags, len(history)):
@@ -436,14 +436,15 @@ def _fit_xgboost_ar(history: List[float], horizon: int) -> List[float]:
         pred = float(model.predict(np.array([feats]))[0])
         preds.append(pred)
         current.append(pred)
-    return preds
+    importances = {f"lag_{i}": float(v) for i, v in enumerate(model.feature_importances_)}
+    return preds, importances
 
 
 def _fit_xgboost_enriched(
     history: List[float],
     horizon: int,
     exog: Dict[str, List[float]],
-) -> List[float]:
+) -> Tuple[List[float], Dict[str, float]]:
     """
     XGBoost with the research-validated 16-feature set.
 
@@ -466,11 +467,11 @@ def _fit_xgboost_enriched(
         from xgboost import XGBRegressor
     except ImportError:
         logger.warning("xgboost not installed — falling back to damped_trend")
-        return damped_trend(history, horizon)
+        return damped_trend(history, horizon), {}
 
     n = len(history)
     if n < 8:
-        return damped_trend(history, horizon)
+        return damped_trend(history, horizon), {}
 
     _FEAT_COLS = [
         "tc_lag_1", "tc_lag_2", "tc_lag_3", "tc_lag_4",
@@ -530,7 +531,8 @@ def _fit_xgboost_enriched(
         pred = float(model.predict(np.array([row]))[0])
         preds.append(pred)
         rolling.append(pred)
-    return preds
+    importances = {feat: float(v) for feat, v in zip(_FEAT_COLS, model.feature_importances_)}
+    return preds, importances
 
 
 def _fit_prophet(history: List[float], horizon: int) -> List[float]:
@@ -699,7 +701,7 @@ def _retrain_pair(route: str, vessel_class: str, horizons: List[int]) -> None:
         logger.debug("(%s, %s, h=%d) naive MAE=%.2f", route, vessel_class, horizon, naive_mae)
 
         # --- Select and gate model (passes aligned_exog for enriched XGBoost) ---
-        best_model_name, best_preds, best_mae = _select_best_model(
+        best_model_name, best_preds, best_mae, best_importances = _select_best_model(
             history, horizon, naive_mae, aligned_exog
         )
 
@@ -709,7 +711,7 @@ def _retrain_pair(route: str, vessel_class: str, horizons: List[int]) -> None:
 
         # --- Build and write ForecastObject ---
         forecast_obj = _build_forecast_object(
-            route, vessel_class, horizon, best_preds, history, best_model_name
+            route, vessel_class, horizon, best_preds, history, best_model_name, feature_importances=best_importances
         )
         repository.write_forecast(forecast_obj)
         logger.info(
@@ -723,7 +725,7 @@ def _select_best_model(
     horizon: int,
     naive_mae: float,
     exog_series: Dict[str, List[float]],
-) -> Tuple[str, List[float], float]:
+) -> Tuple[str, List[float], float, Dict[str, float]]:
     """
     Try models in priority order (XGBoost → ARIMA → Naive baseline).
     Returns (model_name, predictions, mae).
@@ -744,6 +746,7 @@ def _select_best_model(
     best_name = "naive"
     best_preds = naive_preds
     best_mae = naive_mae
+    best_importances: Dict[str, float] = {}
 
     # Determine if the enriched path is viable for this pair
     enriched_viable = (
@@ -771,18 +774,18 @@ def _select_best_model(
     if n >= MIN_OBSERVATIONS_FOR_XGBOOST:
         try:
             if enriched_viable:
-                xgb_preds = _fit_xgboost(history, horizon, exog=exog_series)
+                xgb_preds, xgb_importances = _fit_xgboost(history, horizon, exog=exog_series)
                 xgb_mae = _walk_forward_mae_with_exog(
                     history,
                     exog_series,
-                    lambda h, hor, ex: _fit_xgboost(h, hor, exog=ex),
+                    lambda h, hor, ex: _fit_xgboost(h, hor, exog=ex)[0],
                     horizon,
                 )
             else:
-                xgb_preds = _fit_xgboost(history, horizon, exog=None)
+                xgb_preds, xgb_importances = _fit_xgboost(history, horizon, exog=None)
                 xgb_mae = _walk_forward_mae(
                     history,
-                    lambda h, hor, _fn=_fit_xgboost_ar: _fn(h, hor),
+                    lambda h, hor, _fn=_fit_xgboost_ar: _fn(h, hor)[0],
                     horizon,
                 )
 
@@ -791,10 +794,11 @@ def _select_best_model(
                 best_name = "xgboost"
                 best_preds = xgb_preds
                 best_mae = xgb_mae
+                best_importances = xgb_importances
         except Exception as exc:
             logger.debug("XGBoost evaluation failed: %s", exc)
 
-    return best_name, best_preds, best_mae
+    return best_name, best_preds, best_mae, best_importances
 
 
 
@@ -805,6 +809,7 @@ def _build_forecast_object(
     predictions: List[float],
     history: List[float],
     model_name: str,
+    feature_importances: Optional[Dict[str, float]] = None,
 ) -> dict:
     """Build a ForecastObject dict ready for repository.write_forecast()."""
     # Clamp horizon: never extrapolate beyond what predictions covers
@@ -836,11 +841,17 @@ def _build_forecast_object(
 
     # Driver explanation: simple heuristic for now (extended in Step 7 with SHAP)
     trend_dir = "rising" if (clamped_preds[-1] > history[-1] if history else False) else "falling or stable"
-    driver_explanation = (
-        f"Model: {model_name}. Horizon: {horizon}d. Trend: {trend_dir}. "
-        f"Confidence interval: [{confidence_band['lower']:.0f}, {confidence_band['upper']:.0f}] USD/day. "
-        f"Provenance: modeled."
-    )
+    
+    driver_dict = {
+        "text": (
+            f"Model: {model_name}. Horizon: {horizon}d. Trend: {trend_dir}. "
+            f"Confidence interval: [{confidence_band['lower']:.0f}, {confidence_band['upper']:.0f}] USD/day. "
+            f"Provenance: modeled."
+        ),
+        "importances": feature_importances or {}
+    }
+    import json
+    driver_explanation = json.dumps(driver_dict)
 
     return {
         "route": route,

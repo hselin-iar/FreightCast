@@ -61,6 +61,16 @@ function StrategyRow({ strategy, isWinner, isSelected, onClick }: {
     : lockedCount === strategy.voyages.length ? 'all locked'
     : `${spotCount}s / ${lockedCount}L`;
 
+  let primaryLabel = strategy.voyages.length > 0 ? `${strategy.voyages.length} ${strategy.voyages[0].vessel_class} (${modeMix})` : strategy.commitment_mode;
+  let hasTheme = false;
+  if (strategy.provenance_note?.startsWith("Theme: ")) {
+    const themeMatch = strategy.provenance_note.match(/^Theme:\s*([^(]+)/);
+    if (themeMatch) {
+      primaryLabel = themeMatch[1].trim();
+      hasTheme = true;
+    }
+  }
+
   return (
     <tr
       onClick={onClick}
@@ -72,7 +82,9 @@ function StrategyRow({ strategy, isWinner, isSelected, onClick }: {
       }}
     >
       <td style={{ padding: '9px 0', color: isWinner ? 'var(--accent-hi)' : 'var(--sail-200)', fontWeight: isWinner ? 600 : undefined }}>
-        {isWinner ? '★ ' : isSelected ? '▶ ' : ''}{strategy.commitment_mode} {isWinner ? '(selected)' : ''}
+        {isWinner ? '★ ' : isSelected ? '▶ ' : ''}
+        {primaryLabel}
+        {isWinner ? ' (selected)' : ''}
       </td>
       <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12 }}>{strategy.voyage_count}</td>
       <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12 }}>{modeMix}</td>
@@ -82,7 +94,9 @@ function StrategyRow({ strategy, isWinner, isSelected, onClick }: {
       <td style={{ paddingLeft: 12, fontSize: 11, color: strategy.infeasible_reason ? 'var(--warn)' : 'var(--sail-400)', fontFamily: 'var(--f-sans)' }}>
         {strategy.infeasible_reason
           ? `Infeasible: ${strategy.infeasible_reason}`
-          : strategy.voyages.some(v => v.lightening_required) ? 'Lightening req.' : strategy.provenance_note?.slice(0, 36) ?? ''}
+          : strategy.voyages.some(v => v.lightening_required) ? 'Lightening req.' : 
+             hasTheme ? strategy.voyages.length > 0 ? `${strategy.voyages.length} ${strategy.voyages[0].vessel_class} (${modeMix})` : ''
+             : strategy.provenance_note?.slice(0, 36) ?? ''}
       </td>
     </tr>
   );
@@ -98,9 +112,9 @@ const WhyNotComparator: React.FC<Props> = ({ result }) => {
   const challBD    = challenger?.cost_breakdown;
 
   return (
-    <div className="panel" id="why-not-comparator">
+    <section className="panel" style={{ marginTop: 16 }}>
       <div className="panel-hd">
-        <span className="panel-title">Scenario Comparison</span>
+        <span className="panel-title">Ranked Alternatives</span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <ProvenanceBadge provenance="modeled" note="Pure re-render of scenario_comparison[] from /recommendation — no re-solve." />
           <span className="panel-meta">click row to compare</span>
@@ -170,7 +184,7 @@ const WhyNotComparator: React.FC<Props> = ({ result }) => {
           <p className="infer">Click a non-winning row to see a cost breakdown diff against the winner.</p>
         )}
       </div>
-    </div>
+    </section>
   );
 };
 

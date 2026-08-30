@@ -14,6 +14,7 @@ import {
   getHealth,
   getPortStatus,
   getRecommendation,
+  getForecast,
   getScope,
 } from '../lib/apiClient';
 import type {
@@ -177,23 +178,21 @@ function PortCongestionPanel({ portStatuses, loading }: { portStatuses: PortStat
         {loading ? (
           [1,2,3].map(i => <div key={i} className="skel" style={{ height: 18 }} />)
         ) : portStatuses.length ? portStatuses.map(ps => (
-          <div key={ps.port} className="flex-between" style={{ fontSize: 13 }}>
-            <span className="tip-wrap">
-              <span>{ps.port}</span>
+          <div key={ps.port} style={{ display: 'grid', gridTemplateColumns: '1fr auto 64px', gap: '8px', alignItems: 'center', fontSize: 13 }}>
+            <span className="tip-wrap" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{ps.port}</span>
               <span className="tip-box">
                 {ps.vessel_count} vessels in AIS geofence. {ps.source_note ?? ''}
               </span>
             </span>
-            <div className="cong-bar">
-              <span style={{ fontSize: 12, fontFamily: 'var(--f-mono)', color: textColor(ps.vessel_count) }}>
-                {ps.vessel_count} vessels
-              </span>
-              <div className="cong-track">
-                <div className="cong-fill" style={{
-                  width: `${congPct(ps.vessel_count)}%`,
-                  background: congColor(ps.vessel_count),
-                }} />
-              </div>
+            <span style={{ fontSize: 12, fontFamily: 'var(--f-mono)', color: textColor(ps.vessel_count), textAlign: 'right', whiteSpace: 'nowrap' }}>
+              {ps.vessel_count} vessels
+            </span>
+            <div className="cong-track" style={{ width: '100%', margin: 0 }}>
+              <div className="cong-fill" style={{
+                width: `${congPct(ps.vessel_count)}%`,
+                background: congColor(ps.vessel_count),
+              }} />
             </div>
           </div>
         )) : (
@@ -364,6 +363,29 @@ const STATIC_DRIVERS = [
 ];
 
 function RateDrivers({ driverNote }: { driverNote: string | null }) {
+  let explanationText = driverNote ?? 'XGBoost feature importance · Prophet trend/seasonal decomposition attached. Conditions monitor: level & volatility checks passed → uncertainty = normal.';
+  let drivers = STATIC_DRIVERS;
+
+  if (driverNote) {
+    try {
+      const parsed = JSON.parse(driverNote);
+      if (parsed.text) explanationText = parsed.text;
+      if (parsed.importances && Object.keys(parsed.importances).length > 0) {
+        const sorted = Object.entries(parsed.importances as Record<string, number>)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 6);
+        const maxWeight = sorted[0][1];
+        drivers = sorted.map(([label, weight]) => ({
+          label: label.replace(/_/g, ' '),
+          weight,
+          width: maxWeight > 0 ? (weight / maxWeight) * 100 : 0
+        }));
+      }
+    } catch (e) {
+      // not JSON, fallback to plain string
+    }
+  }
+
   return (
     <section className="panel">
       <div className="panel-hd">
@@ -371,9 +393,9 @@ function RateDrivers({ driverNote }: { driverNote: string | null }) {
         <ProvenanceBadge provenance="modeled" />
       </div>
       <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {STATIC_DRIVERS.map(d => (
+        {drivers.map(d => (
           <div key={d.label} className="flex-between" style={{ fontSize: 12 }}>
-            <span>{d.label}</span>
+            <span style={{ textTransform: 'capitalize' }}>{d.label}</span>
             <div className="flex-center gap-2">
               <div className="driver-bar">
                 <div className="driver-fill" style={{ width: `${d.width}%` }} />
@@ -385,7 +407,7 @@ function RateDrivers({ driverNote }: { driverNote: string | null }) {
           </div>
         ))}
         <p className="infer">
-          {driverNote ?? 'XGBoost feature importance · Prophet trend/seasonal decomposition attached. Conditions monitor: level & volatility checks passed → uncertainty = normal.'}
+          {explanationText}
         </p>
       </div>
     </section>
@@ -399,10 +421,10 @@ function RateDrivers({ driverNote }: { driverNote: string | null }) {
 /* ── Bottom: System Status & Provenance Strip ──────────────── */
 function SystemProvenanceStrip({ origin, ports, health }: { origin: string; ports: Set<string>; health: HealthResponse | null }) {
   return (
-    <div className="panel col-12">
-      <div className="panel-hd">
+    <div className="panel">
+      <div className="panel-hd" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
         <span className="panel-title">System Status & Data Provenance</span>
-        <div className="flex-center gap-4 panel-meta">
+        <div className="panel-meta" style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
           <span>Origin: {origin || '—'}</span>
           <span>Discharge candidates: {[...ports].join(' · ') || '—'}</span>
           <span>AIS geofence {health?.ais_listener_last_seen ? 'active' : 'offline'}</span>
@@ -418,7 +440,7 @@ function SystemProvenanceStrip({ origin, ports, health }: { origin: string; port
               <span className="badge badge-assumed">ASSUMED · commitment_benchmark</span>
             </div>
           </div>
-          <div className="prov-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          <div className="prov-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
             <div className="prov-cell">
               <div className="prov-cell-label">Model gate</div>
               <div className="prov-cell-value" style={{ color: health?.models_loaded ? 'var(--emerald-4)' : 'var(--warn)' }}>
@@ -469,6 +491,7 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
   const [health,       setHealth]       = useState<HealthResponse | null>(null);
   const [scope,        setScope]        = useState<ScopeResponse | null>(null);
   const [result,       setResult]       = useState<RecommendationResponse | null>(null);
+  const [driverNote,   setDriverNote]   = useState<string | null>(null);
   const [portStatuses, setPortStatuses] = useState<PortStatusResponse[]>([]);
 
   /* ── UI state ── */
@@ -543,6 +566,12 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
       setResult(data);
       setBaseRequest(req);
       onCargoContextChange?.(req);
+      const mainVoyage = data.recommendation.voyages[0];
+      if (mainVoyage) {
+        getForecast(`${origin}→${mainVoyage.port}`, mainVoyage.vessel_class, 30).then(fRes => {
+          if (fRes.data) setDriverNote(fRes.data.driver_explanation);
+        });
+      }
     }
   }, [qty, origin, ports, flex, bench, onCargoContextChange]);
 
@@ -554,14 +583,30 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
     // Ignore AbortError (stale request cancelled)
     if (apiErr?.message?.includes('abort') || apiErr?.message?.includes('cancel')) return;
     if (apiErr) { setError(apiErr.message); return; }
-    if (data) setResult(data);
+    if (data) {
+      setResult(data);
+      const mainVoyage = data.recommendation.voyages[0];
+      if (mainVoyage) {
+        getForecast(`${req.origin_port}→${mainVoyage.port}`, mainVoyage.vessel_class, 30).then(fRes => {
+          if (fRes.data) setDriverNote(fRes.data.driver_explanation);
+        });
+      }
+    }
   }, []);
 
 
   /** Sync external re-solve result from ChatPanel (DOC2 §3c dashboard_update) */
   useEffect(() => {
-    if (externalResult) setResult(externalResult);
-  }, [externalResult]);
+    if (externalResult) {
+      setResult(externalResult);
+      const mainVoyage = externalResult.recommendation.voyages[0];
+      if (mainVoyage && origin) {
+        getForecast(`${origin}→${mainVoyage.port}`, mainVoyage.vessel_class, 30).then(fRes => {
+          if (fRes.data) setDriverNote(fRes.data.driver_explanation);
+        });
+      }
+    }
+  }, [externalResult, origin]);
 
   const rec = result?.recommendation;
 
@@ -650,7 +695,6 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
             <WinningPlanBanner rec={rec} />
             <CostBreakdown bd={rec.cost_breakdown} />
             <ScenarioFanChart result={result!} origin={origin} />
-            <WhyNotComparator result={result!} />
           </>
         )}
 
@@ -668,28 +712,19 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
             </div>
           </section>
         )}
-        <RateDrivers driverNote={null} />
+        <RateDrivers driverNote={driverNote} />
         {result ? <SensitivityPanel result={result} /> : null}
         {result && <RobustnessReadout result={result} />}
-        {/* Decision Assistant lives in the right sidebar → see ChatPanel mounted in App.tsx */}
-        <section className="panel">
-          <div className="panel-hd">
-            <span className="panel-title">Chartering Agent</span>
-            <span className="panel-meta" style={{ color: 'var(--accent-hi)' }}>→ sidebar →</span>
-          </div>
-          <div className="panel-body">
-            <p className="infer">
-              The live Chartering Agent is open in the <strong>right sidebar</strong>.
-              Ask any chartering question there — it calls the same optimizer as this form.
-              Constraint-change questions (e.g. "what if no Capesize?" or "finish in 12 days")
-              will automatically update the plan above.
-            </p>
-          </div>
-        </section>
+        <SystemProvenanceStrip origin={origin} ports={ports} health={health} />
       </div>
 
       {/* ── BOTTOM ROW ── */}
       <div className="col-12 col-space">
+        {result && (
+          <div style={{ marginBottom: 16 }}>
+            <WhyNotComparator result={result} />
+          </div>
+        )}
         {result && (
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 4 }}>
             <ExecutiveBriefExport
@@ -704,7 +739,6 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
           dischargePorts={[...ports]}
           portStatuses={portStatuses}
         />
-        <SystemProvenanceStrip origin={origin} ports={ports} health={health} />
       </div>
 
     </div>

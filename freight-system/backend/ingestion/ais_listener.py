@@ -180,7 +180,7 @@ def _on_position_message(
             _update_congestion_snapshot(port, recorded_at)
 
     # (b) Vessel fleet tracking — write position snapshot
-    if is_loading and imo:
+    if imo:
         pos = {
             "imo": imo,
             "vessel_name": vessel_name,

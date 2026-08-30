@@ -158,3 +158,10 @@ export async function getFleetSchedule(
 ): Promise<Result<import('./types').FleetScheduleResponse>> {
   return apiFetch<import('./types').FleetScheduleResponse>('/fleet-schedule', {}, signal);
 }
+
+/**
+ * GET /vessel-positions — Live vessel coordinates from AIS listener.
+ */
+export async function getVesselPositions(): Promise<Result<Record<string, any>>> {
+  return apiFetch<Record<string, any>>('/vessel-positions');
+}
