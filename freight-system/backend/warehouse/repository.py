@@ -728,6 +728,21 @@ def get_candidate_vessels_by_class(vessel_class: str) -> list[VesselPositionSnap
         return list(rows)
 
 
+def get_all_candidate_vessels() -> list[VesselPositionSnapshot]:
+    """
+    Return all tracked vessel positions.
+    Used by the Fleet Portfolio dashboard for live visibility.
+    """
+    with get_session() as session:
+        rows = session.execute(
+            select(VesselPositionSnapshot)
+            .order_by(desc(VesselPositionSnapshot.recorded_at))
+        ).scalars().all()
+        for row in rows:
+            session.expunge(row)
+        return list(rows)
+
+
 def get_earliest_repositioning_days(
     vessel_class: str,
     origin_port: str,
@@ -803,21 +818,55 @@ def get_latest_retrain_timestamp() -> Optional[datetime]:
 
 def get_latest_ais_timestamp() -> Optional[datetime]:
     """
-    Return the recorded_at of the most-recently written live CongestionSnapshot,
-    or None if the AIS listener hasn't written any live snapshots yet.
+    Return the recorded_at of the most-recently written live VesselPositionSnapshot
+    or CongestionSnapshot, indicating the AIS listener is actively writing data.
     Used by /health to report ais_listener_last_seen.
-    DOC3 §FEATURE: API Layer — health check.
     """
     try:
         with get_session() as session:
-            row = session.execute(
+            # Check VesselPositionSnapshot first (updated constantly by moving ships)
+            vessel_row = session.execute(
+                select(VesselPositionSnapshot.recorded_at)
+                .order_by(desc(VesselPositionSnapshot.recorded_at))
+                .limit(1)
+            ).scalar_one_or_none()
+
+            # Check CongestionSnapshot as well (updated on geofence enter/exit)
+            cong_row = session.execute(
                 select(CongestionSnapshot.recorded_at)
                 .where(CongestionSnapshot.is_live == True)  # noqa: E712
                 .order_by(desc(CongestionSnapshot.recorded_at))
                 .limit(1)
             ).scalar_one_or_none()
-            return row
+
+            timestamps = [t for t in (vessel_row, cong_row) if t is not None]
+            if not timestamps:
+                return None
+            latest = max(timestamps)
+            if latest and latest.tzinfo is None:
+                latest = latest.replace(tzinfo=timezone.utc)
+            return latest
     except Exception as exc:
         logger.debug("get_latest_ais_timestamp failed: %s", exc)
         return None
 
+
+def get_latest_bunker_timestamp() -> Optional[datetime]:
+    """
+    Return the recorded_at of the most-recently written bunker price.
+    Used by /health to report bunker_last_updated.
+    """
+    try:
+        with get_session() as session:
+            row = session.execute(
+                select(CongestionSnapshot.recorded_at)
+                .where(CongestionSnapshot.port == "bunker")
+                .order_by(desc(CongestionSnapshot.recorded_at))
+                .limit(1)
+            ).scalar_one_or_none()
+            if row and row.tzinfo is None:
+                row = row.replace(tzinfo=timezone.utc)
+            return row
+    except Exception as exc:
+        logger.debug("get_latest_bunker_timestamp failed: %s", exc)
+        return None

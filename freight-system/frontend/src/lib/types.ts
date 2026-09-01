@@ -128,6 +128,7 @@ export interface HealthResponse {
   models_loaded:          boolean;
   last_retrain_at:        string | null;
   ais_listener_last_seen: string | null;
+  bunker_last_updated:    string | null;
   message:                string | null;
 }
 
@@ -241,4 +242,33 @@ export interface FleetScheduleResponse {
   assignments: ContractAssignment[];
   vessel_schedule: VesselScheduleItem[];
   all_decisions: Record<string, any>[];
+}
+
+/* ── /fleet-status (Phase 1 MVP) ────────────────────────── */
+
+export interface LiveVesselStatus {
+  imo: number;
+  vessel_name: string;
+  vessel_class: string;
+  dwt: number;
+  current_lat: number;
+  current_lon: number;
+  speed_knots: number;
+  recorded_at: string;
+  status: string;
+  destination: string;
+}
+
+export interface VesselClassEntry {
+  class_name: string;
+  typical_capacity_tonnes: number;
+  draft_m: number;
+  loa_m: number;
+  beam_m: number;
+}
+
+export interface FleetStatusResponse {
+  vessels: LiveVesselStatus[];         // Live AIS-tracked (may be empty)
+  vessel_classes: VesselClassEntry[];  // Canonical catalog — always present
+  ais_live: boolean;
 }

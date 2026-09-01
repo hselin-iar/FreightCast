@@ -235,6 +235,7 @@ class HealthResponse(BaseModel):
     models_loaded:          bool
     last_retrain_at:        Optional[datetime]
     ais_listener_last_seen: Optional[datetime]
+    bunker_last_updated:    Optional[datetime] = None
     message:                Optional[str] = None
 
 

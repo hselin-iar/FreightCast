@@ -62,6 +62,7 @@ _port_vessel_map: dict[str, set[int]] = {}
 # Subscription builder
 # ---------------------------------------------------------------------------
 
+
 def _build_subscription(bounding_boxes: dict[str, dict]) -> dict:
     """
     Build the AIS stream subscription payload.
@@ -69,32 +70,32 @@ def _build_subscription(bounding_boxes: dict[str, dict]) -> dict:
     Subscribes to:
       (a) All port bounding boxes for congestion tracking
       (b) Loading-region bounding boxes for vessel fleet tracking
+
+    AISStream v0 BoundingBoxes format: list of [[minLat, minLon], [maxLat, maxLon]]
     """
     # Loading regions for fleet tracking (DOC3 §FEATURE: AIS Listener)
     loading_regions = {
-        "Queensland_loading": {"min_lat": -24.0, "max_lat": -18.0, "min_lon": 148.0, "max_lon": 153.0},
-        "Richards_Bay_loading": {"min_lat": -29.0, "max_lat": -27.0, "min_lon": 31.0,  "max_lon": 33.0},
-        "Kalimantan_loading": {"min_lat": -4.0,  "max_lat": 2.0,   "min_lon": 115.0, "max_lon": 119.0},
+        "Queensland_loading":   {"min_lat": -24.0, "max_lat": -18.0, "min_lon": 148.0, "max_lon": 153.0},
+        "Richards_Bay_loading": {"min_lat": -29.0, "max_lat": -27.0, "min_lon":  31.0, "max_lon":  33.0},
+        "Kalimantan_loading":   {"min_lat":  -4.0, "max_lat":   2.0, "min_lon": 115.0, "max_lon": 119.0},
     }
 
     all_boxes = {**bounding_boxes, **loading_regions}
 
+    # aisstream.io v0 format: each box is [[minLat, minLon], [maxLat, maxLon]]
     bboxes = []
     for region_name, bb in all_boxes.items():
         if isinstance(bb, dict) and bb:  # skip placeholder empty dicts
-            bboxes.append({
-                "MinLatitude":  bb.get("min_lat", -90),
-                "MaxLatitude":  bb.get("max_lat",  90),
-                "MinLongitude": bb.get("min_lon", -180),
-                "MaxLongitude": bb.get("max_lon",  180),
-            })
+            bboxes.append([
+                [bb.get("min_lat", -90), bb.get("min_lon", -180)],
+                [bb.get("max_lat",  90), bb.get("max_lon",  180)],
+            ])
 
     return {
         "APIKey": _AISSTREAM_API_KEY,
-        "BoundingBoxes": bboxes if bboxes else [[
-            {"MinLatitude": -90, "MaxLatitude": 90,
-             "MinLongitude": -180, "MaxLongitude": 180}
-        ]],
+        "BoundingBoxes": bboxes if bboxes else [
+            [[-90, -180], [90, 180]]   # global fallback
+        ],
         "FilterMessageTypes": ["PositionReport", "ShipStaticData"],
     }
 

@@ -73,5 +73,6 @@ def health() -> HealthResponse:
         models_loaded=models_loaded,
         last_retrain_at=last_retrain_at,
         ais_listener_last_seen=ais_last_seen,
+        bunker_last_updated=repository.get_latest_bunker_timestamp() if warehouse_ok else None,
         message=message,
     )

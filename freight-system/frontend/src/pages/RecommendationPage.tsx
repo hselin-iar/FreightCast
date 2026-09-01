@@ -590,6 +590,19 @@ function RateDrivers({ driverNote }: { driverNote: string | null }) {
 
 /* ── Bottom: System Status & Provenance Strip ──────────────── */
 function SystemProvenanceStrip({ origin, ports, health }: { origin: string; ports: Set<string>; health: HealthResponse | null }) {
+  const AIS_STALE_MS = 60 * 60 * 1000;
+  const aisLastSeen = health?.ais_listener_last_seen ? new Date(health.ais_listener_last_seen) : null;
+  const aisIsRecent = aisLastSeen ? (Date.now() - aisLastSeen.getTime() < AIS_STALE_MS) : false;
+  const aisLabel = !health ? '…' : aisIsRecent ? 'live' : aisLastSeen ? 'stale' : 'offline';
+  const aisColor = aisIsRecent ? 'var(--emerald-4)' : 'var(--warn)';
+
+  const bunkerDate = health?.bunker_last_updated ? new Date(health.bunker_last_updated) : null;
+  const bunkerAgeH = bunkerDate ? Math.round((Date.now() - bunkerDate.getTime()) / 3600000) : null;
+  const bunkerLabel = bunkerDate
+    ? `${bunkerDate.toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short' })} · ${bunkerAgeH}h ago`
+    : '—';
+  const bunkerColor = bunkerAgeH !== null && bunkerAgeH < 26 ? 'var(--emerald-4)' : 'var(--warn)';
+
   return (
     <div className="panel panel-tinted">
       <div className="panel-hd" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
@@ -597,7 +610,7 @@ function SystemProvenanceStrip({ origin, ports, health }: { origin: string; port
         <div className="panel-meta" style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-start' }}>
           <span>Origin: {origin || '—'}</span>
           <span>Discharge candidates: {[...ports].join(' · ') || '—'}</span>
-          <span>AIS geofence {health?.ais_listener_last_seen ? 'active' : 'offline'}</span>
+          <span>AIS geofence {aisLabel}</span>
         </div>
       </div>
       <div className="panel-body">
@@ -619,8 +632,13 @@ function SystemProvenanceStrip({ origin, ports, health }: { origin: string; port
             </div>
             <div className="prov-cell">
               <div className="prov-cell-label">AIS listener</div>
-              <div className="prov-cell-value" style={{ color: health?.ais_listener_last_seen ? 'var(--emerald-4)' : 'var(--warn)' }}>
-                {health?.ais_listener_last_seen ? 'live' : 'offline'}
+              <div className="prov-cell-value" style={{ color: aisColor }}>
+                {aisLabel}
+                {aisLastSeen && (
+                  <span style={{ fontSize: 10, color: 'var(--sail-500)', display: 'block', fontFamily: 'var(--f-mono)' }}>
+                    {aisLastSeen.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })} IST
+                  </span>
+                )}
               </div>
             </div>
             <div className="prov-cell">
@@ -633,6 +651,12 @@ function SystemProvenanceStrip({ origin, ports, health }: { origin: string; port
               <div className="prov-cell-label">Warehouse</div>
               <div className="prov-cell-value" style={{ color: health?.warehouse_reachable ? 'var(--emerald-4)' : 'var(--warn)' }}>
                 {health?.warehouse_reachable ? 'ok' : 'degraded'}
+              </div>
+            </div>
+            <div className="prov-cell">
+              <div className="prov-cell-label">Bunker price (VLSFO)</div>
+              <div className="prov-cell-value" style={{ color: bunkerColor, fontSize: 11 }}>
+                {bunkerLabel}
               </div>
             </div>
           </div>
@@ -690,18 +714,19 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
         if (sc.origins.length) setOrigin(sc.origins[0]);
         if (sc.dest_ports.length) setPorts(new Set(sc.dest_ports.slice(0, 2)));
 
-        // Fetch port statuses for first few ports
+        // Fire port status fetches in the background — don't await them here
+        // so the form becomes interactive immediately after scope resolves.
         setPortLoading(true);
-        const statusResults = await Promise.all(
-          sc.dest_ports.slice(0, 4).map(p => getPortStatus(p))
-        );
-        setPortStatuses(statusResults.map(r => r.data).filter(Boolean) as PortStatusResponse[]);
-        setPortLoading(false);
+        Promise.all(sc.dest_ports.slice(0, 4).map(p => getPortStatus(p))).then(statusResults => {
+          setPortStatuses(statusResults.map(r => r.data).filter(Boolean) as PortStatusResponse[]);
+          setPortLoading(false);
+        });
       } else {
         setPortLoading(false);
       }
     })();
   }, []);
+
 
   const togglePort = (p: string) => {
     setPorts(prev => {

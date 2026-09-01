@@ -129,17 +129,18 @@ const PortConstraintsPage: React.FC = () => {
                 }
               </Geographies>
 
-              {/* Heatmaps around congested ports */}
+              {/* Heatmaps around congested ports — radius scales with zoom so circles shrink as map zooms out */}
               {allEntries.map(([name, c]) => {
                 const live = portStatuses[name];
-                // Base heat on vessel count. If no live data, use a small default.
                 const count = live ? live.vessel_count : (name in LOAD_PORT_CONSTRAINTS ? 5 : 2);
                 if (count === 0) return null;
-                const heatRadius = Math.min(25, 8 + (count * 2));
-                const color = count > 5 ? 'rgba(239, 68, 68, 0.4)' : count > 2 ? 'rgba(245, 158, 11, 0.4)' : 'rgba(16, 185, 129, 0.4)';
+                // Base size in world-space pixels, divided by zoom to keep visual size proportional
+                const baseRadius = Math.min(18, 5 + (count * 1.5));
+                const scaledRadius = baseRadius / mapPosition.zoom;
+                const color = count > 5 ? 'rgba(239, 68, 68, 0.45)' : count > 2 ? 'rgba(245, 158, 11, 0.45)' : 'rgba(16, 185, 129, 0.45)';
                 return (
                   <Marker key={`heat-${name}`} coordinates={[c.lon, c.lat]}>
-                    <circle r={heatRadius} fill={color} stroke={color.replace('0.4', '0.8')} strokeWidth={1} style={{ pointerEvents: 'none' }} />
+                    <circle r={scaledRadius} fill={color} stroke={color.replace('0.45', '0.85')} strokeWidth={0.5 / mapPosition.zoom} style={{ pointerEvents: 'none' }} />
                   </Marker>
                 );
               })}
@@ -207,6 +208,14 @@ const PortConstraintsPage: React.FC = () => {
                     const isSelected = port === selectedPort;
                     const rowType = port in PORT_CONSTRAINTS ? 'Discharge' : 'Load';
                     
+                    // Sparkline: color derived from vessel_count (congestion severity)
+                    const vesselCount = live ? live.vessel_count : 0;
+                    const sparkColor = vesselCount > 5
+                      ? '#ef4444'  // red = high congestion
+                      : vesselCount > 2
+                      ? '#f59e0b'  // amber = medium
+                      : '#10b981'; // green = low / no data
+
                     const sparklinePoints = (() => {
                       const pts = [];
                       let y = 10 + (i % 3) * 2;
@@ -263,7 +272,7 @@ const PortConstraintsPage: React.FC = () => {
                              </td>
                              <td style={{ padding: '16px 20px' }}>
                                 <svg width="60" height="20" style={{ overflow: 'visible' }}>
-                                   <polyline fill="none" stroke="#1A1A1A" strokeWidth="1.5" points={sparklinePoints} />
+                                   <polyline fill="none" stroke={sparkColor} strokeWidth="1.5" points={sparklinePoints} />
                                 </svg>
                              </td>
                            </>

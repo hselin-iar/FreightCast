@@ -10,14 +10,92 @@ import json
 import logging
 import os
 from pathlib import Path
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
+from backend.warehouse.repository import get_all_candidate_vessels, get_vessel_specs
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+
+class LiveVesselStatus(BaseModel):
+    imo: int
+    vessel_name: str
+    vessel_class: str
+    dwt: float
+    current_lat: float
+    current_lon: float
+    speed_knots: float
+    recorded_at: datetime
+    status: str = "Available"
+    destination: str = "Open"
+
+
+class VesselClassEntry(BaseModel):
+    """Canonical vessel class from VesselSpec — always shown even without live AIS."""
+    class_name: str
+    typical_capacity_tonnes: float
+    draft_m: float
+    loa_m: float
+    beam_m: float
+
+
+class FleetStatusResponse(BaseModel):
+    vessels: List[LiveVesselStatus]          # Live AIS-tracked vessels (may be empty)
+    vessel_classes: List[VesselClassEntry]   # Canonical classes from VesselSpec (always present)
+    ais_live: bool                           # True when at least one live vessel is tracked
+
+
+@router.get("/fleet-status", response_model=FleetStatusResponse)
+def get_fleet_status() -> FleetStatusResponse:
+    """
+    Returns the live fleet visibility data (Phase 1).
+    - vessels: real ships currently tracked by the AIS listener (may be empty if listener is offline)
+    - vessel_classes: canonical vessel class catalog from VesselSpec (always present)
+    - ais_live: True when at least one live vessel position exists
+    """
+    try:
+        db_vessels = get_all_candidate_vessels()
+        live_vessels = []
+        for v in db_vessels:
+            live_vessels.append(LiveVesselStatus(
+                imo=v.imo,
+                vessel_name=v.vessel_name,
+                vessel_class=v.vessel_class,
+                dwt=v.dwt,
+                current_lat=v.current_lat,
+                current_lon=v.current_lon,
+                speed_knots=v.speed_knots,
+                recorded_at=v.recorded_at,
+            ))
+
+        # Always return the canonical vessel class catalog from VesselSpec
+        specs = get_vessel_specs()
+        vessel_classes = [
+            VesselClassEntry(
+                class_name=s.class_name,
+                typical_capacity_tonnes=s.typical_capacity_tonnes,
+                draft_m=s.draft_m,
+                loa_m=s.loa_m,
+                beam_m=s.beam_m,
+            )
+            for s in specs.values()
+        ]
+
+        return FleetStatusResponse(
+            vessels=live_vessels,
+            vessel_classes=vessel_classes,
+            ais_live=len(live_vessels) > 0,
+        )
+    except Exception as exc:
+        logger.exception("Failed to get fleet status: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
 
 # Locate freight_optimization directory robustly
 CURRENT_FILE = Path(__file__).resolve()

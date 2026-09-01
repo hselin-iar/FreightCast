@@ -45,11 +45,10 @@ function PlaceholderView({ title, meta }: { title: string; meta: string }) {
 /* ── App shell ─────────────────────────────────────────── */
 const TABS: { id: View; label: string }[] = [
   { id: 'recommendation', label: 'Recommendation' },
-  { id: 'fleet',          label: 'Fleet'           },
   { id: 'forecast',       label: 'Forecast'        },
   { id: 'ports',          label: 'Ports'           },
-  { id: 'scenario',       label: 'Scenarios'       },
   { id: 'provenance',     label: 'Provenance'      },
+  { id: 'fleet',          label: 'Fleet'           },
 ];
 
 const App: React.FC = () => {
@@ -90,7 +89,20 @@ const App: React.FC = () => {
     ? `Forecast gen: ${new Date(health.last_retrain_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })} IST`
     : null;
 
-  const aisStatus = health ? (health.ais_listener_last_seen ? 'ok' : 'warn') : 'ok';
+  const bunkerUpdatedLabel = health?.bunker_last_updated
+    ? `Bunker: ${new Date(health.bunker_last_updated).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })} IST`
+    : null;
+
+  // AIS is considered "live" only if last seen within the past 60 minutes.
+  // A stale timestamp from days ago is NOT live — show it as warn.
+  const AIS_STALE_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
+  const aisLastSeen = health?.ais_listener_last_seen ? new Date(health.ais_listener_last_seen) : null;
+  const aisIsRecent = aisLastSeen ? (Date.now() - aisLastSeen.getTime() < AIS_STALE_THRESHOLD_MS) : false;
+  const aisStatus = health ? (aisIsRecent ? 'ok' : 'warn') : 'ok';
+  const aisLabel  = !health ? 'AIS …'
+    : aisIsRecent    ? 'AIS live'
+    : aisLastSeen    ? 'AIS stale'
+    : 'AIS offline';
   const dbStatus = health ? (health.warehouse_reachable ? 'ok' : 'warn') : 'ok';
 
   return (
@@ -116,21 +128,16 @@ const App: React.FC = () => {
         </nav>
 
         <div className="nav-right">
-          {/* AIS status — from /health */}
-          <span className="flex-center gap-1">
+          {/* AIS status — live only if seen within last 60 min */}
+          <span className="flex-center gap-1" title={aisLastSeen ? `Last seen: ${aisLastSeen.toLocaleString()}` : 'Never seen'}>
             <span className={`status-dot ${aisStatus}`} />
-            {health ? (health.ais_listener_last_seen ? 'AIS live' : 'AIS standby') : 'AIS live'}
+            {aisLabel}
           </span>
           {/* Warehouse status */}
           <span className="flex-center gap-1">
             <span className={`status-dot ${dbStatus}`} />
             {health ? (health.warehouse_reachable ? 'DB ok' : 'DB degraded') : 'DB ok'}
           </span>
-          {lastRetrainLabel && (
-            <span className="mono" style={{ fontSize: 10, color: 'var(--sail-500)' }}>
-              {lastRetrainLabel}
-            </span>
-          )}
         </div>
       </header>
 
@@ -170,7 +177,6 @@ const App: React.FC = () => {
         {view === 'fleet'      && <div style={{ padding: '1.5rem', maxWidth: '1400px', margin: '0 auto' }}><FleetSchedulePage /></div>}
         {view === 'forecast'   && <ForecastExplorerPage />}
         {view === 'ports'      && <PortConstraintsPage />}
-        {view === 'scenario'   && <PlaceholderView title="Scenario Lab" meta="WhatIfSliders · Build Step 12" />}
         {view === 'provenance' && <PlaceholderView title="Data Provenance" meta="Full audit trail · Build Step 12" />}
       </div>
     </div>

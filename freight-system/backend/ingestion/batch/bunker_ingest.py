@@ -74,6 +74,33 @@ def run() -> IngestResult:
         alerts.append(stale_msg)
         logger.warning(stale_msg)
 
+    if batch.rows:
+        latest_price = batch.rows[0]["price_usd"]
+        try:
+            from backend.warehouse import repository
+            from datetime import datetime, timezone
+            now_utc = datetime.now(timezone.utc)
+            repository.write_congestion_snapshot("bunker", {
+                "port": "bunker",
+                "vessel_count": 0,
+                "avg_wait_hours": 0.0,
+                "recorded_at": now_utc,
+                "is_live": not is_fallback,
+                "source_note": source_label,
+                "bunker_price_usd": latest_price
+            })
+            
+            # Write to exogenous_feature table for the forecasting engine (XGBoost)
+            repository.upsert_exogenous_feature([{
+                "source": "bunker_vlsfo",
+                "date": now_utc.date().isoformat(),
+                "value": latest_price
+            }])
+            
+            logger.info("Bunker price $%.2f written to warehouse (congestion + exogenous_feature).", latest_price)
+        except Exception as e:
+            logger.error("Failed to write bunker price to warehouse: %s", e)
+
     logger.info(
         "Bunker ingest: %d clean, %d rejected, is_fallback=%s",
         len(batch.rows), len(batch.rejected), is_fallback,

@@ -160,6 +160,15 @@ export async function getFleetSchedule(
 }
 
 /**
+ * GET /fleet-status — Live fleet visibility MVP.
+ */
+export async function getFleetStatus(
+  signal?: AbortSignal,
+): Promise<Result<import('./types').FleetStatusResponse>> {
+  return apiFetch<import('./types').FleetStatusResponse>('/fleet-status', {}, signal);
+}
+
+/**
  * GET /vessel-positions — Live vessel coordinates from AIS listener.
  */
 export async function getVesselPositions(): Promise<Result<Record<string, any>>> {
