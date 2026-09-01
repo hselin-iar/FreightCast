@@ -85,14 +85,6 @@ const App: React.FC = () => {
     [],
   );
 
-  const lastRetrainLabel = health?.last_retrain_at
-    ? `Forecast gen: ${new Date(health.last_retrain_at).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })} IST`
-    : null;
-
-  const bunkerUpdatedLabel = health?.bunker_last_updated
-    ? `Bunker: ${new Date(health.bunker_last_updated).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })} IST`
-    : null;
-
   // AIS is considered "live" only if last seen within the past 60 minutes.
   // A stale timestamp from days ago is NOT live — show it as warn.
   const AIS_STALE_THRESHOLD_MS = 60 * 60 * 1000; // 60 minutes
