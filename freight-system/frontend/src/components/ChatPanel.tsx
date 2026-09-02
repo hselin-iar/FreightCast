@@ -73,11 +73,11 @@ function uid(): string {
 
 function TypingDots() {
   return (
-    <span style={{ display: 'inline-flex', gap: 3, alignItems: 'center', height: 14 }}>
+    <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center', height: 16, padding: '2px 2px' }}>
       {[0, 1, 2].map(i => (
         <span key={i} style={{
-          width: 5, height: 5, borderRadius: '50%',
-          background: 'var(--accent)',
+          width: 6, height: 6, borderRadius: '50%',
+          background: '#374151',
           animation: `typingDot 1.2s ${i * 0.2}s ease-in-out infinite`,
           display: 'inline-block',
         }} />
