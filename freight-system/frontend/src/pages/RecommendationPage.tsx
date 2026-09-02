@@ -36,6 +36,15 @@ import ExecutiveBriefExport from '../components/ExecutiveBriefExport';
 import ProvenanceBadge from '../components/ProvenanceBadge';
 
 
+import {
+  DEFAULT_SCOPE,
+  DEFAULT_PORT_STATUSES,
+  getCachedScope,
+  setCachedScope,
+  getCachedPortStatuses,
+  setCachedPortStatuses,
+} from '../lib/defaults';
+
 /* ── Helpers ──────────────────────────────────────────────── */
 function fmtM(n: number)  { return '$' + (n / 1_000_000).toFixed(2) + 'M'; }
 function fmtK(n: number)  {
@@ -62,6 +71,8 @@ function CargoForm({
   ports, togglePort, flex, setFlex, bench, setBench, onSubmit,
 }: FormPanelProps) {
   const [benchOpen, setBenchOpen] = useState(false);
+  const activeOrigins = scope?.origins?.length ? scope.origins : DEFAULT_SCOPE.origins;
+  const activeDestPorts = scope?.dest_ports?.length ? scope.dest_ports : DEFAULT_SCOPE.dest_ports;
 
   return (
     <section className="panel">
@@ -79,32 +90,22 @@ function CargoForm({
         {/* Origin */}
         <div className="form-group">
           <label className="form-label">Origin port</label>
-          {scope ? (
-            <select className="input-field" value={origin} onChange={e => setOrigin(e.target.value)}>
-              {scope.origins.map(o => <option key={o} value={o}>{o}</option>)}
-            </select>
-          ) : <div className="skel" style={{ height: 34 }} />}
+          <select className="input-field" value={origin} onChange={e => setOrigin(e.target.value)}>
+            {activeOrigins.map(o => <option key={o} value={o}>{o}</option>)}
+          </select>
         </div>
 
         {/* Discharge ports */}
         <div className="form-group">
           <label className="form-label">Preferred discharge ports</label>
-          {scope ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {scope.dest_ports.map(p => (
-                <label key={p} className="checkbox-item">
-                  <input type="checkbox" checked={ports.has(p)} onChange={() => togglePort(p)} />
-                  {p}
-                </label>
-              ))}
-            </div>
-          ) : (
-            <>
-              <div className="skel" style={{ height: 20, marginBottom: 6 }} />
-              <div className="skel" style={{ height: 20, marginBottom: 6 }} />
-              <div className="skel" style={{ height: 20 }} />
-            </>
-          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {activeDestPorts.map(p => (
+              <label key={p} className="checkbox-item">
+                <input type="checkbox" checked={ports.has(p)} onChange={() => togglePort(p)} />
+                {p}
+              </label>
+            ))}
+          </div>
         </div>
 
         {/* Timing flex */}
@@ -155,7 +156,7 @@ function CargoForm({
           </div>
         </div>
 
-        <button type="submit" className="btn btn-accent btn-full" disabled={loading || !scope} id="btn-run">
+        <button type="submit" className="btn btn-accent btn-full" disabled={loading} id="btn-run">
           {loading ? <><span className="spinner" />Solving…</> : 'Run Recommendation'}
         </button>
         {loading && <p className="infer" style={{ textAlign: 'center' }}>MILP solver running — may take a few seconds</p>}
@@ -165,10 +166,11 @@ function CargoForm({
 }
 
 /* ── Left panel: Port Congestion ───────────────────────────── */
-function PortCongestionPanel({ portStatuses, loading }: { portStatuses: PortStatusResponse[]; loading: boolean }) {
+function PortCongestionPanel({ portStatuses }: { portStatuses: PortStatusResponse[] }) {
   const congPct = (v: number) => Math.min(100, Math.round((v / 20) * 100));
   const congColor = (v: number) => v > 10 ? 'var(--warn)' : v > 5 ? '#f59e0b' : 'var(--emerald)';
   const textColor = (v: number) => v > 10 ? 'var(--warn)' : v > 5 ? '#f59e0b' : 'var(--emerald-4)';
+  const displayStatuses = portStatuses.length ? portStatuses : DEFAULT_PORT_STATUSES;
 
   return (
     <section className="panel" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -176,9 +178,7 @@ function PortCongestionPanel({ portStatuses, loading }: { portStatuses: PortStat
         <span className="panel-title">Port Congestion</span>
       </div>
       <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 10, flex: 1 }}>
-        {loading ? (
-          [1,2,3].map(i => <div key={i} className="skel" style={{ height: 18 }} />)
-        ) : portStatuses.length ? portStatuses.map(ps => (
+        {displayStatuses.map(ps => (
           <div key={ps.port} style={{ display: 'grid', gridTemplateColumns: '1fr auto 64px', gap: '8px', alignItems: 'center', fontSize: 13 }}>
             <span className="tip-wrap" style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'block' }}>{ps.port}</span>
@@ -196,9 +196,7 @@ function PortCongestionPanel({ portStatuses, loading }: { portStatuses: PortStat
               }} />
             </div>
           </div>
-        )) : (
-          <p className="infer">AIS data not available (backend offline or cold start).</p>
-        )}
+        ))}
         <p className="infer" style={{ marginTop: 'auto' }}>
           <strong>Read this as:</strong> congestion is not a hard block — it adds a risk-buffer term and biases entry timing.
         </p>
@@ -678,22 +676,24 @@ export default function RecommendationPage({
   externalResult?: RecommendationResponse | null;
   chatConstraintNote?: string | null;
 }) {
+  const initialScope = getCachedScope();
+  const initialPortStatuses = getCachedPortStatuses();
+
   /* ── Server state ── */
   const [health,       setHealth]       = useState<HealthResponse | null>(null);
-  const [scope,        setScope]        = useState<ScopeResponse | null>(null);
+  const [scope,        setScope]        = useState<ScopeResponse>(initialScope);
   const [result,       setResult]       = useState<RecommendationResponse | null>(null);
   const [driverNote,   setDriverNote]   = useState<string | null>(null);
-  const [portStatuses, setPortStatuses] = useState<PortStatusResponse[]>([]);
+  const [portStatuses, setPortStatuses] = useState<PortStatusResponse[]>(initialPortStatuses);
 
   /* ── UI state ── */
   const [loading,      setLoading]      = useState(false);
-  const [portLoading,  setPortLoading]  = useState(true);
   const [error,        setError]        = useState<string | null>(null);
 
   /* ── Form state ── */
   const [qty,    setQty]    = useState('60000');
-  const [origin, setOrigin] = useState('');
-  const [ports,  setPorts]  = useState<Set<string>>(new Set());
+  const [origin, setOrigin] = useState(initialScope.origins[0] || 'Australia (Hay Point)');
+  const [ports,  setPorts]  = useState<Set<string>>(new Set(initialScope.dest_ports.slice(0, 2)));
   const [flex,   setFlex]   = useState(30);
   const [bench,  setBench]  = useState('95');
 
@@ -703,25 +703,37 @@ export default function RecommendationPage({
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    (async () => {
-      const [{ data: h }, { data: sc }] = await Promise.all([getHealth(), getScope()]);
-      setHealth(h);
-      if (sc) {
-        setScope(sc);
-        if (sc.origins.length) setOrigin(sc.origins[0]);
-        if (sc.dest_ports.length) setPorts(new Set(sc.dest_ports.slice(0, 2)));
+    let active = true;
+    // Fast non-blocking background fetch
+    getHealth().then(({ data: h }) => {
+      if (active && h) setHealth(h);
+    });
 
-        // Fire port status fetches in the background — don't await them here
-        // so the form becomes interactive immediately after scope resolves.
-        setPortLoading(true);
-        Promise.all(sc.dest_ports.slice(0, 4).map(p => getPortStatus(p))).then(statusResults => {
-          setPortStatuses(statusResults.map(r => r.data).filter(Boolean) as PortStatusResponse[]);
-          setPortLoading(false);
-        });
-      } else {
-        setPortLoading(false);
+    getScope().then(({ data: sc }) => {
+      if (!active || !sc) return;
+      setScope(sc);
+      setCachedScope(sc);
+      if (sc.origins?.length) {
+        setOrigin(curr => (sc.origins.includes(curr) ? curr : sc.origins[0]));
       }
-    })();
+      if (sc.dest_ports?.length) {
+        setPorts(curr => (curr.size > 0 ? curr : new Set(sc.dest_ports.slice(0, 2))));
+      }
+
+      // Fetch port statuses in background
+      Promise.all(sc.dest_ports.slice(0, 4).map(p => getPortStatus(p))).then(statusResults => {
+        if (!active) return;
+        const liveStatuses = statusResults.map(r => r.data).filter(Boolean) as PortStatusResponse[];
+        if (liveStatuses.length) {
+          setPortStatuses(liveStatuses);
+          setCachedPortStatuses(liveStatuses);
+        }
+      });
+    });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
 
@@ -829,7 +841,7 @@ export default function RecommendationPage({
             loading={loading}
           />
         )}
-        <PortCongestionPanel portStatuses={portStatuses} loading={portLoading} />
+        <PortCongestionPanel portStatuses={portStatuses} />
       </div>
 
           {/* ── CENTER COL ── */}

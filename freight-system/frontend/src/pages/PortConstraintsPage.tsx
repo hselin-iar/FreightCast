@@ -1,10 +1,5 @@
-/**
- * PortConstraintsPage.tsx
- */
-
 import React, { useEffect, useState, useMemo } from 'react';
-import { getPortStatus, getScope } from '../lib/apiClient';
-import { getVesselPositions } from '../lib/apiClient';
+import { getPortStatus, getVesselPositions } from '../lib/apiClient';
 import type { PortStatusResponse } from '../lib/types';
 import { ComposableMap, Geographies, Geography, Marker, ZoomableGroup } from 'react-simple-maps';
 import geoData from '../assets/world-110m.json';
@@ -22,9 +17,14 @@ const LOAD_PORT_CONSTRAINTS: Record<string, any> = {
   'Indonesia (East Kalimantan)': { maxDraft: 15.0, maxLoa: 265, maxBeam: 43, handling: 22000, tide: 'no',  lightening: '—', lat: -1.26, lon: 116.82 },
 };
 
+import { getCachedPortStatuses, setCachedPortStatuses } from '../lib/defaults';
+
 const PortConstraintsPage: React.FC = () => {
-  const [portStatuses,  setPortStatuses]  = useState<Record<string, PortStatusResponse>>({});
-  const [statusLoading, setStatusLoading] = useState(true);
+  const initialMap: Record<string, PortStatusResponse> = {};
+  getCachedPortStatuses().forEach(s => { initialMap[s.port] = s; });
+
+  const [portStatuses,  setPortStatuses]  = useState<Record<string, PortStatusResponse>>(initialMap);
+  const [statusLoading, setStatusLoading] = useState(false);
   const [vesselPositions, setVesselPositions] = useState<Record<string, any>>({});
   const [mapPosition, setMapPosition] = useState({ coordinates: [115, 0] as [number, number], zoom: 1.2 });
 
@@ -35,18 +35,26 @@ const PortConstraintsPage: React.FC = () => {
   const [selectedPort, setSelectedPort] = useState<string>(allEntries[0][0]);
 
   useEffect(() => {
+    let active = true;
     (async () => {
-      await getScope();
-      setStatusLoading(true);
       const allPorts = Object.keys(PORT_CONSTRAINTS);
       const results = await Promise.all(allPorts.map(p => getPortStatus(p)));
+      if (!active) return;
       const statusMap: Record<string, PortStatusResponse> = {};
+      const statusList: PortStatusResponse[] = [];
       results.forEach((r, i) => {
-        if (r.data) statusMap[allPorts[i]] = r.data;
+        if (r.data) {
+          statusMap[allPorts[i]] = r.data;
+          statusList.push(r.data);
+        }
       });
-      setPortStatuses(statusMap);
+      if (statusList.length) {
+        setPortStatuses(statusMap);
+        setCachedPortStatuses(statusList);
+      }
       setStatusLoading(false);
     })();
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {

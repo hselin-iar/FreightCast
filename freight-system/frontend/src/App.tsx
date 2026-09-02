@@ -33,15 +33,27 @@ const App: React.FC = () => {
   const [view,   setView]   = useState<View>('recommendation');
   const [health, setHealth] = useState<HealthResponse | null>(null);
 
-  // Fetch health on mount + every 60 seconds for nav bar status
+  // Fetch health on mount + fast retry during cold boot until online, then every 60s
   useEffect(() => {
-    const poll = async () => {
+    let timerId: ReturnType<typeof setTimeout>;
+    let isMounted = true;
+
+    const checkHealth = async () => {
       const { data } = await getHealth();
-      if (data) setHealth(data);
+      if (!isMounted) return;
+      if (data) {
+        setHealth(data);
+        timerId = setTimeout(checkHealth, 60_000); // Online: poll every 60s
+      } else {
+        timerId = setTimeout(checkHealth, 3_000);  // Cold boot: retry fast every 3s
+      }
     };
-    poll();
-    const id = setInterval(poll, 60_000);
-    return () => clearInterval(id);
+
+    checkHealth();
+    return () => {
+      isMounted = false;
+      clearTimeout(timerId);
+    };
   }, []);
 
   /**

@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { getForecast, getScope, postNarrate } from '../lib/apiClient';
 import type { ForecastResponse, ScopeResponse, ParsedDriverExplanation } from '../lib/types';
+import { getCachedScope, setCachedScope } from '../lib/defaults';
 
 // ── Horizon options matching backend FORECAST_HORIZONS_DAYS = [7, 14, 30] ──
 const HORIZON_OPTIONS = [
@@ -151,13 +152,14 @@ interface PairStatus {
 }
 
 const ForecastExplorerPage: React.FC = () => {
-  const [scope, setScope] = useState<ScopeResponse | null>(null);
-  const [scopeError, setScopeError] = useState<string | null>(null);
+  const initialScope = getCachedScope();
+  const [scope, setScope] = useState<ScopeResponse>(initialScope);
+  const [scopeError] = useState<string | null>(null);
 
-  const [selectedOrigin,  setSelectedOrigin]  = useState('');
-  const [selectedDest,    setSelectedDest]    = useState('');
-  const [selectedVessel,  setSelectedVessel]  = useState('');
-  const [selectedHorizon, setSelectedHorizon] = useState(14);
+  const [selectedOrigin,  setSelectedOrigin]  = useState<string>(initialScope.origins[0] || 'Australia (Hay Point)');
+  const [selectedDest,    setSelectedDest]    = useState<string>(initialScope.dest_ports[0] || 'Paradip');
+  const [selectedVessel,  setSelectedVessel]  = useState<string>(initialScope.vessel_classes[0] || 'Capesize');
+  const [selectedHorizon, setSelectedHorizon] = useState<number>(14);
 
   const [forecast,  setForecast]  = useState<ForecastResponse | null>(null);
   const [fcLoading, setFcLoading] = useState(false);
@@ -170,17 +172,20 @@ const ForecastExplorerPage: React.FC = () => {
   const [narrativeLoading, setNarrativeLoading] = useState(false);
 
   useEffect(() => {
+    let active = true;
     (async () => {
       const { data, error } = await getScope();
+      if (!active) return;
       if (error || !data) {
-        setScopeError(error?.message ?? 'Failed to load scope');
         return;
       }
       setScope(data);
-      if (data.origins.length)        setSelectedOrigin(data.origins[0]);
-      if (data.dest_ports.length)     setSelectedDest(data.dest_ports[0]);
-      if (data.vessel_classes.length) setSelectedVessel(data.vessel_classes[0]);
+      setCachedScope(data);
+      if (data.origins.length)        setSelectedOrigin((curr: string) => data.origins.includes(curr) ? curr : data.origins[0]);
+      if (data.dest_ports.length)     setSelectedDest((curr: string) => data.dest_ports.includes(curr) ? curr : data.dest_ports[0]);
+      if (data.vessel_classes.length) setSelectedVessel((curr: string) => data.vessel_classes.includes(curr) ? curr : data.vessel_classes[0]);
     })();
+    return () => { active = false; };
   }, []);
 
   const fetchForecast = useCallback(async () => {
