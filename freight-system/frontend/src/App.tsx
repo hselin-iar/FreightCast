@@ -16,31 +16,9 @@ import ForecastExplorerPage from './pages/ForecastExplorerPage';
 import PortConstraintsPage from './pages/PortConstraintsPage';
 import RecommendationPage from './pages/RecommendationPage';
 import FleetSchedulePage from './pages/FleetSchedulePage';
+import ProvenancePage from './pages/ProvenancePage';
 
-type View = 'recommendation' | 'fleet' | 'forecast' | 'ports' | 'scenario' | 'provenance';
-
-/* ── Placeholder for tabs not yet built as live pages ───────── */
-function PlaceholderView({ title, meta }: { title: string; meta: string }) {
-  return (
-    <div className="page-grid">
-      <div className="col-12">
-        <div className="panel">
-          <div className="panel-hd">
-            <span className="panel-title">{title}</span>
-            <span className="panel-meta">{meta}</span>
-          </div>
-          <div className="empty-state">
-            <div className="empty-icon">⬡</div>
-            <div className="empty-title">{title}</div>
-            <div className="empty-desc">
-              This view is implemented in Build Step 15. Core form and results are fully functional on the Recommendation tab.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+type View = 'recommendation' | 'fleet' | 'forecast' | 'ports' | 'provenance';
 
 /* ── App shell ─────────────────────────────────────────── */
 const TABS: { id: View; label: string }[] = [
@@ -169,7 +147,7 @@ const App: React.FC = () => {
         {view === 'fleet'      && <div style={{ padding: '1.5rem', maxWidth: '1400px', margin: '0 auto' }}><FleetSchedulePage /></div>}
         {view === 'forecast'   && <ForecastExplorerPage />}
         {view === 'ports'      && <PortConstraintsPage />}
-        {view === 'provenance' && <PlaceholderView title="Data Provenance" meta="Full audit trail · Build Step 12" />}
+        {view === 'provenance' && <ProvenancePage />}
       </div>
     </div>
   );

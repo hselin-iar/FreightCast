@@ -251,7 +251,7 @@ class TestXGBoostThreshold:
         """_select_best_model() should never return 'xgboost' when n < threshold."""
         history = _make_rate_series(60)
         assert len(history) < MIN_OBSERVATIONS_FOR_XGBOOST
-        name, preds, mae = _select_best_model(history, 7, naive_mae=600.0, exog_series={})
+        name, preds, mae, _ = _select_best_model(history, 7, naive_mae=600.0, exog_series={})
         assert name != "xgboost", f"Expected non-xgboost, got {name!r}"
         assert len(preds) == 7
         assert math.isfinite(mae)
@@ -371,7 +371,7 @@ class TestForecastObjectShape:
         train_and_evaluate(routes=["C2"], vessel_classes=["Capesize"], horizons=[7])
         obj = repository.get_latest_forecast("C2", "Capesize", 7)
         assert obj is not None
-        assert "modeled" in (obj.driver_explanation or "").lower()
+        assert obj.provenance == "modeled" or "modeled" in (obj.driver_explanation or "").lower()
 
     def test_horizon_clamping_in_get_forecast(self):
         """get_forecast with out-of-range horizon should clamp to nearest valid horizon."""
@@ -409,7 +409,7 @@ class TestXGBoostEnrichedFeatures:
         n = 90
         history = _make_rate_series(n)
         exog = self._make_exog(n)
-        preds = _fit_xgboost_enriched(history, 7, exog)
+        preds, _ = _fit_xgboost_enriched(history, 7, exog)
         assert len(preds) == 7, f"Expected 7 preds, got {len(preds)}"
         assert all(isinstance(p, float) for p in preds)
         assert all(math.isfinite(p) for p in preds)
@@ -420,7 +420,7 @@ class TestXGBoostEnrichedFeatures:
         history = _make_rate_series(n)
         exog = self._make_exog(n)
         # All 10 enriched keys present, all correct length → enriched path fires
-        preds = _fit_xgboost(history, 7, exog=exog)
+        preds, _ = _fit_xgboost(history, 7, exog=exog)
         assert len(preds) == 7
         assert all(math.isfinite(p) for p in preds)
 
@@ -429,7 +429,7 @@ class TestXGBoostEnrichedFeatures:
         n = 90
         history = _make_rate_series(n)
         partial_exog = {"brent": [80.0] * n}  # only 1 of 10 required keys
-        preds = _fit_xgboost(history, 7, exog=partial_exog)
+        preds, _ = _fit_xgboost(history, 7, exog=partial_exog)
         assert len(preds) == 7
         assert all(math.isfinite(p) for p in preds)
 
@@ -441,7 +441,7 @@ class TestXGBoostEnrichedFeatures:
         mae = _walk_forward_mae_with_exog(
             history,
             exog,
-            lambda h, hor, ex: _fit_xgboost(h, hor, exog=ex),
+            lambda h, hor, ex: _fit_xgboost(h, hor, exog=ex)[0],
             horizon=7,
         )
         assert math.isfinite(mae), f"Expected finite MAE, got {mae}"

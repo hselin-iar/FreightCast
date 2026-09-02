@@ -204,3 +204,22 @@ export async function postNarrate(
     signal,
   );
 }
+
+/**
+ * GET /provenance/situations — Rich first-principles situational proof scenarios.
+ */
+export async function getProvenanceSituations(
+  signal?: AbortSignal,
+): Promise<Result<import('./types').ProvenanceSituationsResponse>> {
+  return apiFetch<import('./types').ProvenanceSituationsResponse>('/provenance/situations', {}, signal);
+}
+
+/**
+ * GET /provenance/catalog — Grounded parameter and evidence data dictionary.
+ */
+export async function getProvenanceCatalog(
+  signal?: AbortSignal,
+): Promise<Result<import('./types').ProvenanceCatalogResponse>> {
+  return apiFetch<import('./types').ProvenanceCatalogResponse>('/provenance/catalog', {}, signal);
+}
+

@@ -270,23 +270,26 @@ def validate(raw_df: pd.DataFrame, schema: IngestSchema) -> ValidatedBatch:
                     start=df[date_col].min(),
                     end=df[date_col].max(),
                 )
-                df = df.set_index(date_col).reindex(full_idx)
-                n_gaps = df[numeric_cols].isna().any(axis=1).sum()
-                if n_gaps > 0:
-                    df[numeric_cols] = df[numeric_cols].ffill()
-                    gap_msg = f"Gap-fill: forward-filled {n_gaps} missing business-day row(s)."
-                    logger.info(gap_msg)
-                    batch.alerts.append(gap_msg)
+                if not full_idx.empty:
+                    df = df.set_index(date_col).reindex(full_idx)
+                    n_gaps = df[numeric_cols].isna().any(axis=1).sum()
+                    if n_gaps > 0:
+                        df[numeric_cols] = df[numeric_cols].ffill()
+                        gap_msg = f"Gap-fill: forward-filled {n_gaps} missing business-day row(s)."
+                        logger.info(gap_msg)
+                        batch.alerts.append(gap_msg)
 
-                df = df.reset_index().rename(columns={"index": date_col})
-                df[date_col] = df[date_col].dt.date
+                    df = df.reset_index().rename(columns={"index": date_col})
+                    df[date_col] = df[date_col].dt.date
 
-                # Re-fill non-numeric columns from the last known value
-                non_numeric = [
-                    col for col in df.columns
-                    if col != date_col and col not in numeric_cols
-                ]
-                df[non_numeric] = df[non_numeric].ffill()
+                    # Re-fill non-numeric columns from the last known value
+                    non_numeric = [
+                        col for col in df.columns
+                        if col != date_col and col not in numeric_cols
+                    ]
+                    df[non_numeric] = df[non_numeric].ffill()
+                else:
+                    df[date_col] = df[date_col].dt.date
             else:
                 # Non-unique date index (multi-row-per-date feed) — convert
                 # date column back to date objects for plausibility step

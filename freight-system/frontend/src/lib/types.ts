@@ -278,3 +278,57 @@ export const FALLBACK_SCOPE: ScopeResponse = {
   dest_ports: ['Dhamra', 'Gangavaram', 'Paradip'],
   vessel_classes: ['Capesize', 'Panamax/Kamsarmax', 'Supramax/Ultramax']
 };
+
+/* ── /provenance ────────────────────────────────────────── */
+
+export interface CitationItem {
+  id: string;
+  token: string;
+  title: string;
+  source: string;
+  equation?: string | null;
+  provenance: Provenance;
+  confidence: string;
+  rationale: string;
+}
+
+export interface ComparativeMetric {
+  label: string;
+  baseline: string;
+  assumed: string;
+  delta: string;
+  favorable: boolean;
+}
+
+export interface SituationalScenario {
+  id: string;
+  title: string;
+  category: string;
+  subtitle: string;
+  base_case_text: string;
+  assumed_situation_title: string;
+  assumed_situation_text: string;
+  comparative_metrics: ComparativeMetric[];
+  citations: Record<string, CitationItem>;
+}
+
+export interface ParameterItem {
+  name: string;
+  category: string;
+  value: string;
+  unit: string;
+  provenance: Provenance;
+  source: string;
+  verified: boolean;
+  notes: string;
+}
+
+export interface ProvenanceSituationsResponse {
+  scenarios: SituationalScenario[];
+}
+
+export interface ProvenanceCatalogResponse {
+  parameters: ParameterItem[];
+  total_count: number;
+}
+
