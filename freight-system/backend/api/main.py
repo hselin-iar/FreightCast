@@ -160,3 +160,15 @@ app.include_router(provenance.router,     tags=["Provenance & Understanding"])
 app.include_router(health.router,         tags=["Health"])
 app.include_router(fleet_schedule.router,  tags=["Fleet Schedule (Step 51V)"])
 app.include_router(vessels.router,        tags=["Vessels"])
+
+
+# ---------------------------------------------------------------------------
+# Zero-overhead keepalive ping endpoints
+# ---------------------------------------------------------------------------
+
+@app.get("/ping", tags=["Liveness"])
+@app.get("/api/ping", tags=["Liveness"])
+def ping() -> dict:
+    """Zero-overhead ping endpoint for keep-alive crons and load balancer probes (<1ms, 0 DB queries)."""
+    return {"status": "ok", "service": "freightcast-api"}
+

@@ -72,10 +72,23 @@ function CargoForm({
   ports, togglePort, flex, setFlex, bench, setBench, onSubmit,
 }: FormPanelProps) {
   const [benchOpen, setBenchOpen] = useState(false);
+  const [wakeElapsed, setWakeElapsed] = useState(0);
+
   const activeOrigins = scope?.origins?.length ? scope.origins : DEFAULT_SCOPE.origins;
   const activeDestPorts = scope?.dest_ports?.length ? scope.dest_ports : DEFAULT_SCOPE.dest_ports;
   const isBackendReady = Boolean(health?.warehouse_reachable);
   const isButtonDisabled = loading || !isBackendReady;
+
+  useEffect(() => {
+    if (isBackendReady) {
+      setWakeElapsed(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setWakeElapsed(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [isBackendReady]);
 
   return (
     <section className="panel">
@@ -169,16 +182,27 @@ function CargoForm({
           {loading ? (
             <><span className="spinner" />Solving…</>
           ) : !isBackendReady ? (
-            <><span className="spinner" />Connecting to server…</>
+            <><span className="spinner" />Waking up engine{wakeElapsed > 0 ? ` (${wakeElapsed}s)` : '…'}</>
           ) : (
             'Run Recommendation'
           )}
         </button>
         {loading && <p className="infer" style={{ textAlign: 'center' }}>MILP solver running — may take a few seconds</p>}
         {!loading && !isBackendReady && (
-          <p className="infer" style={{ textAlign: 'center', color: 'var(--warn)' }}>
-            Waiting for backend server to spin up…
-          </p>
+          <div style={{
+            marginTop: 4,
+            padding: '8px 10px',
+            borderRadius: 6,
+            background: 'color-mix(in srgb, var(--accent) 8%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
+            fontSize: 11,
+            lineHeight: 1.4,
+            color: 'var(--sail-300)',
+            textAlign: 'center',
+          }}>
+            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Waking up cloud engine</span>
+            {wakeElapsed >= 3 && <span> · Free-tier instances spin up in ~30–45s ({wakeElapsed}s elapsed)</span>}
+          </div>
         )}
       </form>
     </section>
@@ -873,14 +897,35 @@ export default function RecommendationPage({
         )}
 
         {!rec && !loading && !error && (
-          <div className="panel" style={{ flex: 1 }}>
-            <div className="empty-state">
-              <div className="empty-icon">⬡</div>
-              <div className="empty-title">No recommendation yet</div>
-              <div className="empty-desc">
-                Fill in the cargo request form and click Run Recommendation to get a MILP-optimised chartering strategy.
+          <div className="panel" style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            {!health?.warehouse_reachable ? (
+              <div className="engine-warmup-wrap">
+                <div className="beacon-core">
+                  <div className="beacon-ring" />
+                  <div className="beacon-ring beacon-ring-delayed" />
+                  <div className="beacon-center" />
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--sail-300)', marginBottom: 4 }}>
+                    Connecting to FreightCast Engine
+                  </div>
+                  <div style={{ fontSize: 12, color: 'var(--sail-500)', maxWidth: 320, margin: '0 auto', lineHeight: 1.5 }}>
+                    Cloud backend is spinning up. You can configure your cargo requirements on the left — the engine will be online in a moment.
+                  </div>
+                </div>
+                <div className="warmup-track">
+                  <div className="warmup-indicator" />
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="empty-state">
+                <div className="empty-icon">⬡</div>
+                <div className="empty-title">No recommendation yet</div>
+                <div className="empty-desc">
+                  Fill in the cargo request form and click Run Recommendation to get a MILP-optimised chartering strategy.
+                </div>
+              </div>
+            )}
           </div>
         )}
 

@@ -1,0 +1,28 @@
+name: Keepalive Cloud Instance
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render 15-minute free-tier idle spin-down
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+    # Allows manual triggering from GitHub Actions UI
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend
+        run: |
+          TARGET_URL="${{ secrets.RENDER_BACKEND_URL }}"
+          if [ -z "$TARGET_URL" ]; then
+            TARGET_URL="https://freightcast-api.onrender.com"
+          fi
+          echo "Pinging $TARGET_URL/api/ping..."
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" --max-time 60 "$TARGET_URL/api/ping" || true)
+          echo "$RESPONSE"
+          STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
+          if [ "$STATUS" = "200" ]; then
+            echo "Instance is warm and healthy."
+          else
+            echo "Pinged (HTTP $STATUS) - container waking up."
+          fi

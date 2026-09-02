@@ -613,6 +613,87 @@ input[type="range"] { accent-color: var(--accent); cursor: pointer; }
 .empty-title { font-size: 14px; font-weight: 500; color: var(--sail-400); }
 .empty-desc { font-size: 12px; color: var(--sail-500); max-width: 260px; line-height: 1.5; }
 
+/* ── Cold Boot Engine Pulse & Radar ───────────────────────── */
+@keyframes beacon-pulse {
+  0% { transform: scale(0.9); opacity: 0.9; }
+  50% { transform: scale(1.15); opacity: 0.4; }
+  100% { transform: scale(0.9); opacity: 0.9; }
+}
+
+@keyframes wave-ring {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes scan-line {
+  0% { left: 0%; opacity: 0.2; }
+  50% { left: 50%; opacity: 0.8; }
+  100% { left: 100%; opacity: 0.2; }
+}
+
+.engine-warmup-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  text-align: center;
+  gap: 14px;
+  color: var(--sail-400);
+}
+
+.beacon-core {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.beacon-center {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--sail-400);
+  box-shadow: 0 0 12px rgba(160, 160, 160, 0.4);
+  animation: beacon-pulse 2s ease-in-out infinite;
+  z-index: 2;
+}
+
+.beacon-ring {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 1.5px solid var(--sail-500);
+  animation: wave-ring 2.5s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+}
+
+.beacon-ring-delayed {
+  animation-delay: 1.25s;
+}
+
+.warmup-track {
+  width: 220px;
+  height: 3px;
+  background: var(--sail-800);
+  border-radius: 3px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.warmup-indicator {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 70px;
+  background: linear-gradient(90deg, transparent, var(--sail-300), transparent);
+  animation: scan-line 1.8s ease-in-out infinite alternate;
+}
+
 /* ── Skeleton ───────────────────────────────────────────── */
 @keyframes shimmer {
   from { background-position: -500px 0; }
