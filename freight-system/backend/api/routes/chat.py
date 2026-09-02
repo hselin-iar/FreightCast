@@ -649,6 +649,28 @@ def _call_anthropic(
         return resp.json()
 
 
+def _clean_reasoning_artifacts(text: str) -> str:
+    """Strip <think> tags and leaked planner scratchpad prefixes."""
+    import re
+    if not text:
+        return ""
+    # Strip <think>...</think> tags if present
+    text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    # Strip common reasoning prefixes if the model leaked its internal planner thoughts
+    patterns = [
+        r"^We need to answer.*?\n\n",
+        r"^Okay, the user is asking.*?\n\n",
+        r"^The user wants to know.*?\n\n",
+        r"^Let me start by.*?\n\n",
+        r"^I need to check.*?\n\n",
+        r"^We need to interpret.*?\n\n",
+        r"^The user asks:.*?\n\n",
+    ]
+    for p in patterns:
+        text = re.sub(p, "", text, flags=re.DOTALL | re.IGNORECASE)
+    return text.strip()
+
+
 # ---------------------------------------------------------------------------
 # Route handler
 # ---------------------------------------------------------------------------
@@ -684,20 +706,43 @@ def chat(req: ChatRequest) -> ChatResponse:
             messages.append({"role": m.role, "content": m.content})
         messages.append({"role": "user", "content": req.message})
 
-        # Turn 1: Check for tool calls
-        llm_resp = _call_openai_compatible(api_keys, base_url, model, messages)
-        choice = llm_resp.get("choices", [{}])[0]
-        msg_obj = choice.get("message", {})
+        # Multi-turn tool execution loop (up to 3 turns for complex comparisons)
+        for turn in range(3):
+            llm_resp = _call_openai_compatible(api_keys, base_url, model, messages)
+            choice = llm_resp.get("choices", [{}])[0]
+            msg_obj = choice.get("message", {})
+            tool_calls = msg_obj.get("tool_calls")
 
-        tool_calls = msg_obj.get("tool_calls")
-        if tool_calls:
+            if not tool_calls:
+                raw_content = msg_obj.get("content")
+                if raw_content and str(raw_content).strip():
+                    reply = _clean_reasoning_artifacts(str(raw_content))
+                else:
+                    reply = _clean_reasoning_artifacts(msg_obj.get("reasoning_content") or "")
+                break
+
             tool_called = True
             call_0 = tool_calls[0]
-            func_name = call_0.get("function", {}).get("name")
-            args_str = call_0.get("function", {}).get("arguments", "{}")
-
+            func = call_0.get("function", {})
+            args_str = func.get("arguments", "{}")
             try:
                 tool_input = json.loads(args_str)
+                # Handle possible stringified inner JSON from some models
+                if isinstance(tool_input.get("discharge_ports"), str):
+                    try:
+                        tool_input["discharge_ports"] = json.loads(tool_input["discharge_ports"])
+                    except Exception:
+                        tool_input["discharge_ports"] = [tool_input["discharge_ports"]]
+                if isinstance(tool_input.get("cargo_quantity"), str):
+                    try:
+                        tool_input["cargo_quantity"] = float(tool_input["cargo_quantity"])
+                    except Exception:
+                        pass
+                if isinstance(tool_input.get("timing_flexibility_days"), str):
+                    try:
+                        tool_input["timing_flexibility_days"] = int(tool_input["timing_flexibility_days"])
+                    except Exception:
+                        pass
             except Exception:
                 tool_input = {}
 
@@ -735,24 +780,6 @@ def chat(req: ChatRequest) -> ChatResponse:
                 "tool_call_id": call_0.get("id"),
                 "content": tool_result_content,
             })
-
-            # Turn 2: Get final assistant synthesis
-            final_resp = _call_openai_compatible(api_keys, base_url, model, messages)
-            final_choice = final_resp.get("choices", [{}])[0]
-            final_msg = final_choice.get("message", {})
-            raw_content = final_msg.get("content")
-            if raw_content and str(raw_content).strip():
-                reply = str(raw_content).strip()
-            else:
-                reply = (final_msg.get("reasoning_content") or "").strip()
-
-        else:
-            # Direct response (clarification or explanation)
-            raw_content = msg_obj.get("content")
-            if raw_content and str(raw_content).strip():
-                reply = str(raw_content).strip()
-            else:
-                reply = (msg_obj.get("reasoning_content") or "").strip()
 
     # ── 2. Anthropic flow ──────────────────────────────────────────────────
     elif provider == "anthropic":
