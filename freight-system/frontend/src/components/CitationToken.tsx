@@ -31,17 +31,17 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
 
   const badgeBorder =
     citation.provenance === 'measured'
-      ? '#059669'
+      ? 'var(--emerald)'
       : citation.provenance === 'modeled'
       ? '#2563eb'
-      : '#d97706';
+      : 'var(--warn)';
 
   const badgeBg =
     citation.provenance === 'measured'
-      ? 'rgba(16, 185, 129, 0.14)'
+      ? 'var(--badge-measured-bg)'
       : citation.provenance === 'modeled'
-      ? 'rgba(59, 130, 246, 0.14)'
-      : 'rgba(245, 158, 11, 0.14)';
+      ? 'var(--badge-modeled-bg)'
+      : 'var(--badge-assumed-bg)';
 
   return (
     <span
@@ -58,7 +58,7 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
           fontWeight: 600,
           cursor: 'pointer',
           padding: '1px 3px',
-          borderRadius: 3,
+          borderRadius: 'var(--r)',
           backgroundColor: isOpen ? badgeBg : 'transparent',
           transition: 'all 0.15s ease',
         }}
@@ -89,10 +89,10 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
             transform: 'translateX(-50%)',
             width: 360,
             maxWidth: '90vw',
-            backgroundColor: '#ffffff',
+            backgroundColor: 'var(--sail-900)',
             border: `1.5px solid ${badgeBorder}`,
-            boxShadow: '0 12px 30px rgba(0, 0, 0, 0.15)',
-            borderRadius: 8,
+            boxShadow: 'var(--shadow-panel)',
+            borderRadius: 'var(--r-lg)',
             padding: '14px 16px',
             zIndex: 9999,
             fontSize: 12,
@@ -134,9 +134,9 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
               style={{
                 marginBottom: 8,
                 padding: '6px 10px',
-                backgroundColor: 'var(--sail-950)',
-                borderRadius: 4,
-                border: '1px solid var(--sail-800)',
+                backgroundColor: 'var(--sail-800)',
+                borderRadius: 'var(--r)',
+                border: '1px solid var(--sail-700)',
                 fontFamily: 'var(--f-mono)',
                 fontSize: 11,
                 color: 'var(--sail-100)',
@@ -179,7 +179,7 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
               transform: 'translateX(-50%) rotate(45deg)',
               width: 10,
               height: 10,
-              backgroundColor: '#ffffff',
+              backgroundColor: 'var(--sail-900)',
               borderRight: `1.5px solid ${badgeBorder}`,
               borderBottom: `1.5px solid ${badgeBorder}`,
             }}

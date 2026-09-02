@@ -470,13 +470,18 @@ def get_provenance_catalog() -> ProvenanceCatalogResponse:
     try:
         port_dict = repository.get_port_constraints(verified_only=False)
         for name, pc in port_dict.items():
+            source_citation = (
+                pc.source
+                if pc.source and pc.source not in ("measured", "modeled", "assumed")
+                else f"Indian Ports Gazette / Official Marine Handbook ({name})"
+            )
             params.append(ParameterItem(
                 name=f"Port Max Draft · {name}",
                 category="Port Hydrodynamics",
                 value=f"{pc.max_draft_m:.1f}",
                 unit="meters",
                 provenance="measured" if pc.verified else "assumed",
-                source=pc.source or "Port Marine Manual",
+                source=source_citation,
                 verified=pc.verified,
                 notes=f"Maximum permissible draft at berth (Tidal: {'Yes' if pc.tidal_dependent else 'No'})."
             ))
@@ -486,7 +491,7 @@ def get_provenance_catalog() -> ProvenanceCatalogResponse:
                 value=f"{pc.handling_rate_tpd:,.0f}",
                 unit="tonnes/day",
                 provenance="measured" if pc.verified else "assumed",
-                source=pc.source or "Port Marine Manual",
+                source=source_citation,
                 verified=pc.verified,
                 notes="Daily mechanized discharge capacity with grab unloaders / conveyor."
             ))

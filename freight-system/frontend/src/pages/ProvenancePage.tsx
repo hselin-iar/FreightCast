@@ -44,112 +44,108 @@ export const ProvenancePage: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ maxWidth: 1400, margin: '0 auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {/* ── Page Header ── */}
-      <div
-        className="panel panel-tinted"
-        style={{
-          padding: '24px 28px',
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-          borderBottom: '1px solid var(--sail-800)',
-        }}
-      >
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 700,
-                textTransform: 'uppercase',
-                padding: '3px 9px',
-                borderRadius: 4,
-                backgroundColor: 'var(--accent-bg)',
-                color: 'var(--text-accent)',
-              }}
-            >
-              First-Principles Audit
-            </span>
-            <span style={{ fontSize: 12, color: 'var(--sail-500)', fontFamily: 'var(--f-mono)', fontWeight: 600 }}>
-              Provenance & Understanding Lab
-            </span>
+    <div className="page-grid">
+      {/* ── TOP HEADER (col-12) ── */}
+      <div className="col-12">
+        <section className="panel">
+          <div className="panel-hd">
+            <div>
+              <span className="panel-title" style={{ fontSize: 16 }}>
+                Empirical Proof & Situational Dissection
+              </span>
+              <span className="panel-meta" style={{ marginLeft: 12 }}>
+                First-Principles Audit · Provenance Lab
+              </span>
+            </div>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
+              <span className="panel-meta">
+                Parameters: <strong style={{ color: 'var(--badge-measured-text)' }}>{parameters.length || 15} Verified</strong>
+              </span>
+              <span className="panel-meta">
+                Proofs: <strong style={{ color: 'var(--text-accent)' }}>{scenarios.length || 4} Available</strong>
+              </span>
+            </div>
           </div>
-          <h1 style={{ fontSize: 24, fontWeight: 700, color: 'var(--sail-100)', margin: '4px 0 6px' }}>
-            Empirical Proof & Situational Dissection
-          </h1>
-          <p style={{ fontSize: 13.5, color: 'var(--sail-300)', margin: 0, maxWidth: 880, lineHeight: 1.6 }}>
-            A completely transparent, plain-text breakdown of why the maritime freight system operates the way it does. 
-            Explore hypothetical situations, hover over any claim to inspect verified telemetry citations, and audit every parameter.
-          </p>
-        </div>
+          <div
+            className="panel-body"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 16,
+              padding: '14px 16px',
+            }}
+          >
+            <p style={{ fontSize: 13, color: 'var(--sail-300)', margin: 0, maxWidth: 840, lineHeight: 1.5 }}>
+              A completely transparent breakdown of why the maritime freight system operates the way it does. 
+              Explore hypothetical situations, hover over any highlighted claim to inspect verified telemetry citations, and audit every parameter.
+            </p>
 
-        {/* Status Indicators */}
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div style={{ backgroundColor: '#ffffff', padding: '10px 16px', borderRadius: 'var(--r)', border: '1px solid var(--sail-800)', boxShadow: 'var(--shadow-panel)', textAlign: 'right' }}>
-            <span style={{ fontSize: 10, color: 'var(--sail-500)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Grounded Parameters</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#047857' }}>{parameters.length || 15} Verified</span>
+            {/* View Switcher Tabs */}
+            <div style={{ display: 'flex', background: 'var(--sail-800)', padding: 3, borderRadius: 'var(--r)', gap: 3 }}>
+              <button
+                onClick={() => setActiveTab('situations')}
+                className={`btn btn-sm ${activeTab === 'situations' ? 'btn-accent' : ''}`}
+                style={{
+                  background: activeTab === 'situations' ? 'var(--accent)' : 'transparent',
+                  color: activeTab === 'situations' ? 'var(--accent-text)' : 'var(--sail-400)',
+                  fontWeight: activeTab === 'situations' ? 700 : 500,
+                }}
+              >
+                ⚡ Situational Proofs
+              </button>
+              <button
+                onClick={() => setActiveTab('primer')}
+                className={`btn btn-sm ${activeTab === 'primer' ? 'btn-accent' : ''}`}
+                style={{
+                  background: activeTab === 'primer' ? 'var(--accent)' : 'transparent',
+                  color: activeTab === 'primer' ? 'var(--accent-text)' : 'var(--sail-400)',
+                  fontWeight: activeTab === 'primer' ? 700 : 500,
+                }}
+              >
+                📖 Evidence Primer
+              </button>
+              <button
+                onClick={() => setActiveTab('catalog')}
+                className={`btn btn-sm ${activeTab === 'catalog' ? 'btn-accent' : ''}`}
+                style={{
+                  background: activeTab === 'catalog' ? 'var(--accent)' : 'transparent',
+                  color: activeTab === 'catalog' ? 'var(--accent-text)' : 'var(--sail-400)',
+                  fontWeight: activeTab === 'catalog' ? 700 : 500,
+                }}
+              >
+                🔍 Source Catalog
+              </button>
+            </div>
           </div>
-          <div style={{ backgroundColor: '#ffffff', padding: '10px 16px', borderRadius: 'var(--r)', border: '1px solid var(--sail-800)', boxShadow: 'var(--shadow-panel)', textAlign: 'right' }}>
-            <span style={{ fontSize: 10, color: 'var(--sail-500)', textTransform: 'uppercase', fontWeight: 700, display: 'block' }}>Situational Proofs</span>
-            <span style={{ fontSize: 15, fontWeight: 700, color: '#1d4ed8' }}>{scenarios.length || 4} Available</span>
-          </div>
-        </div>
+        </section>
       </div>
 
-      {/* ── View Switcher Navigation Bar ── */}
-      <div
-        style={{
-          display: 'flex',
-          gap: 12,
-          borderBottom: '1px solid var(--sail-800)',
-          paddingBottom: 12,
-        }}
-      >
-        <button
-          onClick={() => setActiveTab('situations')}
-          className={`btn ${activeTab === 'situations' ? 'btn-primary' : 'btn-outline'}`}
-          style={{ padding: '8px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <span>⚡</span> Situational Proofs & Scenarios
-        </button>
-        <button
-          onClick={() => setActiveTab('primer')}
-          className={`btn ${activeTab === 'primer' ? 'btn-primary' : 'btn-outline'}`}
-          style={{ padding: '8px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <span>📖</span> The Maritime Evidence Primer
-        </button>
-        <button
-          onClick={() => setActiveTab('catalog')}
-          className={`btn ${activeTab === 'catalog' ? 'btn-primary' : 'btn-outline'}`}
-          style={{ padding: '8px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}
-        >
-          <span>🔍</span> Source & Parameter Catalog
-        </button>
-      </div>
-
-      {/* ── Main View Content ── */}
+      {/* ── Error Banner (if any) ── */}
       {error && (
-        <div
-          style={{
-            padding: 16,
-            backgroundColor: 'rgba(239, 68, 68, 0.08)',
-            borderRadius: 'var(--r)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#b91c1c',
-            fontSize: 13,
-          }}
-        >
-          {error}
+        <div className="col-12">
+          <div
+            style={{
+              padding: 12,
+              backgroundColor: 'rgba(239, 68, 68, 0.08)',
+              borderRadius: 'var(--r)',
+              border: '1px solid rgba(239, 68, 68, 0.25)',
+              color: '#b91c1c',
+              fontSize: 13,
+            }}
+          >
+            {error}
+          </div>
         </div>
       )}
 
+      {/* ── Dynamic Tab View Content ── */}
       {loading ? (
-        <div className="panel panel-tinted" style={{ padding: 40, textAlign: 'center', color: 'var(--sail-400)' }}>
-          Loading empirical proof models and parameter registry...
+        <div className="col-12">
+          <div className="panel" style={{ padding: 40, textAlign: 'center', color: 'var(--sail-500)' }}>
+            Loading empirical proof models and parameter registry...
+          </div>
         </div>
       ) : (
         <>
@@ -159,7 +155,7 @@ export const ProvenancePage: React.FC = () => {
         </>
       )}
 
-      {/* ── Persistent Hypothesis Auditor ("Ask the Auditor") ── */}
+      {/* ── Persistent Hypothesis Auditor ("Ask the Auditor") (col-12) ── */}
       <HypothesisAuditor />
     </div>
   );
