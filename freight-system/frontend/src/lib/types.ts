@@ -272,3 +272,9 @@ export interface FleetStatusResponse {
   vessel_classes: VesselClassEntry[];  // Canonical catalog — always present
   ais_live: boolean;
 }
+
+export const FALLBACK_SCOPE: ScopeResponse = {
+  origins: ['Australia (Hay Point)', 'Indonesia (Samarinda)', 'South Africa (Richards Bay)'],
+  dest_ports: ['Dhamra', 'Gangavaram', 'Paradip'],
+  vessel_classes: ['Capesize', 'Panamax/Kamsarmax', 'Supramax/Ultramax']
+};
