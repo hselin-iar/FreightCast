@@ -405,7 +405,7 @@ const MessageBubble: React.FC<{ msg: UiMessage }> = ({ msg }) => {
           border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
           borderRadius: 6,
           fontSize: 10.5,
-          color: 'var(--accent)',
+          color: '#fbbf24', // Explicit bright amber to avoid any variable overrides
           fontFamily: 'var(--f-mono)',
           maxWidth: '88%',
         }}>
