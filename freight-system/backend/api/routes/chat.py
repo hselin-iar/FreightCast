@@ -494,10 +494,17 @@ def _get_provider_config() -> Tuple[str, List[str], str, str]:
         return ("groq", groq_keys, "https://api.groq.com/openai/v1", model)
 
     # 2. Nvidia NIM
-    nvidia_key = os.environ.get("NVIDIA_API_KEY") or os.environ.get("NVIDIA_NIM_API_KEY")
-    if nvidia_key:
-        model = os.environ.get("NVIDIA_MODEL", "meta/llama-3.3-70b-instruct")
-        return ("nvidia", [nvidia_key], "https://integrate.api.nvidia.com/v1", model)
+    nvidia_keys = [
+        k for k in (
+            os.environ.get("NVIDIA_API_KEY"),
+            os.environ.get("NVIDIA_API_KEY_2"),
+            os.environ.get("NVIDIA_API_KEY_3"),
+            os.environ.get("NVIDIA_NIM_API_KEY"),
+        ) if k and k.strip()
+    ]
+    if nvidia_keys:
+        model = os.environ.get("NVIDIA_MODEL", "nvidia/nemotron-3-super-120b-a12b")
+        return ("nvidia", nvidia_keys, "https://integrate.api.nvidia.com/v1", model)
 
     # 3. Anthropic Claude
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -532,9 +539,13 @@ def _call_openai_compatible(
         "messages": messages,
         "tools": _OPENAI_TOOLS,
         "tool_choice": "auto",
-        "temperature": 0.1,
-        "max_tokens": 1024,
+        "temperature": 1.0,  # User requested temperature=1
+        "max_tokens": 16384, # User requested 16384
     }
+
+    if "nvidia.com" in base_url:
+        payload["chat_template_kwargs"] = {"enable_thinking": True}
+        payload["top_p"] = 0.95
 
     with httpx.Client(timeout=45.0) as client:
         for attempt in range(4):
