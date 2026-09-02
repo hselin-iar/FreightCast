@@ -685,8 +685,13 @@ def chat(req: ChatRequest) -> ChatResponse:
                 updated_rec = tool_result
                 constraint_note = _constraints_note(tool_input)
 
-            # Format tool result back into message thread
-            messages.append(msg_obj)
+            # Format tool result back into message thread (sanitize assistant message)
+            assistant_msg: Dict[str, Any] = {
+                "role": "assistant",
+                "content": msg_obj.get("content") or "",
+                "tool_calls": tool_calls,
+            }
+            messages.append(assistant_msg)
             tool_result_content = json.dumps(
                 {
                     "recommendation": tool_result.recommendation.model_dump(mode="json"),
@@ -709,7 +714,7 @@ def chat(req: ChatRequest) -> ChatResponse:
 
         else:
             # Direct response (clarification or explanation)
-            reply = msg_obj.get("content", "").strip()
+            reply = (msg_obj.get("content") or "").strip()
 
     # ── 2. Anthropic flow ──────────────────────────────────────────────────
     elif provider == "anthropic":
