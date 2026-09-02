@@ -21,8 +21,27 @@ import type {
   ScopeResponse,
 } from './types';
 
-export const API_BASE_URL: string =
-  (import.meta.env.VITE_API_BASE_URL as string | undefined) ?? 'http://localhost:8000';
+function getApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
+  const isBrowser = typeof window !== 'undefined';
+  const isLocalhost =
+    isBrowser &&
+    (window.location.hostname === 'localhost' ||
+      window.location.hostname === '127.0.0.1' ||
+      window.location.hostname.startsWith('192.168.'));
+
+  if (isBrowser && !isLocalhost) {
+    // On deployed production (e.g. *.vercel.app or custom domain)
+    if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+      return 'https://freightcast-api.onrender.com';
+    }
+    return envUrl;
+  }
+
+  return envUrl || 'http://localhost:8000';
+}
+
+export const API_BASE_URL: string = getApiBaseUrl();
 
 /* ── Core fetch wrapper ──────────────────────────────────── */
 

@@ -118,7 +118,7 @@ const App: React.FC = () => {
           {/* Warehouse status */}
           <span className="flex-center gap-1">
             <span className={`status-dot ${dbStatus}`} />
-            {health ? (health.warehouse_reachable ? 'DB ok' : 'DB degraded') : 'DB ok'}
+            {health ? (health.warehouse_reachable ? 'DB ok' : 'DB degraded') : 'Connecting…'}
           </span>
         </div>
       </header>
@@ -137,6 +137,7 @@ const App: React.FC = () => {
             onResultChange={setChatResult}
             externalResult={chatResult}
             chatConstraintNote={chatNote}
+            externalHealth={health}
           />
           <div style={{
             borderLeft: '1px solid var(--ink-600)',

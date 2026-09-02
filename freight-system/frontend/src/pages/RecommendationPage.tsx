@@ -714,17 +714,19 @@ export default function RecommendationPage({
   onResultChange,
   externalResult,
   chatConstraintNote,
+  externalHealth,
 }: {
   onCargoContextChange?: (req: RecommendationRequest) => void;
   onResultChange?: (res: RecommendationResponse) => void;
   externalResult?: RecommendationResponse | null;
   chatConstraintNote?: string | null;
+  externalHealth?: HealthResponse | null;
 }) {
   const initialScope = getCachedScope();
   const initialPortStatuses = getCachedPortStatuses();
 
   /* ── Server state ── */
-  const [health,       setHealth]       = useState<HealthResponse | null>(null);
+  const [health,       setHealth]       = useState<HealthResponse | null>(externalHealth ?? null);
   const [scope,        setScope]        = useState<ScopeResponse>(initialScope);
   const [result,       setResult]       = useState<RecommendationResponse | null>(null);
   const [driverNote,   setDriverNote]   = useState<string | null>(null);
@@ -746,12 +748,38 @@ export default function RecommendationPage({
 
   const abortRef = useRef<AbortController | null>(null);
 
+  // Sync externalHealth when parent App updates
   useEffect(() => {
+    if (externalHealth) {
+      setHealth(externalHealth);
+    }
+  }, [externalHealth]);
+
+  // Continuous background health & scope polling
+  useEffect(() => {
+    let timerId: ReturnType<typeof setTimeout>;
     let active = true;
-    // Fast non-blocking background fetch
-    getHealth().then(({ data: h }) => {
-      if (active && h) setHealth(h);
-    });
+
+    const poll = async () => {
+      try {
+        const { data: h } = await getHealth();
+        if (!active) return;
+        if (h && h.warehouse_reachable) {
+          setHealth(h);
+          timerId = setTimeout(poll, 30_000); // 30s once online
+        } else {
+          setHealth(null);
+          timerId = setTimeout(poll, 3_000);  // 3s rapid retry while booting
+        }
+      } catch {
+        if (active) {
+          setHealth(null);
+          timerId = setTimeout(poll, 3_000);
+        }
+      }
+    };
+
+    poll();
 
     getScope().then(({ data: sc }) => {
       if (!active || !sc) return;
@@ -777,6 +805,7 @@ export default function RecommendationPage({
 
     return () => {
       active = false;
+      clearTimeout(timerId);
     };
   }, []);
 
