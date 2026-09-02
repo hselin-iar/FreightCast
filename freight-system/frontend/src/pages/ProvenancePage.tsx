@@ -6,7 +6,7 @@ import EvidencePrimer from '../components/EvidencePrimer';
 import ParameterCatalog from '../components/ParameterCatalog';
 import HypothesisAuditor from '../components/HypothesisAuditor';
 
-type ProvenanceTab = 'situations' | 'primer' | 'catalog';
+type ProvenanceTab = 'situations' | 'primer' | 'catalog' | 'auditor';
 
 export const ProvenancePage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ProvenanceTab>('situations');
@@ -117,6 +117,17 @@ export const ProvenancePage: React.FC = () => {
               >
                 🔍 Source Catalog
               </button>
+              <button
+                onClick={() => setActiveTab('auditor')}
+                className={`btn btn-sm ${activeTab === 'auditor' ? 'btn-accent' : ''}`}
+                style={{
+                  background: activeTab === 'auditor' ? 'var(--accent)' : 'transparent',
+                  color: activeTab === 'auditor' ? 'var(--accent-text)' : 'var(--sail-400)',
+                  fontWeight: activeTab === 'auditor' ? 700 : 500,
+                }}
+              >
+                💬 Agentic Auditor
+              </button>
             </div>
           </div>
         </section>
@@ -152,11 +163,9 @@ export const ProvenancePage: React.FC = () => {
           {activeTab === 'situations' && <SituationalProofLab scenarios={scenarios} />}
           {activeTab === 'primer' && <EvidencePrimer />}
           {activeTab === 'catalog' && <ParameterCatalog parameters={parameters} loading={loading} />}
+          {activeTab === 'auditor' && <HypothesisAuditor />}
         </>
       )}
-
-      {/* ── Persistent Hypothesis Auditor ("Ask the Auditor") (col-12) ── */}
-      <HypothesisAuditor />
     </div>
   );
 };

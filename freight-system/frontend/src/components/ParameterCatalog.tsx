@@ -67,17 +67,7 @@ export const ParameterCatalog: React.FC<Props> = ({ parameters, loading }) => {
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  style={{
-                    padding: '5px 12px',
-                    borderRadius: 'var(--r)',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    border: isActive ? '2px solid var(--accent-dim)' : '1px solid var(--sail-800)',
-                    backgroundColor: isActive ? 'var(--accent-bg)' : 'var(--sail-900)',
-                    color: isActive ? 'var(--text-accent)' : 'var(--sail-400)',
-                    transition: 'all 0.12s ease',
-                  }}
+                  className={`nav-tab ${isActive ? 'active' : ''}`}
                 >
                   {cat}
                 </button>

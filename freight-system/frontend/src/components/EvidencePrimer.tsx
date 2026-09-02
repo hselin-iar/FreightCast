@@ -97,18 +97,25 @@ export const EvidencePrimer: React.FC = () => {
                     alignItems: 'flex-start',
                     padding: '12px 14px',
                     borderRadius: 'var(--r)',
-                    border: isActive ? '2px solid var(--accent-dim)' : '1px solid var(--sail-800)',
-                    backgroundColor: isActive ? 'var(--accent-bg)' : 'var(--sail-900)',
-                    color: 'var(--sail-100)',
+                    border: '1px solid',
+                    borderColor: isActive ? 'var(--sail-400)' : 'transparent',
+                    backgroundColor: isActive ? 'var(--ink-800)' : 'transparent',
+                    color: isActive ? '#FAFAFA' : 'var(--sail-200)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.12s ease',
                   }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) e.currentTarget.style.backgroundColor = 'var(--sail-800)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) e.currentTarget.style.backgroundColor = 'transparent';
+                  }}
                 >
-                  <span style={{ fontSize: 10, textTransform: 'uppercase', color: isActive ? 'var(--text-accent)' : 'var(--sail-500)', fontWeight: 700 }}>
+                  <span style={{ fontSize: 10, textTransform: 'uppercase', color: isActive ? 'var(--accent)' : 'var(--sail-500)', fontWeight: 700 }}>
                     {ch.category}
                   </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sail-100)', marginTop: 2, lineHeight: 1.3 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: isActive ? '#FAFAFA' : 'var(--sail-100)', marginTop: 2, lineHeight: 1.3 }}>
                     {ch.title}
                   </span>
                 </button>

@@ -42,12 +42,19 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
                     alignItems: 'flex-start',
                     padding: '12px 14px',
                     borderRadius: 'var(--r)',
-                    border: isSelected ? '2px solid var(--accent-dim)' : '1px solid var(--sail-800)',
-                    backgroundColor: isSelected ? 'var(--accent-bg)' : 'var(--sail-900)',
-                    color: 'var(--sail-100)',
+                    border: '1px solid',
+                    borderColor: isSelected ? 'var(--sail-400)' : 'transparent',
+                    backgroundColor: isSelected ? 'var(--ink-800)' : 'transparent',
+                    color: isSelected ? '#FAFAFA' : 'var(--sail-200)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.12s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--sail-800)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent';
                   }}
                 >
                   <span
@@ -55,14 +62,14 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
                       fontSize: 10,
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
-                      color: isSelected ? 'var(--text-accent)' : 'var(--sail-500)',
+                      color: isSelected ? 'var(--accent)' : 'var(--sail-500)',
                       fontWeight: 700,
                       marginBottom: 3,
                     }}
                   >
                     {sc.category}
                   </span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--sail-100)', lineHeight: 1.3 }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: isSelected ? '#FAFAFA' : 'var(--sail-100)', lineHeight: 1.3 }}>
                     {sc.title}
                   </span>
                 </button>
@@ -136,17 +143,17 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
         </section>
 
         {/* 2. Hypothetical "Assume & Prove" Card */}
-        <section className="panel panel-yellow">
-          <div className="panel-hd">
-            <span className="panel-title" style={{ color: 'var(--accent-text)' }}>
+        <section className="panel" style={{ background: 'var(--ink-800)', borderColor: 'var(--ink-700)', color: '#FAFAFA' }}>
+          <div className="panel-hd" style={{ borderBottomColor: 'var(--ink-700)' }}>
+            <span className="panel-title" style={{ color: 'var(--accent)' }}>
               ⚡ {activeScenario.assumed_situation_title}
             </span>
-            <span className="panel-meta" style={{ color: 'rgba(0,0,0,0.6)' }}>
+            <span className="panel-meta" style={{ color: 'var(--sail-400)' }}>
               Hypothetical Simulation
             </span>
           </div>
           <div className="panel-body">
-            <div style={{ fontSize: 13.5, lineHeight: 1.75, color: 'var(--accent-text)', whiteSpace: 'pre-line' }}>
+            <div style={{ fontSize: 13.5, lineHeight: 1.75, color: '#FAFAFA', whiteSpace: 'pre-line' }}>
               {activeScenario.assumed_situation_text}
             </div>
           </div>

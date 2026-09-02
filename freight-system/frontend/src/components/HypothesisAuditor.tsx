@@ -43,13 +43,13 @@ export const HypothesisAuditor: React.FC = () => {
   };
 
   return (
-    <div className="col-12">
-      <section className="panel accent-left">
+    <div className="col-12 col-space">
+      <section className="panel">
         <div className="panel-hd">
           <span className="panel-title">Agentic Hypothesis Auditor</span>
           <span className="panel-meta">On-Demand Empirical Proofs</span>
         </div>
-        <div className="panel-body">
+        <div className="panel-body" style={{ maxWidth: 900, margin: '0 auto', width: '100%' }}>
           <p style={{ fontSize: 13.5, color: 'var(--sail-300)', marginBottom: 14 }}>
             Ask any hypothetical or operational question to prove why the maritime system behaves the way it does:
           </p>
