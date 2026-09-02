@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import type { SituationalScenario, RecommendationRequest, RecommendationResponse } from '../lib/types';
 import SituationalProofLab from '../components/SituationalProofLab';
 import HypothesisAuditor from '../components/HypothesisAuditor';
-// Using generic fetch for the new POST endpoint for now, can be moved to apiClient later.
+import { generateSituationalProofs } from '../lib/apiClient';
 
 export const ProvenancePage: React.FC<{
   requestContext?: RecommendationRequest | null;
@@ -21,24 +21,18 @@ export const ProvenancePage: React.FC<{
     let isMounted = true;
     (async () => {
       setLoading(true);
+      setError(null);
       try {
-        const response = await fetch('http://localhost:8000/provenance/situations/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            request: requestContext,
-            result: resultContext
-          }),
+        const { data, error: apiErr } = await generateSituationalProofs({
+          request: requestContext,
+          result: resultContext,
         });
 
-        if (!response.ok) {
-          throw new Error('Failed to generate situational proofs.');
-        }
-
-        const data = await response.json();
         if (!isMounted) return;
-        
-        if (data.scenarios) {
+
+        if (apiErr) {
+          setError(apiErr.message || 'Failed to generate situational proofs.');
+        } else if (data?.scenarios) {
           setScenarios(data.scenarios);
         }
       } catch (err: any) {

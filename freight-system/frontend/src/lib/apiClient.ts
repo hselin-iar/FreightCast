@@ -223,3 +223,21 @@ export async function getProvenanceCatalog(
   return apiFetch<import('./types').ProvenanceCatalogResponse>('/provenance/catalog', {}, signal);
 }
 
+/**
+ * POST /provenance/situations/generate — Dynamic LLM-grounded proofs for a specific recommendation.
+ */
+export async function generateSituationalProofs(
+  req: { request: RecommendationRequest; result: RecommendationResponse },
+  signal?: AbortSignal,
+): Promise<Result<import('./types').ProvenanceSituationsResponse>> {
+  return apiFetch<import('./types').ProvenanceSituationsResponse>(
+    '/provenance/situations/generate',
+    {
+      method: 'POST',
+      body: JSON.stringify(req),
+    },
+    signal,
+  );
+}
+
+
