@@ -571,8 +571,8 @@ def _call_openai_compatible(
 
             last_error_resp = resp
 
-            # If rate-limited, quota-exhausted, or temporarily overloaded/server error, rotate immediately
-            if resp.status_code in (429, 402, 403, 500, 502, 503, 504):
+            # If rate-limited, quota-exhausted, temporarily overloaded/server error, or invalid/expired key (404), rotate immediately
+            if resp.status_code in (404, 429, 402, 403, 500, 502, 503, 504):
                 logger.warning(
                     "LLM key #%d/%d returned status %d (%s). Rotating to next key...",
                     key_idx + 1, len(api_keys), resp.status_code, resp.text[:120]
@@ -740,11 +740,19 @@ def chat(req: ChatRequest) -> ChatResponse:
             final_resp = _call_openai_compatible(api_keys, base_url, model, messages)
             final_choice = final_resp.get("choices", [{}])[0]
             final_msg = final_choice.get("message", {})
-            reply = (final_msg.get("content") or final_msg.get("reasoning_content") or "").strip()
+            raw_content = final_msg.get("content")
+            if raw_content and str(raw_content).strip():
+                reply = str(raw_content).strip()
+            else:
+                reply = (final_msg.get("reasoning_content") or "").strip()
 
         else:
             # Direct response (clarification or explanation)
-            reply = (msg_obj.get("content") or msg_obj.get("reasoning_content") or "").strip()
+            raw_content = msg_obj.get("content")
+            if raw_content and str(raw_content).strip():
+                reply = str(raw_content).strip()
+            else:
+                reply = (msg_obj.get("reasoning_content") or "").strip()
 
     # ── 2. Anthropic flow ──────────────────────────────────────────────────
     elif provider == "anthropic":
