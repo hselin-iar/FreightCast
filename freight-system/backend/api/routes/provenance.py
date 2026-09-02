@@ -594,3 +594,78 @@ def get_provenance_catalog() -> ProvenanceCatalogResponse:
         parameters=params,
         total_count=len(params)
     )
+
+from typing import Dict
+import json
+from backend.api.routes.chat import _get_provider_config, _call_openai_compatible, _call_anthropic
+from backend.api.schemas import RecommendationRequest, RecommendationResponse
+
+class GenerateSituationsRequest(BaseModel):
+    request: RecommendationRequest
+    result: RecommendationResponse
+
+@router.post("/provenance/situations/generate", response_model=ProvenanceSituationsResponse)
+def generate_situations(req: GenerateSituationsRequest) -> ProvenanceSituationsResponse:
+    provider, api_keys, base_url, model = _get_provider_config()
+
+    prompt = f"""You are the Provenance Auditor for SAIL Freight Intelligence (SAIL PS3).
+The user just ran a cargo recommendation. 
+Request: {req.request.model_dump_json()}
+Result: {req.result.model_dump_json()}
+
+You must generate exactly 2 `SituationalScenario` JSON objects that highlight the physical or economic realities driving this specific result. For example, if the result splits a Capesize into 2 Panamax, explain the draft restrictions at the port. If a port is skipped, explain congestion or distance.
+CRITICAL CONSTRAINTS:
+1. Do NOT generate generic templates, boilerplate, or placeholder text.
+2. Every scenario MUST contain fresh, mathematically correct, and explicitly tailored facts corresponding ONLY to the provided Request and Result.
+3. Your JSON must strictly follow this schema without markdown blocks:
+{{
+  "scenarios": [
+    {{
+      "id": "string",
+      "title": "string",
+      "category": "string",
+      "subtitle": "string",
+      "base_case_text": "string (use [text]{{ref-id}} to mark citations)",
+      "assumed_situation_title": "string",
+      "assumed_situation_text": "string",
+      "comparative_metrics": [
+        {{"label": "str", "baseline": "str", "assumed": "str", "delta": "str", "favorable": true}}
+      ],
+      "citations": {{
+        "ref-id": {{
+          "id": "ref-id", "token": "string", "title": "string", "source": "string", 
+          "equation": "string", "provenance": "measured", "confidence": "High", "rationale": "string"
+        }}
+      }}
+    }}
+  ]
+}}
+DO NOT include markdown block ticks like ```json.
+"""
+
+    if provider in ("groq", "nvidia", "openai"):
+        messages = [{"role": "system", "content": prompt}]
+        llm_resp = _call_openai_compatible(api_keys, base_url, model, messages)
+        choice = llm_resp.get("choices", [{}])[0]
+        content = choice.get("message", {}).get("content", "{}")
+    else:
+        # anthropic
+        llm_resp = _call_anthropic(api_keys, model, [{"role": "user", "content": "Generate the JSON."}], system_prompt=prompt)
+        blocks = llm_resp.get("content", [])
+        content = " ".join(b.get("text", "") for b in blocks if b.get("text")).strip()
+
+    try:
+        import re
+        match = re.search(r'(\{.*\})', content, re.DOTALL)
+        if match:
+            json_str = match.group(1)
+        else:
+            json_str = content
+        data = json.loads(json_str)
+        # Parse into Pydantic models
+        return ProvenanceSituationsResponse(**data)
+    except Exception as e:
+        logger.error(f"Failed to parse LLM JSON: {e}\nContent: {content}")
+        # fallback to static if generation fails
+        return ProvenanceSituationsResponse(scenarios=_SITUATIONAL_SCENARIOS)
+

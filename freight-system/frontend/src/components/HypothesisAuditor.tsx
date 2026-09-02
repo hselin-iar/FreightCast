@@ -1,18 +1,35 @@
 import React, { useState } from 'react';
 import { postChat } from '../lib/apiClient';
+import type { RecommendationRequest } from '../lib/types';
 
-export const HypothesisAuditor: React.FC = () => {
+export const HypothesisAuditor: React.FC<{
+  requestContext?: RecommendationRequest | null;
+}> = ({ requestContext }) => {
   const [question, setQuestion] = useState('');
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const suggestedQuestions = [
-    'Why does Dhamra take 2 voyages to transport 120k cargo when Gangavaram takes 1?',
-    'Prove why Capesize is cheaper per tonne despite costing more overall.',
-    'Explain the exact mathematical derivation of the 5% maritime freight tax.',
-    'Why is Gangavaram preferred even if rail freight to inland plants is higher?',
-  ];
+  const getSuggestedQuestions = () => {
+    if (!requestContext) {
+      return [
+        'Prove why Capesize is cheaper per tonne despite costing more overall.',
+        'Explain the exact mathematical derivation of the 5% maritime freight tax.',
+      ];
+    }
+    const ports = requestContext.discharge_ports;
+    const origin = requestContext.origin_port;
+    const qty = requestContext.cargo_quantity;
+    
+    return [
+      `Why might shipping ${qty / 1000}k cargo to ${ports[0]} require 2 voyages instead of 1?`,
+      `Prove why Capesize is cheaper per tonne despite costing more overall on the ${origin} route.`,
+      `Explain the exact mathematical derivation of the 5% maritime freight tax.`,
+      ports.length > 1 ? `Why might ${ports[1]} be preferred even if rail freight to inland plants is higher?` : `How does queuing delay at ${ports[0]} affect the demurrage risk?`
+    ];
+  };
+
+  const suggestedQuestions = getSuggestedQuestions();
 
   const handleAsk = async (q: string) => {
     if (!q.trim() || loading) return;
@@ -26,7 +43,7 @@ export const HypothesisAuditor: React.FC = () => {
     const res = await postChat({
       message: promptMessage,
       conversation_history: [],
-      cargo_context: {
+      cargo_context: requestContext || {
         cargo_quantity: 120000,
         origin_port: 'Australia (Hay Point)',
         discharge_ports: ['Dhamra', 'Gangavaram', 'Paradip'],
@@ -81,7 +98,7 @@ export const HypothesisAuditor: React.FC = () => {
                   e.currentTarget.style.backgroundColor = 'var(--sail-800)';
                 }}
               >
-                💬 {sq}
+                {sq}
               </button>
             ))}
           </div>

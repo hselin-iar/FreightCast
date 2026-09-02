@@ -667,20 +667,17 @@ function SystemProvenanceStrip({ origin, ports, health }: { origin: string; port
 }
 
 /* ── Main component ─────────────────────────────────────────── */
-interface RecommendationPageProps {
-  /** Fires when user submits the form — lets App pass cargo_context to ChatPanel */
-  onCargoContextChange?: (req: RecommendationRequest) => void;
-  /** A re-solved result pushed in from ChatPanel (DOC2 §3c dashboard_update) */
-  externalResult?: RecommendationResponse | null;
-  /** Human-readable annotation of what constraint drove the re-solve */
-  chatConstraintNote?: string | null;
-}
-
-const RecommendationPage: React.FC<RecommendationPageProps> = ({
+export default function RecommendationPage({
   onCargoContextChange,
+  onResultChange,
   externalResult,
   chatConstraintNote,
-}) => {
+}: {
+  onCargoContextChange?: (req: RecommendationRequest) => void;
+  onResultChange?: (res: RecommendationResponse) => void;
+  externalResult?: RecommendationResponse | null;
+  chatConstraintNote?: string | null;
+}) {
   /* ── Server state ── */
   const [health,       setHealth]       = useState<HealthResponse | null>(null);
   const [scope,        setScope]        = useState<ScopeResponse | null>(null);
@@ -761,6 +758,7 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
       setResult(data);
       setBaseRequest(req);
       onCargoContextChange?.(req);
+      onResultChange?.(data);
       const mainVoyage = data.recommendation.voyages[0];
       if (mainVoyage) {
         getForecast(`${origin}→${mainVoyage.port}`, mainVoyage.vessel_class, 30).then(fRes => {
@@ -768,7 +766,7 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
         });
       }
     }
-  }, [qty, origin, ports, flex, bench, onCargoContextChange]);
+  }, [qty, origin, ports, flex, bench, onCargoContextChange, onResultChange]);
 
   /** WhatIfSliders callback — same /recommendation path, AbortSignal provided by slider */
   const handleSliderChange = useCallback(async (req: RecommendationRequest, signal: AbortSignal) => {
@@ -780,6 +778,7 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
     if (apiErr) { setError(apiErr.message); return; }
     if (data) {
       setResult(data);
+      onResultChange?.(data);
       const mainVoyage = data.recommendation.voyages[0];
       if (mainVoyage) {
         getForecast(`${req.origin_port}→${mainVoyage.port}`, mainVoyage.vessel_class, 30).then(fRes => {
@@ -949,6 +948,4 @@ const RecommendationPage: React.FC<RecommendationPageProps> = ({
 
     </div>
   );
-};
-
-export default RecommendationPage;
+}

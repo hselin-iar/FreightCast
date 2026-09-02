@@ -122,6 +122,7 @@ const App: React.FC = () => {
         }}>
           <RecommendationPage
             onCargoContextChange={setChatCargoContext}
+            onResultChange={setChatResult}
             externalResult={chatResult}
             chatConstraintNote={chatNote}
           />
@@ -147,7 +148,9 @@ const App: React.FC = () => {
         {view === 'fleet'      && <div style={{ padding: '1.5rem', maxWidth: '1400px', margin: '0 auto' }}><FleetSchedulePage /></div>}
         {view === 'forecast'   && <ForecastExplorerPage />}
         {view === 'ports'      && <PortConstraintsPage />}
-        {view === 'provenance' && <ProvenancePage />}
+        <div style={{ display: view === 'provenance' ? 'block' : 'none', height: '100%' }}>
+          <ProvenancePage requestContext={chatCargoContext} resultContext={chatResult} />
+        </div>
       </div>
     </div>
   );

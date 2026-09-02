@@ -121,39 +121,47 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
       {/* ── RIGHT COLUMN (col-8): Baseline Case, Assume & Prove, Delta Proof Matrix ── */}
       <div className="col-8 col-space">
         {/* 1. Baseline Case Reality */}
-        <section className="panel">
-          <div className="panel-hd">
-            <span className="panel-title">Baseline Operational Reality</span>
-            <span className="panel-meta">grounded · live telemetry</span>
+        <section className="panel" style={{ background: 'var(--ink-800)', borderColor: 'var(--ink-700)', color: '#FAFAFA' }}>
+          <div className="panel-hd" style={{ borderBottomColor: 'var(--ink-700)' }}>
+            <span className="panel-title" style={{ color: '#FAFAFA' }}>Baseline Operational Reality</span>
+            <span className="panel-meta" style={{ color: '#A0A0A0' }}>grounded · live telemetry</span>
           </div>
           <div className="panel-body">
-            <h3 style={{ fontSize: 16, fontWeight: 700, color: 'var(--sail-100)', margin: '0 0 10px', lineHeight: 1.4 }}>
+            <h3 style={{ fontSize: 16, fontWeight: 700, color: '#FAFAFA', margin: '0 0 10px', lineHeight: 1.4 }}>
               {activeScenario.subtitle}
             </h3>
-            <div style={{ fontSize: 13.5, lineHeight: 1.8, color: 'var(--sail-200)' }}>
+            <div style={{ fontSize: 13.5, lineHeight: 1.8, color: '#FAFAFA' }}>
               <CitationTextParser
                 text={activeScenario.base_case_text}
                 citations={activeScenario.citations}
               />
             </div>
-            <p className="infer">
+            <p className="infer" style={{ color: '#A0A0A0' }}>
               Hover or click any highlighted token to view the governing hydrodynamics formula, Admiralty nautical distance, or port authority bathymetry circular.
             </p>
           </div>
         </section>
 
         {/* 2. Hypothetical "Assume & Prove" Card */}
-        <section className="panel" style={{ background: 'var(--ink-800)', borderColor: 'var(--ink-700)', color: '#FAFAFA' }}>
-          <div className="panel-hd" style={{ borderBottomColor: 'var(--ink-700)' }}>
-            <span className="panel-title" style={{ color: 'var(--accent)' }}>
-              ⚡ {activeScenario.assumed_situation_title}
-            </span>
-            <span className="panel-meta" style={{ color: 'var(--sail-400)' }}>
-              Hypothetical Simulation
+        <section className="panel">
+          <div className="panel-hd">
+            <span className="panel-title">
+              {activeScenario.assumed_situation_title}
             </span>
           </div>
           <div className="panel-body">
-            <div style={{ fontSize: 13.5, lineHeight: 1.75, color: '#FAFAFA', whiteSpace: 'pre-line' }}>
+            <div
+              style={{
+                fontSize: 13,
+                lineHeight: 1.6,
+                color: 'var(--sail-200)',
+                whiteSpace: 'pre-wrap',
+                padding: '12px 14px',
+                background: 'var(--sail-900)',
+                border: '1px solid var(--sail-800)',
+                borderRadius: 'var(--r)',
+              }}
+            >
               {activeScenario.assumed_situation_text}
             </div>
           </div>

@@ -1,47 +1,57 @@
 import React, { useState, useEffect } from 'react';
-import { getProvenanceSituations, getProvenanceCatalog } from '../lib/apiClient';
-import type { SituationalScenario, ParameterItem } from '../lib/types';
+import type { SituationalScenario, RecommendationRequest, RecommendationResponse } from '../lib/types';
 import SituationalProofLab from '../components/SituationalProofLab';
-import EvidencePrimer from '../components/EvidencePrimer';
-import ParameterCatalog from '../components/ParameterCatalog';
 import HypothesisAuditor from '../components/HypothesisAuditor';
+// Using generic fetch for the new POST endpoint for now, can be moved to apiClient later.
 
-type ProvenanceTab = 'situations' | 'primer' | 'catalog' | 'auditor';
-
-export const ProvenancePage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<ProvenanceTab>('situations');
+export const ProvenancePage: React.FC<{
+  requestContext?: RecommendationRequest | null;
+  resultContext?: RecommendationResponse | null;
+}> = ({ requestContext, resultContext }) => {
   const [scenarios, setScenarios] = useState<SituationalScenario[]>([]);
-  const [parameters, setParameters] = useState<ParameterItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!requestContext || !resultContext) {
+      // Nothing to generate proofs for yet.
+      return;
+    }
+
     let isMounted = true;
     (async () => {
       setLoading(true);
-      const [situationsRes, catalogRes] = await Promise.all([
-        getProvenanceSituations(),
-        getProvenanceCatalog(),
-      ]);
+      try {
+        const response = await fetch('http://localhost:8000/provenance/situations/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            request: requestContext,
+            result: resultContext
+          }),
+        });
 
-      if (!isMounted) return;
+        if (!response.ok) {
+          throw new Error('Failed to generate situational proofs.');
+        }
 
-      if (situationsRes.data) {
-        setScenarios(situationsRes.data.scenarios);
+        const data = await response.json();
+        if (!isMounted) return;
+        
+        if (data.scenarios) {
+          setScenarios(data.scenarios);
+        }
+      } catch (err: any) {
+        if (isMounted) setError(err.message || 'Failed to generate dynamic provenance.');
+      } finally {
+        if (isMounted) setLoading(false);
       }
-      if (catalogRes.data) {
-        setParameters(catalogRes.data.parameters);
-      }
-      if (situationsRes.error && catalogRes.error) {
-        setError(situationsRes.error.message || 'Failed to load provenance data.');
-      }
-      setLoading(false);
     })();
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [requestContext, resultContext]);
 
   return (
     <div className="page-grid">
@@ -51,18 +61,10 @@ export const ProvenancePage: React.FC = () => {
           <div className="panel-hd">
             <div>
               <span className="panel-title" style={{ fontSize: 16 }}>
-                Empirical Proof & Situational Dissection
+                Dynamic Empirical Proof & Situational Dissection
               </span>
               <span className="panel-meta" style={{ marginLeft: 12 }}>
                 First-Principles Audit · Provenance Lab
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 16, alignItems: 'center' }}>
-              <span className="panel-meta">
-                Parameters: <strong style={{ color: 'var(--badge-measured-text)' }}>{parameters.length || 15} Verified</strong>
-              </span>
-              <span className="panel-meta">
-                Proofs: <strong style={{ color: 'var(--text-accent)' }}>{scenarios.length || 4} Available</strong>
               </span>
             </div>
           </div>
@@ -79,56 +81,9 @@ export const ProvenancePage: React.FC = () => {
           >
             <p style={{ fontSize: 13, color: 'var(--sail-300)', margin: 0, maxWidth: 840, lineHeight: 1.5 }}>
               A completely transparent breakdown of why the maritime freight system operates the way it does. 
-              Explore hypothetical situations, hover over any highlighted claim to inspect verified telemetry citations, and audit every parameter.
+              Explore hypothetical situations, hover over any highlighted claim to inspect verified telemetry citations. 
+              {requestContext ? ' These proofs are dynamically generated for your current cargo requirement.' : ' Run a recommendation first to generate situational proofs.'}
             </p>
-
-            {/* View Switcher Tabs */}
-            <div style={{ display: 'flex', background: 'var(--sail-800)', padding: 3, borderRadius: 'var(--r)', gap: 3 }}>
-              <button
-                onClick={() => setActiveTab('situations')}
-                className={`btn btn-sm ${activeTab === 'situations' ? 'btn-accent' : ''}`}
-                style={{
-                  background: activeTab === 'situations' ? 'var(--accent)' : 'transparent',
-                  color: activeTab === 'situations' ? 'var(--accent-text)' : 'var(--sail-400)',
-                  fontWeight: activeTab === 'situations' ? 700 : 500,
-                }}
-              >
-                ⚡ Situational Proofs
-              </button>
-              <button
-                onClick={() => setActiveTab('primer')}
-                className={`btn btn-sm ${activeTab === 'primer' ? 'btn-accent' : ''}`}
-                style={{
-                  background: activeTab === 'primer' ? 'var(--accent)' : 'transparent',
-                  color: activeTab === 'primer' ? 'var(--accent-text)' : 'var(--sail-400)',
-                  fontWeight: activeTab === 'primer' ? 700 : 500,
-                }}
-              >
-                📖 Evidence Primer
-              </button>
-              <button
-                onClick={() => setActiveTab('catalog')}
-                className={`btn btn-sm ${activeTab === 'catalog' ? 'btn-accent' : ''}`}
-                style={{
-                  background: activeTab === 'catalog' ? 'var(--accent)' : 'transparent',
-                  color: activeTab === 'catalog' ? 'var(--accent-text)' : 'var(--sail-400)',
-                  fontWeight: activeTab === 'catalog' ? 700 : 500,
-                }}
-              >
-                🔍 Source Catalog
-              </button>
-              <button
-                onClick={() => setActiveTab('auditor')}
-                className={`btn btn-sm ${activeTab === 'auditor' ? 'btn-accent' : ''}`}
-                style={{
-                  background: activeTab === 'auditor' ? 'var(--accent)' : 'transparent',
-                  color: activeTab === 'auditor' ? 'var(--accent-text)' : 'var(--sail-400)',
-                  fontWeight: activeTab === 'auditor' ? 700 : 500,
-                }}
-              >
-                💬 Agentic Auditor
-              </button>
-            </div>
           </div>
         </section>
       </div>
@@ -151,21 +106,32 @@ export const ProvenancePage: React.FC = () => {
         </div>
       )}
 
-      {/* ── Dynamic Tab View Content ── */}
+      {/* ── Dynamic Layout ── */}
       {loading ? (
         <div className="col-12">
           <div className="panel" style={{ padding: 40, textAlign: 'center', color: 'var(--sail-500)' }}>
-            Loading empirical proof models and parameter registry...
+            <div className="spinner" style={{ marginBottom: 12 }} />
+            <br />
+            Agentic AI is actively dissecting your cargo strategy and formulating empirical proofs...
           </div>
         </div>
       ) : (
         <>
-          {activeTab === 'situations' && <SituationalProofLab scenarios={scenarios} />}
-          {activeTab === 'primer' && <EvidencePrimer />}
-          {activeTab === 'catalog' && <ParameterCatalog parameters={parameters} loading={loading} />}
-          {activeTab === 'auditor' && <HypothesisAuditor />}
+          {scenarios.length > 0 && <SituationalProofLab scenarios={scenarios} />}
+          {!requestContext && !loading && (
+             <div className="col-12">
+                <div className="panel" style={{ padding: 40, textAlign: 'center', color: 'var(--sail-500)' }}>
+                   Please submit a cargo request in the Recommendation tab to begin.
+                </div>
+             </div>
+          )}
         </>
       )}
+
+      {/* Agentic Auditor always sits at the bottom */}
+      <div className="col-12" style={{ marginTop: 24 }}>
+        <HypothesisAuditor requestContext={requestContext} />
+      </div>
     </div>
   );
 };

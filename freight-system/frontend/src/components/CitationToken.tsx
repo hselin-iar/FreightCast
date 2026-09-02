@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { CitationItem } from '../lib/types';
 import ProvenanceBadge from './ProvenanceBadge';
 
@@ -9,8 +10,19 @@ interface Props {
 
 export const CitationToken: React.FC<Props> = ({ citation, children }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [popoverCoords, setPopoverCoords] = useState<{ top: number; left: number }>({ top: 0, left: 0 });
   const triggerRef = useRef<HTMLSpanElement>(null);
   const popoverRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      setPopoverCoords({
+        top: rect.top + window.scrollY - 8, // Just above the trigger
+        left: rect.left + window.scrollX + rect.width / 2,
+      });
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -54,7 +66,7 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
         onClick={() => setIsOpen((prev) => !prev)}
         style={{
           borderBottom: `2px dotted ${badgeBorder}`,
-          color: 'var(--sail-100)',
+          color: '#FAFAFA',
           fontWeight: 600,
           cursor: 'pointer',
           padding: '1px 3px',
@@ -79,14 +91,14 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
       </span>
 
       {/* Floating Evidence Inspector Popover */}
-      {isOpen && (
+      {isOpen && createPortal(
         <div
           ref={popoverRef}
           style={{
             position: 'absolute',
-            bottom: 'calc(100% + 8px)',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            top: popoverCoords.top,
+            left: popoverCoords.left,
+            transform: 'translate(-50%, -100%)',
             width: 360,
             maxWidth: '90vw',
             backgroundColor: 'var(--sail-900)',
@@ -94,7 +106,7 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
             boxShadow: 'var(--shadow-panel)',
             borderRadius: 'var(--r-lg)',
             padding: '14px 16px',
-            zIndex: 9999,
+            zIndex: 999999, // Ensure absolute top layer
             fontSize: 12,
             lineHeight: 1.5,
             color: 'var(--sail-200)',
@@ -130,28 +142,14 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
 
           {/* Governing Equation / Math (if present) */}
           {citation.equation && (
-            <div
-              style={{
-                marginBottom: 8,
-                padding: '6px 10px',
-                backgroundColor: 'var(--sail-800)',
-                borderRadius: 'var(--r)',
-                border: '1px solid var(--sail-700)',
-                fontFamily: 'var(--f-mono)',
-                fontSize: 11,
-                color: 'var(--sail-100)',
-                fontWeight: 600,
-              }}
-            >
-              <span style={{ color: 'var(--sail-500)', fontSize: 9, display: 'block', marginBottom: 2 }}>
-                FORMULA / DERIVATION:
-              </span>
-              {citation.equation}
+            <div style={{ marginTop: 8, padding: 8, backgroundColor: 'var(--ink-700)', borderLeft: '2px solid var(--accent)' }}>
+              <span style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase' }}>Mathematical Grounding</span>
+              <div style={{ marginTop: 2, fontFamily: 'var(--f-mono)', color: '#FAFAFA' }}>{citation.equation}</div>
             </div>
           )}
 
           {/* Confidence & Rationale */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6, marginTop: 12 }}>
             <div>
               <span style={{ color: 'var(--sail-500)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
                 Confidence & Calibration
@@ -169,22 +167,8 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
               </div>
             </div>
           </div>
-
-          {/* Arrow */}
-          <div
-            style={{
-              position: 'absolute',
-              bottom: -6,
-              left: '50%',
-              transform: 'translateX(-50%) rotate(45deg)',
-              width: 10,
-              height: 10,
-              backgroundColor: 'var(--sail-900)',
-              borderRight: `1.5px solid ${badgeBorder}`,
-              borderBottom: `1.5px solid ${badgeBorder}`,
-            }}
-          />
-        </div>
+        </div>,
+        document.body
       )}
     </span>
   );
