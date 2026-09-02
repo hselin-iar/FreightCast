@@ -481,19 +481,7 @@ def _get_provider_config() -> Tuple[str, List[str], str, str]:
     Detect configured LLM provider and credentials.
     Returns (provider_name, api_keys, base_url, model_name).
     """
-    # 1. Groq
-    groq_keys = [
-        k for k in (
-            os.environ.get("GROQ_API_KEY"),
-            os.environ.get("GROQ_API_KEY_2"),
-            os.environ.get("GROQ_API_KEY_3"),
-        ) if k and k.strip()
-    ]
-    if groq_keys:
-        model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
-        return ("groq", groq_keys, "https://api.groq.com/openai/v1", model)
-
-    # 2. Nvidia NIM
+    # 1. Nvidia NIM (Prioritized)
     nvidia_keys = [
         k for k in (
             os.environ.get("NVIDIA_API_KEY"),
@@ -505,6 +493,18 @@ def _get_provider_config() -> Tuple[str, List[str], str, str]:
     if nvidia_keys:
         model = os.environ.get("NVIDIA_MODEL", "nvidia/nemotron-3-super-120b-a12b")
         return ("nvidia", nvidia_keys, "https://integrate.api.nvidia.com/v1", model)
+
+    # 2. Groq
+    groq_keys = [
+        k for k in (
+            os.environ.get("GROQ_API_KEY"),
+            os.environ.get("GROQ_API_KEY_2"),
+            os.environ.get("GROQ_API_KEY_3"),
+        ) if k and k.strip()
+    ]
+    if groq_keys:
+        model = os.environ.get("GROQ_MODEL", "llama-3.3-70b-versatile")
+        return ("groq", groq_keys, "https://api.groq.com/openai/v1", model)
 
     # 3. Anthropic Claude
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -739,11 +739,12 @@ def chat(req: ChatRequest) -> ChatResponse:
             # Turn 2: Get final assistant synthesis
             final_resp = _call_openai_compatible(api_keys, base_url, model, messages)
             final_choice = final_resp.get("choices", [{}])[0]
-            reply = final_choice.get("message", {}).get("content", "").strip()
+            final_msg = final_choice.get("message", {})
+            reply = (final_msg.get("content") or final_msg.get("reasoning_content") or "").strip()
 
         else:
             # Direct response (clarification or explanation)
-            reply = (msg_obj.get("content") or "").strip()
+            reply = (msg_obj.get("content") or msg_obj.get("reasoning_content") or "").strip()
 
     # ── 2. Anthropic flow ──────────────────────────────────────────────────
     elif provider == "anthropic":
