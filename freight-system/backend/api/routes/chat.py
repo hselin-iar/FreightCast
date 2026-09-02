@@ -548,33 +548,62 @@ def _call_openai_compatible(
         payload["top_p"] = 0.95
 
     with httpx.Client(timeout=45.0) as client:
-        for attempt in range(4):
-            key_to_use = api_keys[attempt % len(api_keys)]
+        last_error_resp = None
+        # Try every configured key in sequence; if all fail, retry once with backoff
+        total_attempts = len(api_keys) * 2
+        for attempt in range(total_attempts):
+            key_idx = attempt % len(api_keys)
+            key_to_use = api_keys[key_idx]
             headers = {
                 "Authorization": f"Bearer {key_to_use}",
                 "Content-Type": "application/json",
             }
-            resp = client.post(f"{base_url}/chat/completions", headers=headers, json=payload)
-            if resp.status_code == 429 and attempt < 3:
-                time.sleep(2.5 * (attempt + 1))
+            try:
+                resp = client.post(f"{base_url}/chat/completions", headers=headers, json=payload)
+            except Exception as e:
+                logger.warning("Network error with key %d: %s. Rotating...", key_idx + 1, e)
                 continue
-            if resp.status_code == 429:
-                logger.warning("LLM provider rate limit exceeded (429): %s", resp.text)
-                return {
-                    "choices": [{
-                        "message": {
-                            "role": "assistant",
-                            "content": "I'm currently experiencing very high traffic and have reached my rate limit. Please wait a few minutes and try again."
-                        }
-                    }]
-                }
-            if resp.status_code != 200:
-                logger.error("LLM provider error %d: %s", resp.status_code, resp.text)
-                raise HTTPException(
-                    status_code=502,
-                    detail=f"LLM provider returned status {resp.status_code}: {resp.text}",
+
+            if resp.status_code == 200:
+                if attempt > 0:
+                    logger.info("Successfully recovered using rotated API key #%d", key_idx + 1)
+                return resp.json()
+
+            last_error_resp = resp
+
+            # If rate-limited, quota-exhausted, or temporarily overloaded/server error, rotate immediately
+            if resp.status_code in (429, 402, 403, 500, 502, 503, 504):
+                logger.warning(
+                    "LLM key #%d/%d returned status %d (%s). Rotating to next key...",
+                    key_idx + 1, len(api_keys), resp.status_code, resp.text[:120]
                 )
-            return resp.json()
+                # Only sleep if we have already cycled through all keys once
+                if attempt >= len(api_keys) - 1:
+                    time.sleep(2.0)
+                continue
+
+            # Non-rotatable client/server error (e.g. 400 Bad Request, 404)
+            logger.error("LLM provider error %d: %s", resp.status_code, resp.text)
+            raise HTTPException(
+                status_code=502,
+                detail=f"LLM provider returned status {resp.status_code}: {resp.text}",
+            )
+
+        if last_error_resp is not None and last_error_resp.status_code in (429, 402, 403, 503):
+            logger.warning("All %d LLM API keys exhausted / rate limited: %s", len(api_keys), last_error_resp.text)
+            return {
+                "choices": [{
+                    "message": {
+                        "role": "assistant",
+                        "content": "All configured API keys are currently experiencing high traffic or rate limits. Please try again in a moment."
+                    }
+                }]
+            }
+        
+        raise HTTPException(
+            status_code=502,
+            detail=f"All LLM keys failed. Last error: {last_error_resp.text if last_error_resp else 'Timeout'}",
+        )
 
 
 def _call_anthropic(
