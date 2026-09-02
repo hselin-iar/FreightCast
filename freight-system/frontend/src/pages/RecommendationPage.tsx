@@ -57,6 +57,7 @@ function pct(a: number, total: number) { return total > 0 ? Math.round((a / tota
 /* ── Left panel: Cargo Request form ────────────────────────── */
 interface FormPanelProps {
   scope: ScopeResponse | null;
+  health: HealthResponse | null;
   loading: boolean;
   qty: string; setQty: (v: string) => void;
   origin: string; setOrigin: (v: string) => void;
@@ -67,12 +68,14 @@ interface FormPanelProps {
 }
 
 function CargoForm({
-  scope, loading, qty, setQty, origin, setOrigin,
+  scope, health, loading, qty, setQty, origin, setOrigin,
   ports, togglePort, flex, setFlex, bench, setBench, onSubmit,
 }: FormPanelProps) {
   const [benchOpen, setBenchOpen] = useState(false);
   const activeOrigins = scope?.origins?.length ? scope.origins : DEFAULT_SCOPE.origins;
   const activeDestPorts = scope?.dest_ports?.length ? scope.dest_ports : DEFAULT_SCOPE.dest_ports;
+  const isBackendReady = Boolean(health?.warehouse_reachable);
+  const isButtonDisabled = loading || !isBackendReady;
 
   return (
     <section className="panel">
@@ -156,10 +159,27 @@ function CargoForm({
           </div>
         </div>
 
-        <button type="submit" className="btn btn-accent btn-full" disabled={loading} id="btn-run">
-          {loading ? <><span className="spinner" />Solving…</> : 'Run Recommendation'}
+        <button
+          type="submit"
+          className="btn btn-accent btn-full"
+          disabled={isButtonDisabled}
+          title={!isBackendReady ? "Waiting for backend server to spin up..." : undefined}
+          id="btn-run"
+        >
+          {loading ? (
+            <><span className="spinner" />Solving…</>
+          ) : !isBackendReady ? (
+            <><span className="spinner" />Connecting to server…</>
+          ) : (
+            'Run Recommendation'
+          )}
         </button>
         {loading && <p className="infer" style={{ textAlign: 'center' }}>MILP solver running — may take a few seconds</p>}
+        {!loading && !isBackendReady && (
+          <p className="infer" style={{ textAlign: 'center', color: 'var(--warn)' }}>
+            Waiting for backend server to spin up…
+          </p>
+        )}
       </form>
     </section>
   );
@@ -825,7 +845,7 @@ export default function RecommendationPage({
           {/* ── LEFT COL ── */}
           <div style={{ gridColumn: 'span 3', display: 'flex', flexDirection: 'column', gap: 16, minWidth: 0 }}>
         <CargoForm
-          scope={scope} loading={loading}
+          scope={scope} health={health} loading={loading}
           qty={qty} setQty={setQty}
           origin={origin} setOrigin={setOrigin}
           ports={ports} togglePort={togglePort}
