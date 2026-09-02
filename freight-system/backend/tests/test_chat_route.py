@@ -99,10 +99,13 @@ def test_is_constraint_change():
 
 def test_chat_endpoint_missing_api_key(monkeypatch):
     """POST /chat without any API key returns 503 explaining the key requirement."""
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
-    monkeypatch.delenv("GROQ_API_KEY", raising=False)
-    monkeypatch.delenv("NVIDIA_API_KEY", raising=False)
-    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    for key in [
+        "ANTHROPIC_API_KEY",
+        "GROQ_API_KEY", "GROQ_API_KEY_2", "GROQ_API_KEY_3",
+        "NVIDIA_API_KEY", "NVIDIA_API_KEY_2", "NVIDIA_API_KEY_3", "NVIDIA_NIM_API_KEY",
+        "OPENAI_API_KEY",
+    ]:
+        monkeypatch.delenv(key, raising=False)
     resp = client.post("/chat", json={"message": "What is the best vessel?"})
     assert resp.status_code == 503
     assert "No LLM API key configured" in resp.json()["detail"]

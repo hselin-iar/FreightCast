@@ -65,42 +65,51 @@ def _cached_scope(key: str, query_fn) -> list[str]:
 
 def get_valid_origins() -> list[str]:
     """
-    Return verified origin names from VesselPositionSnapshot loading regions.
-    Falls back to DEV_FIXTURE_ORIGINS if warehouse is empty (cold start).
+    Return verified origin names from RoutePhysics, RateHistory, or fallback constants.
     DOC2 Addendum v3 §A1.
     """
     def _query() -> list[str]:
         from backend.config.constants import DEV_FIXTURE_ORIGINS
         with get_session() as session:
             rows = session.execute(
-                select(PortConstraint.name)
-                .where(PortConstraint.verified == True)  # noqa: E712
+                select(RoutePhysicsModel.origin).distinct()
             ).scalars().all()
-            # Origins come from the port_constraint table's source-port dimension
-            # (verified port rows are both origins and destinations in this system).
-            # For now return DEV_FIXTURE_ORIGINS if no verified rows exist.
-            return list(rows) if rows else list(DEV_FIXTURE_ORIGINS)
+            if rows:
+                return list(rows)
+            rate_routes = session.execute(
+                select(RateHistory.route).distinct()
+            ).scalars().all()
+            if rate_routes:
+                extracted = sorted(list(set(r.split("→")[0] for r in rate_routes if "→" in r)))
+                if extracted:
+                    return extracted
+            return list(DEV_FIXTURE_ORIGINS)
 
     return _cached_scope("origins", _query)
 
 
 def get_valid_dest_ports() -> list[str]:
     """
-    Return verified destination port names (verified PortConstraint rows).
-    Falls back to DEV_FIXTURE_PORTS if warehouse is empty (cold start).
+    Return verified destination discharge port names (verified PortConstraint rows excluding origins).
+    Falls back to DEV_FIXTURE_DEST_PORTS if warehouse is empty (cold start).
     DOC2 Addendum v3 §A1.
     """
     def _query() -> list[str]:
-        from backend.config.constants import DEV_FIXTURE_DEST_PORTS
+        from backend.config.constants import DEV_FIXTURE_DEST_PORTS, DEV_FIXTURE_ORIGINS
         with get_session() as session:
             rows = session.execute(
                 select(PortConstraint.name)
                 .where(PortConstraint.verified == True)  # noqa: E712
             ).scalars().all()
-            return list(rows) if rows else list(DEV_FIXTURE_DEST_PORTS)
-
+            origin_rows = session.execute(
+                select(RoutePhysicsModel.origin).distinct()
+            ).scalars().all()
+            known_origins = set(origin_rows) | set(DEV_FIXTURE_ORIGINS)
+            dest_rows = [r for r in rows if r not in known_origins]
+            return list(dest_rows) if dest_rows else list(DEV_FIXTURE_DEST_PORTS)
 
     return _cached_scope("dest_ports", _query)
+
 
 
 def get_valid_routes() -> list[str]:
