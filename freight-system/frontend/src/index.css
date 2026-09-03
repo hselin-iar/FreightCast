@@ -1066,16 +1066,63 @@ input[type="range"]::-webkit-slider-runnable-track { border-radius: 2px; height:
   color: var(--sail-200);
 }
 
-.chat-markdown table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 8px 0;
-  font-size: 11px;
-  border: 1px solid var(--sail-800);
-  border-radius: 4px;
+/* ── KaTeX Display Math & Table Centering ─────────── */
+.chat-markdown .katex-display {
+  display: block !important;
+  margin: 16px auto !important;
+  text-align: center !important;
   overflow-x: auto;
-  display: block;
-  white-space: nowrap;
+  overflow-y: hidden;
+  padding: 12px 16px;
+  background: color-mix(in srgb, var(--sail-900) 70%, transparent);
+  border: 1px solid var(--sail-800);
+  border-radius: 8px;
+  max-width: 100%;
+}
+
+.chat-markdown .katex-display > .katex {
+  display: inline-block !important;
+  text-align: center !important;
+  max-width: 100%;
+}
+
+.chat-markdown .katex {
+  font-size: 1.15em;
+  color: var(--sail-100);
+}
+
+/* ── KaTeX in Popovers & Hover Cards (MathFormula) ──── */
+.math-formula.math-block .katex-display {
+  display: block !important;
+  margin: 4px 0 !important;
+  text-align: left !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+}
+
+.math-formula.math-block .katex-display > .katex {
+  display: inline-block !important;
+  text-align: left !important;
+  font-size: 1.08em;
+  color: #FAFAFA;
+}
+
+.math-formula.math-inline .katex {
+  font-size: 0.98em;
+  color: var(--text-accent);
+}
+
+.chat-markdown table {
+  margin: 16px auto !important;
+  max-width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  border: 1px solid var(--sail-700);
+  border-radius: 6px;
+  overflow-x: auto;
+  display: table;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 .chat-markdown th {
   background: color-mix(in srgb, var(--sail-900) 90%, transparent);

@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
 import type { CitationItem } from '../lib/types';
 import ProvenanceBadge from './ProvenanceBadge';
+import MathFormula from './MathFormula';
 
 interface Props {
   citation: CitationItem;
@@ -17,9 +18,14 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
   useLayoutEffect(() => {
     if (isOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
+      const halfWidth = 190;
+      const idealLeft = rect.left + window.scrollX + rect.width / 2;
+      const minLeft = halfWidth + 16;
+      const maxLeft = Math.max(minLeft, window.innerWidth - halfWidth - 16);
+      const clampedLeft = Math.max(minLeft, Math.min(maxLeft, idealLeft));
       setPopoverCoords({
         top: rect.top + window.scrollY - 8, // Just above the trigger
-        left: rect.left + window.scrollX + rect.width / 2,
+        left: clampedLeft,
       });
     }
   }, [isOpen]);
@@ -142,9 +148,13 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
 
           {/* Governing Equation / Math (if present) */}
           {citation.equation && (
-            <div style={{ marginTop: 8, padding: 8, backgroundColor: 'var(--ink-700)', borderLeft: '2px solid var(--accent)' }}>
-              <span style={{ fontSize: 10, color: '#A0A0A0', textTransform: 'uppercase' }}>Mathematical Grounding</span>
-              <div style={{ marginTop: 2, fontFamily: 'var(--f-mono)', color: '#FAFAFA' }}>{citation.equation}</div>
+            <div style={{ marginTop: 8, padding: '8px 10px', backgroundColor: 'var(--ink-700)', borderLeft: '2px solid var(--accent)', borderRadius: '0 4px 4px 0', overflowX: 'auto' }}>
+              <div style={{ fontSize: 9.5, color: 'var(--sail-400)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: 4 }}>
+                Mathematical Grounding
+              </div>
+              <div style={{ color: '#FAFAFA', fontSize: 12 }}>
+                <MathFormula math={citation.equation} block={true} />
+              </div>
             </div>
           )}
 

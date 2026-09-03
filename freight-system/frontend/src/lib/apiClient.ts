@@ -21,24 +21,29 @@ import type {
   ScopeResponse,
 } from './types';
 
-function getApiBaseUrl(): string {
-  const envUrl = import.meta.env.VITE_API_BASE_URL as string | undefined;
-  const isBrowser = typeof window !== 'undefined';
-  const isLocalhost =
-    isBrowser &&
-    (window.location.hostname === 'localhost' ||
-      window.location.hostname === '127.0.0.1' ||
-      window.location.hostname.startsWith('192.168.'));
+export function getApiBaseUrl(): string {
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    const isLocal =
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host.startsWith('192.168.') ||
+      host.endsWith('.local');
 
-  if (isBrowser && !isLocalhost) {
-    // On deployed production (e.g. *.vercel.app or custom domain)
-    if (!envUrl || envUrl.includes('localhost') || envUrl.includes('127.0.0.1')) {
+    if (!isLocal) {
+      const envUrl = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+      if (envUrl && envUrl.startsWith('https://') && !envUrl.includes('localhost') && !envUrl.includes('127.0.0.1')) {
+        return envUrl.replace(/\/+$/, '');
+      }
       return 'https://freightcast-api.onrender.com';
     }
-    return envUrl;
   }
 
-  return envUrl || 'http://localhost:8000';
+  const localEnv = (import.meta.env.VITE_API_BASE_URL as string | undefined)?.trim();
+  if (localEnv) {
+    return localEnv.replace(/\/+$/, '');
+  }
+  return 'http://localhost:8000';
 }
 
 export const API_BASE_URL: string = getApiBaseUrl();

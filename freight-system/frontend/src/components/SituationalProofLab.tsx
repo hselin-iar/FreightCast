@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import type { SituationalScenario } from '../lib/types';
 import CitationTextParser from './CitationTextParser';
+import CitationToken from './CitationToken';
+import { highlightDataTerms } from '../lib/termHighlighter';
 
 interface Props {
   scenarios: SituationalScenario[];
@@ -86,33 +88,38 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
           </div>
           <div className="panel-body" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {Object.values(activeScenario.citations).map((cit) => (
-              <div
-                key={cit.id}
-                style={{
-                  padding: '8px 10px',
-                  backgroundColor: 'var(--sail-900)',
-                  borderRadius: 'var(--r)',
-                  border: '1px solid var(--sail-800)',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 3,
-                }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sail-100)' }}>
-                    {cit.title}
-                  </span>
-                  <span
-                    className={`badge badge-${cit.provenance}`}
-                    style={{ fontSize: 9 }}
-                  >
-                    {cit.provenance.toUpperCase()}
+              <CitationToken key={cit.id} citation={cit}>
+                <div
+                  style={{
+                    padding: '8px 10px',
+                    backgroundColor: 'var(--sail-900)',
+                    borderRadius: 'var(--r)',
+                    border: '1px solid var(--sail-800)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 3,
+                    cursor: 'help',
+                    transition: 'border-color 0.15s ease',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.borderColor = 'var(--accent)')}
+                  onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'var(--sail-800)')}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--sail-100)' }}>
+                      {cit.title}
+                    </span>
+                    <span
+                      className={`badge badge-${cit.provenance}`}
+                      style={{ fontSize: 9 }}
+                    >
+                      {cit.provenance.toUpperCase()}
+                    </span>
+                  </div>
+                  <span style={{ fontSize: 11, color: 'var(--sail-500)' }}>
+                    {cit.source}
                   </span>
                 </div>
-                <span style={{ fontSize: 11, color: 'var(--sail-500)' }}>
-                  {cit.source}
-                </span>
-              </div>
+              </CitationToken>
             ))}
           </div>
         </section>
@@ -162,7 +169,7 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
                 borderRadius: 'var(--r)',
               }}
             >
-              {activeScenario.assumed_situation_text}
+              {highlightDataTerms(activeScenario.assumed_situation_text)}
             </div>
           </div>
         </section>

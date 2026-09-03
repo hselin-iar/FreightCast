@@ -23,9 +23,9 @@ type View = 'recommendation' | 'fleet' | 'forecast' | 'ports' | 'provenance';
 /* ── App shell ─────────────────────────────────────────── */
 const TABS: { id: View; label: string }[] = [
   { id: 'recommendation', label: 'Recommendation' },
+  { id: 'provenance',     label: 'Provenance'      },
   { id: 'forecast',       label: 'Forecast'        },
   { id: 'ports',          label: 'Ports'           },
-  { id: 'provenance',     label: 'Provenance'      },
   { id: 'fleet',          label: 'Fleet'           },
 ];
 

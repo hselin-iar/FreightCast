@@ -78,6 +78,19 @@ CRITICAL — READING TOOL RESULTS:
 - Total cost is in `cost_breakdown.total`.
 - Voyage count is in `recommendation.voyage_count`.
 
+CRITICAL — MATHEMATICAL NOTATION & MILP FORMULAS:
+- Always format mathematical expressions, MILP formulations, and variables using standard LaTeX delimiters:
+  * For display/block equations (such as the MILP objective function, draft restrictions, or cargo conservation), ALWAYS enclose them in double dollar signs on separate lines without internal blank lines:
+    $$
+    \\min \\sum_{i} \\sum_{v} \\sum_{p} \\left( C^{\\text{oc}}_{ivp} + C^{\\text{bk}}_{ivp} + C^{\\text{ox}}_{ivp} + C^{\\text{ph}}_{ivp} + C^{\\text{tx}}_{ivp} + C^{\\text{rail}}_{ip} \\right) x_{iv}
+    $$
+  * Every opening \\left[ or \\left( must be paired with a closing \\right] or \\right). Never emit an unclosed \\right without its delimiter.
+  * In variable definition bullet lists, ALWAYS enclose the variable in single dollar signs, e.g. "• $r^{\\text{dem}}$ = demurrage rate" or "• $\\mathbb{E}[D_v]$ = expected delay".
+  * For inline variables, ALWAYS use single dollar signs: $q_i$, $x_{iv}$, $y_{ip}$, $z_{i\\tau}$, $w_{im}$, $\\ell_{ip}$, $C^{\\text{tot}}_p$.
+  * Never write raw LaTeX commands (\\min, \\sum, \\mathbb{E}, C^{\\text{...}}) without dollar signs.
+  * Never write semicolons around mathematical operators (never write ;\\times; or ;=;).
+  * Never put a single dollar sign on its own line.
+
 AVAILABLE TOOL: get_recommendation
   Wraps the MILP optimizer. Returns the optimal chartering strategy with full cost breakdown, vessel allocations, and scenario comparisons.
 """
@@ -532,22 +545,23 @@ def _call_openai_compatible(
     base_url: str,
     model: str,
     messages: List[Dict[str, Any]],
+    include_tools: bool = True,
 ) -> Dict[str, Any]:
     """Call OpenAI-compatible chat completions endpoint (Groq, Nvidia, OpenAI)."""
-    payload = {
+    payload: Dict[str, Any] = {
         "model": model,
         "messages": messages,
-        "tools": _OPENAI_TOOLS,
-        "tool_choice": "auto",
-        "temperature": 1.0,  # User requested temperature=1
-        "max_tokens": 16384, # User requested 16384
+        "temperature": 0.7,
+        "max_tokens": 4096,
     }
+    if include_tools:
+        payload["tools"] = _OPENAI_TOOLS
+        payload["tool_choice"] = "auto"
 
     if "nvidia.com" in base_url:
-        payload["chat_template_kwargs"] = {"enable_thinking": True}
         payload["top_p"] = 0.95
 
-    with httpx.Client(timeout=45.0) as client:
+    with httpx.Client(timeout=90.0) as client:
         last_error_resp = None
         # Try every configured key in sequence; if all fail, retry once with backoff
         total_attempts = len(api_keys) * 2

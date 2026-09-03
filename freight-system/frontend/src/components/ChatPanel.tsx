@@ -25,8 +25,14 @@ import React, {
 } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
 
 import { postChat } from '../lib/apiClient';
+import { preprocessMathematicalMarkdown, rehypeUnescapeCurrency } from '../lib/mathUtils';
+import { DataTermToken } from './DataTermToken';
+import { findDataSource } from '../lib/dataSources';
+import { highlightDataTerms } from '../lib/termHighlighter';
 import type {
   ChatMessage,
   RecommendationRequest,
@@ -387,8 +393,39 @@ const MessageBubble: React.FC<{ msg: UiMessage }> = ({ msg }) => {
           <span style={{ whiteSpace: 'pre-wrap' }}>{msg.error}</span>
         ) : (
           <div className="chat-markdown">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {msg.content}
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[[rehypeKatex, { throwOnError: false, strict: false }], rehypeUnescapeCurrency]}
+              components={{
+                p({ children, ...props }) {
+                  return <p {...props}>{highlightDataTerms(children)}</p>;
+                },
+                li({ children, ...props }) {
+                  return <li {...props}>{highlightDataTerms(children)}</li>;
+                },
+                td({ children, ...props }) {
+                  return <td {...props}>{highlightDataTerms(children)}</td>;
+                },
+                th({ children, ...props }) {
+                  return <th {...props}>{highlightDataTerms(children)}</th>;
+                },
+                strong({ children, ...props }) {
+                  return <strong {...props}>{highlightDataTerms(children)}</strong>;
+                },
+                em({ children, ...props }) {
+                  return <em {...props}>{highlightDataTerms(children)}</em>;
+                },
+                code({ className, children, ...props }) {
+                  const text = String(children).replace(/\n$/, '').trim();
+                  const def = findDataSource(text);
+                  if (def) {
+                    return <DataTermToken term={text} definition={def}>{text}</DataTermToken>;
+                  }
+                  return <code className={className} {...props}>{children}</code>;
+                },
+              }}
+            >
+              {preprocessMathematicalMarkdown(msg.content)}
             </ReactMarkdown>
           </div>
         )}

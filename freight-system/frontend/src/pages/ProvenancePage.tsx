@@ -124,7 +124,7 @@ export const ProvenancePage: React.FC<{
 
       {/* Agentic Auditor always sits at the bottom */}
       <div className="col-12" style={{ marginTop: 24 }}>
-        <HypothesisAuditor requestContext={requestContext} />
+        <HypothesisAuditor requestContext={requestContext} resultContext={resultContext} />
       </div>
     </div>
   );
