@@ -18,6 +18,7 @@ NOTE (Research Parity & Testing Verification):
   * Chatbot Scope & Hallucination: Live scope injection + alias normalizer (_normalize_constraints) maps "Cape Max", "Super Max", "Panamax" seamlessly to canonical warehouse classes.
 - Comparative Benchmark: All scenarios solve optimally via MILP in ~35ms.
 - GitHub Repository: Successfully published and synced to https://github.com/hselin-iar/FreightCast.git (branch main).
+- Production Release Commit: `6a3374c` — Includes dynamic recommendation-backed empirical proofs, interactive data term hover inspector, universal LaTeX / KaTeX rendering repairs, and Provenance tab navbar repositioning before Forecast.
 - Deployment Configs (Step 14):
   * render.yaml Blueprint: Declares 4 resources (FastAPI Web API, AIS Worker, Retrain Cron, and Postgres DB) with secret keys segregated to server-side only.
   * vercel.json: SPA rewrites configured for React/Vite production build.
