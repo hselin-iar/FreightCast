@@ -1,7 +1,7 @@
 # DOC 2 (v4, Final Production) — Comprehensive Technical Architecture
 ### Intelligent Freight Forecasting, Port Compatibility & Optimized Vessel Chartering (SAIL PS3)
 
-This document is the comprehensive, authoritative technical architecture for the **FreightCast / SAIL PS3** system. It bridges the foundational system specification with the live production codebase and research parity upgrades transplanted from the `freight-optimization` research pipeline (OPEX-integrated 7-bucket economics, Sail vs. Kill incremental value maximization, downside risk ratio constraints, dynamic multi-voyage capacity budgeting, real AIS vessel repositioning physics, live scope catalogs, resilient natural-language constraint normalization, and dual single-cargo + fleet portfolio optimization).
+This document is the comprehensive, authoritative technical architecture for the **FreightCast / SAIL PS3** system. It defines the production architecture uniting Mixed-Integer Linear Programming (MILP) optimization with a First-Principles Grounded Provenance & Telemetry Verification Engine. The architecture integrates OPEX-grounded 7-bucket voyage economics, Sail vs. Kill incremental value maximization, downside risk ratio constraints, dynamic multi-voyage capacity budgeting, real AIS vessel repositioning physics, dynamic recommendation-grounded situational empirical proofs, an interactive telemetry evidence inspector, dual-section parallel hypothesis auditing, universal AST mathematical preprocessing, and a 4-resource high-availability cloud deployment with automated keepalive resilience.
 
 ---
 
@@ -10,7 +10,7 @@ This document is the comprehensive, authoritative technical architecture for the
 The system solves steel and dry bulk maritime logistics problems across two distinct operational tiers:
 
 ### Tier 1: Single-Cargo Tender Optimization (Interactive / Real-Time)
-A chartering manager evaluating a specific shipment request (*Cargo Quantity*, *Origin Port*, *Preferred Discharge Ports*, *Timing Flexibility*) requires an integrated, sub-50ms recommendation that solves three interconnected problems simultaneously:
+A chartering manager evaluating a specific shipment request (*Cargo Quantity*, *Origin Port*, *Preferred Discharge Ports*, *Timing Flexibility*) requires an integrated, sub-50ms recommendation that solves four interconnected problems simultaneously:
 1. **Freight Rate Econometric Forecasting:** Predict forward spot rate curves ($/MT and $/day) across multiple horizons (7, 14, 30, 60 days) under uncertainty.
 2. **Berth Physical Compatibility:** Enforce physical draft limits, length overall (LOA), beam, handling discharge rates, tidal windows, and intermediate lightening feasibility.
 3. **Chartering Commitment Optimization (Spot vs. Forward Locked):** Solve a Mixed-Integer Linear Program (MILP) deciding:
@@ -18,6 +18,7 @@ A chartering manager evaluating a specific shipment request (*Cargo Quantity*, *
    - Which vessel class (`Capesize`, `Panamax/Kamsarmax`, `Supramax/Ultramax`) and discharge port each voyage uses.
    - When each voyage departs ($\tau$) and its commitment mode (*Spot* vs. *Locked* rate).
    - The resulting 7-bucket cost breakdown and net incremental margin vs. walk-away benchmark.
+4. **First-Principles Empirical Verification & Audit Gate:** Deterministically prove *why* the optimal vessel, parcel split, and discharge port assignment dominates alternative combinations using hydrodynamic laws, channel draft restrictions, cubic speed-power fuel curves, Admiralty distance deltas, and laytime/demurrage exposure, grounded in verified warehouse telemetry (`/provenance/situations/active` and `/provenance/catalog`).
 
 ### Tier 2: Fleet-Wide Portfolio Scheduling (Batch / Multi-Contract)
 For fleet operations and periodic reviews across all tracked bulk carriers and an entire slate of pending contracts (`GET /fleet-schedule`):
@@ -29,19 +30,20 @@ For fleet operations and periodic reviews across all tracked bulk carriers and a
 
 ## 2. Decision Scope — Data-Driven Warehouse Catalog
 
-Origins, destination ports, and vessel classes are **dynamically resolved from the warehouse**, never hardcoded:
+Origins, destination ports, vessel classes, and operational parameters are **dynamically resolved from the warehouse**, never hardcoded:
 
 - **Destination Ports:** Loaded from verified rows in `port_constraints` (draft limits, LOA, beam, handling rate TPD, tidal dependency). Added via ingestion with human sign-off (`pending_verification`), requiring zero code changes.
 - **Origin Ports:** Loaded from `route_physics` and `rate_history`.
 - **Vessel Classes:** Canonical dry bulk classes (`Capesize`, `Panamax/Kamsarmax`, `Supramax/Ultramax`) with verified DWT capacities, laden/ballast fuel consumption, draft, LOA, and beam dimensions in `vessel_specs`.
 - **Scope API (`GET /scope`):** Backed by `warehouse/repository.py`, returns live lists of valid origins, ports, and vessel classes. Consumed by API request validation, frontend form dropdowns, and chatbot system prompt grounding.
-- **Provenance Tagging:** Placeholders or default values are tagged `assumed` with UI badges, ensuring transparent data honesty.
+- **Grounded Telemetry Catalog (`GET /provenance/catalog`):** Exposes 20+ verified operational parameters (e.g. Admiralty nautical distances, MAN B&W SFOC fuel curves, port handling rates, tidal allowances, and laytime/demurrage rates). Each entry carries a typed provenance classification (`measured`, `modeled`, `assumed`), source lineage, confidence rating, and mathematical equation.
+- **Provenance Tagging:** Every output metric carries typed provenance metadata with UI badges, ensuring transparent data honesty.
 
 ---
 
 ## 3. System Walkthroughs
 
-The system exposes two front-ends (React Dashboard and Decision Assistant Chatbot) sitting on the exact same FastAPI backend engine.
+The system exposes two front-ends (React Dashboard and Decision Assistant Chatbot) sitting on the exact same FastAPI backend engine, structured around a 5-tab top navigation hierarchy: `Recommendation | Provenance | Forecast | Ports | Fleet`.
 
 ### 3a. Via the Dashboard Form
 1. **Manager Input:** Enters **Cargo Quantity** (e.g. 150,000 MT), **Origin Port** (Australia - Hay Point), **Discharge Ports** (Gangavaram, Paradip, Dhamra), and **Timing Flexibility** (30 days). Optional advanced input: *Locked-rate discount benchmark* (default 10%).
@@ -51,6 +53,7 @@ The system exposes two front-ends (React Dashboard and Decision Assistant Chatbo
 5. **Cost Precomputation:** Computes 7-bucket cost coefficients across Base, Bull, and Bear scenarios for every candidate $(v, p, \tau, m)$.
 6. **MILP Solve:** PuLP/CBC solves the downside incremental maximization problem in ~35ms.
 7. **Response Rendering:** Renders winning plan, 7-bucket stacked cost bar, Base/Bull/Bear fan chart, AIS route map, sensitivity tornado chart, and why-not comparisons.
+8. **Seamless Workflow Transition into Provenance:** Running a recommendation automatically populates the adjacent **Provenance Lab** tab with dynamic empirical proofs grounded specifically in the active cargo quantity, origin, selected port, and vessel draft.
 
 ### 3b. Via the Decision Assistant Chatbot
 1. **Natural-Language Query:** User types: *"What's the best vessel for 70,000 tonnes from Australia to Paradip?"*
@@ -66,6 +69,14 @@ The system exposes two front-ends (React Dashboard and Decision Assistant Chatbo
 3. **Re-Solve:** Invokes `get_recommendation` with constraints fixed, executing a genuine MILP re-solve.
 4. **Live Dashboard Update:** Chatbot replies in plain language and returns `updated_recommendation` with `constraint_note = "only Capesize, ≤12 days"`, automatically updating the dashboard UI.
 
+### 3d. Via the Agentic Hypothesis Auditor
+1. **Manager Question:** In the Provenance tab, user types any operational or physical question (e.g. *"Explain demurrage exposure, berth wait delay, and why Capesize is cheaper per tonne despite costing more overall"*).
+2. **Dual-Section Concurrent Synthesis:** To prevent LLM rate limits and token-length timeouts, the query executes as two parallel requests:
+   - **Section 1 (Physical & Operational Constraints):** First-principles breakdown of vessel draft, channel depth, LOA limits, handling duration, and queuing physics.
+   - **Section 2 (Mathematical Cost Derivation & Economic Proof):** Display LaTeX formulas, parameter definitions, and a detailed cost comparison table.
+3. **Interactive Evidence Inspector:** The output is scanned by `termHighlighter`, rendering dotted cyan underlines under maritime data terms (`demurrage`, `ocean freight`, `bunker`, `OPEX`, `MILP`, `draft`, `laytime`). Hovering reveals interactive cards with definitions, formulas, and telemetry sources.
+4. **Universal Math Preprocessing:** All equations pass through `mathUtils.ts`, auto-healing delimiter brackets (`\left` / `\right`), eliminating empty display boxes, and ensuring crisp KaTeX rendering.
+
 ---
 
 ## 4. High-Level Architecture
@@ -74,48 +85,54 @@ The system exposes two front-ends (React Dashboard and Decision Assistant Chatbo
 ┌────────────────────────────────────────────────────────────────────────────────────────┐
 │                                 FRONTEND CLIENT LAYER                                  │
 │  React 19 + TypeScript + Vite + Recharts + Lucide Icons + apiClient.ts                 │
+│  ├─ Top Navigation Bar (Recommendation | Provenance | Forecast | Ports | Fleet)        │
 │  ├─ Dashboard (WhatIfSliders, Interactive Form, WinningPlanBanner, 7-Bucket Cost Grid) │
+│  ├─ Provenance Lab (SituationalProofLab, Evidence Inspector, Hypothesis Auditor)       │
 │  ├─ Scenario Lab (Base / Bull / Bear Fan Chart, Robustness & Regret Readouts)          │
 │  ├─ Fleet Schedule (AIS Tracked Carrier Schedule, Repositioning Gantt, SAIL vs KILL)   │
-│  ├─ Provenance Explorer & Sensitivity Tornado Panel                                   │
+│  ├─ AST Mathematical & Currency Preprocessor (mathUtils.ts, rehypeUnescapeCurrency)    │
 │  └─ Decision Assistant (Natural-Language Chat with Live Tool-Calling & Normalization)   │
 └───────────────────────────────────────────┬────────────────────────────────────────────┘
-                                            │ HTTP JSON (stateless)
+                                            │ HTTP JSON (stateless) + Auto-Failover
 ┌───────────────────────────────────────────▼────────────────────────────────────────────┐
 │                                  FASTAPI BACKEND API                                   │
 │  /recommendation   /scenario   /chat   /forecast   /compatible-vessels   /fleet-schedule│
+│  /provenance/situations   /provenance/situations/active   /provenance/catalog   /api/ping│
 │  ├─ Scope Validator & Natural Language Constraint Normalizer (_normalize_constraints)  │
+│  ├─ Telemetry Citation & Grounded Scenario Builder (build_grounded_scenarios)          │
 │  └─ Chat Tool-Calling Proxy (Groq / Nvidia NIM / Anthropic Claude / OpenAI)           │
-└─────────────────────┬─────────────────────┬────────────────────┬───────────────────────┘
-                      │                     │                    │
-┌─────────────────────▼───────┐ ┌───────────▼──────────┐ ┌───────▼───────────────────────┐
-│     CONSTRAINT ENGINE       │ │  FORECASTING ENGINE  │ │         COST TERMS            │
-│  Deterministic Pure Rules   │ │  Walk-Forward Gated  │ │  7-Bucket OPEX Economics      │
-│  ├─ 1. Draft limit          │ │  ├─ Enriched XGBoost │ │  ├─ 1. Ocean Freight (Disc.) │
-│  ├─ 2. LOA berth limit      │ │  ├─ Auto-ARIMA       │ │  ├─ 2. Bunker (Physics Dist.) │
-│  ├─ 3. Beam limit           │ │  ├─ Naive Baseline   │ │  ├─ 3. OPEX (Daily Vessel)    │
-│  ├─ 4. Parcel-fit ratio     │ │  ├─ Damped Fallback  │ │  ├─ 4. Other Voyage (Dues)    │
-│  ├─ 5. Handling rate days   │ │  └─ Prophet Additive │ │  ├─ 5. Port Handling          │
-│  ├─ 6. Tidal arrival window │ │     Decomposition    │ │  ├─ 6. Lightening Penalty     │
-│  ├─ 7. Lightening en-route  │ └───────────┬──────────┘ │  ├─ 7. Tax (Effective 5%)     │
-│  └─ 8. Vessel size rank     │             │            └───────┬───────────────────────┘
-└─────────────────────┬───────┘             │                    │
-                      │                     │                    │
-                      └──────────────┬──────┴────────────────────┘
-                                     │
-┌────────────────────────────────────▼───────────────────────────────────────────────────┐
+└───────┬─────────────────────┬─────────────────────┬────────────────────┬───────────────┘
+        │                     │                     │                    │
+┌───────▼─────────────┐ ┌─────▼─────────────┐ ┌─────▼──────────────────┐ ┌▼──────────────┐
+│  CONSTRAINT ENGINE  │ │ FORECASTING ENGINE│ │      COST TERMS        │ │  PROVENANCE & │
+│  Deterministic Rules│ │ Walk-Forward Gated│ │7-Bucket OPEX Economics │ │CITATION ENGINE│
+│  ├─ 1. Draft limit  │ │ ├─ Enriched XGBoost│ ├─ 1. Ocean Freight     │ │├─ Grounded    │
+│  ├─ 2. LOA limit    │ │ ├─ Auto-ARIMA     │ │  (Effective Post-Disc.)│ │   Situations  │
+│  ├─ 3. Beam limit   │ │ ├─ Naive Baseline │ ├─ 2. Bunker (Physics)   │ │├─ Telemetry   │
+│  ├─ 4. Parcel-fit   │ │ ├─ Damped Fallback│ ├─ 3. OPEX (Daily Vessel)│ │   Catalog     │
+│  ├─ 5. Handling rate│ │ └─ Prophet Addit. │ ├─ 4. Other Voyage (Dues)│ │├─ Sensitivity │
+│  ├─ 6. Tidal window │ │    Decomposition  │ ├─ 5. Port Handling      │ │   Tornado     │
+│  ├─ 7. Lightening   │ └─────────┬─────────┘ ├─ 6. Lightening Penalty │ │└─ Citation    │
+│  └─ 8. Vessel rank  │           │           │ ├─ 7. Tax (Exact 5.0%) │ │   Registry    │
+└───────┬─────────────┘           │           └─────┬──────────────────┘ └┬──────────────┘
+        │                         │                 │                     │
+        └─────────────────────────┼─────────────────┴─────────────────────┘
+                                  │
+┌─────────────────────────────────▼──────────────────────────────────────────────────────┐
 │                     DECISION OPTIMIZER (MILP via PuLP / CBC)                           │
 │  Objective: Maximize Worst-Case Incremental Value  max Σ x * worst_incremental         │
 │  Downside Risk Constraint: Σ x * (worst_incremental - 0.60 * base_incremental) >= 0   │
 │  Decomposed Variables: q_i (tonnes), x_iv (vessel), y_ip (port), z_it (tau), w_im(mode)│
-│  Dynamic Capacity Budgeting: Multi-voyage splits clamped to physical vessel limits     │
+│  Dynamic Capacity Budgeting: Needed = max(1, ceil(Q/Cap)), max 6 voyages with clamping │
 │  Fast Fallback: Hybrid Enumeration (<50ms solver timeout safety net)                   │
-└────────────────────────────────────┬───────────────────────────────────────────────────┘
-                                     │
-┌────────────────────────────────────▼───────────────────────────────────────────────────┐
-│                           SQLITE / POSTGRES WAREHOUSE                                  │
+└─────────────────────────────────┬──────────────────────────────────────────────────────┘
+                                  │
+┌─────────────────────────────────▼──────────────────────────────────────────────────────┐
+│                 SQLITE / POSTGRES WAREHOUSE & CLOUD DEPLOYMENT                         │
 │  Tables: rate_history, port_constraint, vessel_spec, forecast_object, route_physics,   │
-│          exogenous_feature (BDI, Brent, WTI, Iron Ore, BDRY, GSCPI), congestion        │
+│          exogenous_feature, telemetry_catalog, congestion, ais_position                │
+│  Render 4-Resource Blueprint: Web Service + AIS Worker + Retrain Cron + Postgres DB   │
+│  Vercel SPA Frontend + Automated GitHub Actions Keepalive Cron Workflow (/api/ping)   │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -132,7 +149,10 @@ The system exposes two front-ends (React Dashboard and Decision Assistant Chatbo
 | AIS Vessel Positions | Continuous | Repositioning & Fleet Schedule | Real IMO-tracked bulk carriers via MyShipTracking feed. |
 | Route Rate Assessments (5TC) | Daily / Weekly | Rate History | Benchmark Capesize, Panamax, Supramax route rates. |
 | Macro Features | Daily | Forecasting models | Brent, WTI, Iron Ore 62% Fe, BDRY ETF, GSCPI index. |
-| Route Physics & Distances | Static / Refreshed | Cost terms | Nautical distances (NM), laden/ballast fuel burn, daily OPEX. |
+| Route Physics & Distances | Static / Refreshed | Cost terms & Provenance | Nautical distances (NM), laden/ballast fuel burn, daily OPEX. |
+| Admiralty Distance Tables | Navigational verified| Provenance Lab | Geodetic distance deltas between competing discharge ports. |
+| Engine SFOC Sea Trials | Manufacturer verified| Cost terms & Provenance | MAN B&W speed-power cubic fuel curves for vessel classes. |
+| Telemetry Parameter Registry| Continuous | Provenance Catalog | Grounded registry of 20+ operational parameters with equations. |
 | Operational Evidence | Weekly | Advisory layer | Broker fixture evidence, charterer matching. |
 
 ---
@@ -143,13 +163,17 @@ The system exposes two front-ends (React Dashboard and Decision Assistant Chatbo
 |---|---|---|---|
 | `cargo_quantity` | Form / Chat / API | Constraint Engine | Evaluated against vessel capacity bands (Rule 4). |
 | | | Decision Optimizer | Sized into voyage parcels $\sum q_i = \text{cargo\_quantity}$. |
+| | | Provenance Engine | Evaluates draft limits and parcel splitting proofs. |
 | `origin_port` | Form / Chat / API | Decision Optimizer | Combined with discharge ports to look up route physics & forecasts. |
 | `discharge_ports[]` | Form / Chat / API | Constraint Engine | Checked against berth limits; validated via `GET /scope`. |
 | `timing_flexibility_days` | Form / Chat / API | Decision Optimizer | Bounds the fix-date search window $[0, \text{flexibility}]$. |
-| `commitment_benchmark_pct` | Form (Advanced) / Chat | Cost Terms | Discount applied to spot rate for locked forward commitments (default 10%). |
+| `commitment_benchmark_pct`| Form (Advanced) / Chat | Cost Terms | Discount applied to spot rate for locked forward commitments (default 10%). |
 | `bunker_price_usd` | Ingestion / DB | Cost Terms | Multiplied by distance fuel consumption to price bunker cost. |
 | `daily_opex_usd` | Route Physics / DB | Cost Terms | Multiplied by voyage days to compute operating expenses. |
 | `vessel_positions` | AIS Feed / DB | Fleet Schedule | Determines ballast repositioning feasibility and earliest departure. |
+| `active_recommendation` | Solver Output | Provenance Lab | Binds dynamic situational proofs to actual cargo and vessel allocations. |
+| `admiralty_distance_delta`| Route Physics / DB | Provenance Engine | Computes fuel savings from hydrodynamic distance differentials. |
+| `laytime_hours` & `demurrage_rate`| Port Constraints / DB | Cost Terms & Provenance | Quantifies congestion delay exposure and demurrage penalties. |
 
 ---
 
@@ -208,7 +232,9 @@ $$\text{Total Cost} = \text{Ocean Freight} + \text{Bunker} + \text{OPEX} + \text
 4. **Other Voyage Costs:** Port dues, canal tolls, pilotage from `RoutePhysics`.
 5. **Port Handling:** Port handling tariff $\times \text{Cargo Quantity}$.
 6. **Lightening Extra:** Added anchorage and port charges when lightening is required.
-7. **Tax Cost:** Exact $5.0\%$ applied to the **effective post-discount ocean freight cost**.
+7. **Tax Cost:** Exact $5.0\%$ applied strictly to the **effective post-discount ocean freight cost**:
+   $$\text{Tax Cost} = \text{Ocean Freight}_{\text{effective}} \times 0.05$$
+   Ensures accurate commercial accounting matching Indian withholding tax standards.
 
 ---
 
@@ -244,9 +270,14 @@ Guarantees that selected strategies do not suffer severe downside deterioration:
 $$\sum_{i} \sum_{c} x_{i,c} \cdot (\text{Worst Incremental}_c - 0.60 \cdot \text{Base Incremental}_c) \ge 0$$
 
 ### 11.4 Dynamic Multi-Voyage Capacity Budgeting
-- Needed voyages: $\text{Needed} = \max\left(1, \lceil \frac{\text{Cargo Quantity}}{\text{Max Feasible Vessel Capacity}} \rceil\right)$.
-- Max voyages allowed: $\min(6, \text{Needed})$.
-- Handles heavy parcels at restricted ports (e.g., 300,000 MT at Dhamra solves as 4 Panamax voyages: $60\text{k} + 80\text{k} + 80\text{k} + 80\text{k}$).
+The solver dynamically determines the required voyage count and strictly clamps individual voyage tonnages to vessel physical capacities:
+
+$$\text{Needed Voyages} = \max\left(1, \left\lceil \frac{\text{Cargo Quantity}}{\text{Max Feasible Vessel Capacity}} \right\rceil\right), \quad \text{Max Voyages Allowed} = \min(6, \text{Needed Voyages})$$
+
+Individual voyage parcel tonnages satisfy:
+$$q_i \le \sum_v x_{i,v} \cdot \text{Capacity}_v \quad \forall i, \quad \sum_{i} q_i = \text{Cargo Quantity}$$
+
+This ensures physical feasibility for large parcels calling at draft-restricted ports (e.g. 300,000 MT at Dhamra, where Capesize is blocked by draft, cleanly solves as 4 Panamax voyages: $60\text{k} + 80\text{k} + 80\text{k} + 80\text{k}$ MT without capacity violation).
 
 ### 11.5 Human Overrides & Alias Normalization
 Supports:
@@ -255,14 +286,45 @@ Supports:
 - `require_port: "Gangavaram"`
 - `force_mode: "locked"`
 - `min_fix_day: 14`, `max_completion_day: 30`
+- Fuzzy natural language alias normalization (`_normalize_constraints` maps `"Cape Max"`, `"Super Max"`, `"Panamax"` to canonical warehouse classes).
 
 ---
 
-## 12. Provenance & Explainability Layer
+## 12. Provenance, Explainability & Grounded Telemetry Layer
 
-- Every figure returned by the API carries a typed `provenance` tag (`measured`, `modeled`, `assumed`).
-- **Sensitivity Tornado Analysis:** Perturbs assumptions ($\pm 10\%$ commitment discount, bunker prices, port handling rates) to compute impact on total cost without re-solving the MILP.
-- **Robustness Score:** Measures spread between Base and Worst-case scenario costs.
+The Provenance layer transforms optimization outputs from opaque mathematical solutions into fully auditable, empirical first-principles proofs.
+
+### 12.1 Dynamic Recommendation-Grounded Empirical Proofs
+Rather than displaying static boilerplate, `POST /provenance/situations/active` binds the active cargo recommendation (Quantity, Origin, Selected Port, Vessel Class, Voyage Count, Cost Breakdown) with warehouse telemetry to construct four grounded situational proofs:
+1. **Port Hydrodynamics & Draft Physics:** Proves why port draft limits (e.g. Dhamra 14.0m) physically block Capesize ($18.2\text{m}$ draft) and force parcel splitting into multiple Panamax voyages, calculating exact overhead and pilotage deltas.
+2. **Hydrodynamic Distance & Bunker Volatility:** Uses the cubic speed-power law to demonstrate how nautical mile distance deltas (e.g. Gangavaram saving $270\text{ NM}$ over Paradip) translate to fuel savings under market fuel shocks.
+3. **Forward Curve Arbitrage & Commitment Mode:** Quantifies the insurance premium vs. volatility savings of locked forward commitments vs. spot exposure across the timing horizon.
+4. **Berth Congestion, Laytime & Demurrage Exposure:** Formulates expected demurrage cost $\mathbb{E}[C^{\text{dem}}_v] = r^{\text{dem}} \cdot \mathbb{E}[D_v]$, demonstrating how queue times and laytime allowances drive port selection.
+
+### 12.2 Interactive Evidence Inspector & Grounded Data Term Highlighting
+The `termHighlighter` and `DataTermToken` components scan all proof narratives and audit text, identifying maritime economic and physical terms (`ocean freight`, `bunker`, `OPEX`, `port handling`, `demurrage`, `tax`, `MILP`, `draft`, `laytime`, `deadweight`).
+- Terms receive a non-intrusive dotted cyan underline.
+- Hovering opens an interactive card displaying the formal definition, mathematical formula, telemetry source, provenance classification (`measured`, `modeled`, `assumed`), and verification status.
+- Replaces distracting inline bracketed variable tags with an on-demand audit trail.
+
+### 12.3 Agentic Hypothesis Auditor
+Embedded in the Provenance Lab, the Hypothesis Auditor allows chartering managers to explore arbitrary operational "what-if" hypotheses via natural language.
+- **Dual-Section Concurrent Synthesis:** Solves LLM rate limits and token-length timeouts by executing two parallel requests:
+  - *Section 1:* Physical and operational constraints (hydrodynamics, channel depth, LOA limits, handling duration).
+  - *Section 2:* Mathematical cost derivation, display LaTeX formulas, parameter definitions, and comparative economic tables.
+- **Multi-Provider Failover:** Proxies requests across Groq, Nvidia NIM, Anthropic Claude, and OpenAI to ensure zero downtime.
+
+### 12.4 Universal AST Mathematical & Currency Preprocessor
+The `mathUtils.ts` preprocessor immunizes frontend KaTeX rendering against common LLM formatting anomalies:
+- **Early Display Block Stashing:** Stashes `$$ ... $$` blocks and collapses internal blank lines prior to heuristic line matching, preventing the double-wrapping empty box bug.
+- **Delimiter Auto-Healing:** Matches bare `\right` tokens at line or equation ends to their opening brackets (`\mathbb{E}\left[D_v\right` $\rightarrow$ `\mathbb{E}\left[D_v\right]`) and auto-closes unclosed `\left` with `\right.`.
+- **Punctuation & Syntax Repair:** Normalizes operator spacing (`;=;` $\rightarrow$ `\;=\;`, `;\times;` $\rightarrow$ `\;\times\;`), cleans stripped negative spaces (`\mathbb{E}!\left` $\rightarrow$ `\mathbb{E}\left`), and restores subscript underscores (`D{v}` $\rightarrow$ `D_{v}`).
+- **Bullet-Point Math Auto-Wrapping:** Automatically wraps variables preceding `=` in bullet points into `$ ... $` (`• $r^{\text{dem}}$ = ...`).
+- **AST-Level Currency Sanitization:** Converts currency in math mode to `\text{USD } num`, and unescapes dollar signs in prose at the AST level (`rehypeUnescapeCurrency`).
+
+### 12.5 Sensitivity Tornado Analysis & Robustness Scoring
+- Perturbs key assumptions ($\pm 10\%$ commitment discount, bunker prices, port handling rates) to compute sensitivity bars without re-solving the MILP.
+- Computes a Robustness Score based on the spread between Base and Worst-case scenario costs.
 
 ---
 
@@ -292,29 +354,42 @@ Post-solve advisory layer matching candidate fixtures against real-world broker 
 | `GET` | `/compatible-vessels`| Physical berth rule checks. |
 | `GET` | `/port-status` | Port congestion and queue wait times. |
 | `GET` | `/fleet-schedule` | Multi-vessel fleet schedule and Gantt data. |
+| `GET` | `/provenance/situations` | Baseline first-principles situational proofs. |
+| `POST` | `/provenance/situations/active`| Dynamic recommendation-grounded empirical proofs. |
+| `GET` | `/provenance/catalog` | Grounded telemetry and parameter registry. |
 | `GET` | `/scope` | Live valid origins, discharge ports, and vessel classes. |
 | `GET` | `/health` | Warehouse reachability and model freshness. |
+| `GET` | `/api/ping` | High-availability keepalive health probe. |
 
 ---
 
 ## 16. Frontend Presentation Components
 
-1. **WhatIfSliders:** Reactive sliders for cargo quantity, timing flexibility, and discount benchmark.
-2. **WinningPlanBanner:** Summary of optimal voyage count, ports, vessels, and worst-case cost.
-3. **7-Bucket Cost Breakdown Grid:** Interactive visual bar and table detailing Ocean Freight, Bunker, OPEX, Other Costs, Port Handling, Lightening, and Tax.
-4. **Scenario Fan Chart:** Recharts visualization of Base, Bull, and Bear forecast curves with marked fix dates ($\tau$).
-5. **AIS Route & Repositioning Map:** Map displaying load/discharge ports, vessel positions, and congestion status.
-6. **WhyNotComparator:** Side-by-side diagnostic comparison between winning plan and alternative candidate options.
-7. **Executive Brief Export:** One-page summary export for chartering executives.
+1. **Top Navigation Bar:** 5-tab persistent navigation: `Recommendation | Provenance | Forecast | Ports | Fleet`.
+2. **WhatIfSliders:** Reactive sliders for cargo quantity, timing flexibility, and discount benchmark.
+3. **WinningPlanBanner:** Summary of optimal voyage count, ports, vessels, and worst-case cost.
+4. **7-Bucket Cost Breakdown Grid:** Interactive visual bar and table detailing Ocean Freight, Bunker, OPEX, Other Costs, Port Handling, Lightening, and Tax.
+5. **SituationalProofLab:** Dynamic empirical proof cards displaying hydrodynamics, distance physics, and laytime metrics with on-hover telemetry citations.
+6. **DataTermToken & CitationToken:** Interactive hover popover components rendering formulas, definitions, and verified warehouse sources.
+7. **HypothesisAuditor:** Embedded conversational auditor with dual-section concurrent rendering and AST math protection.
+8. **Scenario Fan Chart:** Recharts visualization of Base, Bull, and Bear forecast curves with marked fix dates ($\tau$).
+9. **AIS Route & Repositioning Map:** Map displaying load/discharge ports, vessel positions, and congestion status.
+10. **WhyNotComparator:** Side-by-side diagnostic comparison between winning plan and alternative candidate options.
+11. **Executive Brief Export:** One-page summary export for chartering executives.
 
 ---
 
-## 17. Non-Functional Performance Standards
+## 17. Non-Functional Performance & High-Availability Standards
 
 - **Solver Latency:** $<50\text{ms}$ for standard MILP solves (timeout threshold: $4.0\text{s}$).
 - **Database Query Latency:** $<10\text{ms}$ via indexed SQLite / PostgreSQL.
 - **Stateless API:** Zero server-side session state for chat and recommendation requests.
 - **Frontend Responsiveness:** $<300\text{ms}$ debounced re-render during slider adjustments.
+- **Cloud Architecture & Keepalive Resilience:**
+  - Deployed across a 4-resource Render Blueprint (FastAPI Web API, Background AIS Worker, Retrain Cron, and Managed PostgreSQL).
+  - Automated GitHub Actions keepalive cron workflow (`keepalive.yml`) pinging `/api/ping` every 10 minutes to eliminate free-tier cold-boot spin-downs.
+  - Frontend auto-polls `/health` with fast 3-second retries during boot, providing animated warmup feedback and preventing premature submissions.
+  - Production API routing with automatic fallback in `apiClient.ts` when hosted on Vercel.
 
 ---
 
@@ -324,6 +399,7 @@ Post-solve advisory layer matching candidate fixtures against real-world broker 
 - **Port Safety Sign-off:** Changes to berth draft or LOA limits require verified human sign-off.
 - **Walk-Forward Out-of-Sample Gate:** Models must beat naive random-walk on rolling tests.
 - **Freshness Alerts:** Stale AIS congestion data ($>48\text{h}$) is flagged explicitly.
+- **Telemetry Parameter Integrity:** All 20+ parameters in `GET /provenance/catalog` verified against Admiralty tables and engine manufacturer specifications.
 
 ---
 
@@ -333,17 +409,22 @@ Post-solve advisory layer matching candidate fixtures against real-world broker 
 |---|---|
 | Berth draft/LOA inaccuracies causing grounding | Strict deterministic rules; physical hard-blocks on LOA/draft; manual verification gate. |
 | Freight market volatility & geopolitical shocks | 3-scenario fan bands; downside risk ratio constraint; Damped-trend fallback. |
-| Large parcel infeasibility at restricted ports | Dynamic capacity budgeting splitting up to 6 voyages; physical capacity clamping. |
+| Large parcel infeasibility at restricted ports | Dynamic capacity budgeting splitting up to 6 voyages; physical vessel capacity clamping. |
 | Chatbot hallucination of rates or ship names | System prompt live scope injection; fuzzy constraint normalizer; strict verbatim tool grounding. |
+| LLM rate-limit or timeout on complex proofs | Dual-section concurrent synthesis splitting physical and mathematical derivations; multi-provider failover. |
+| Malformed LaTeX or empty display boxes | Universal AST preprocessor with early block stashing, delimiter auto-healing, and currency escaping. |
+| Cloud cold-boot spin-down | Automated 10-minute GitHub Actions keepalive ping; client-side animated warmup polling. |
 | AIS data feed disruption | Graceful degradation to calendar-based $\tau$ points; UI alerts for stale congestion. |
 
 ---
 
 ## 20. System Constants & Defaults
 
-- `TAX_RATE_PCT = 5.0%` (computed on effective post-discount ocean freight).
+- `TAX_RATE_PCT = 5.0%` (computed strictly on effective post-discount ocean freight).
 - `DEFAULT_COMMITMENT_BENCHMARK_PCT = 10.0%` (locked discount vs. spot).
 - `MILP_RISK_RATIO = 0.60` (minimum acceptable worst-to-base incremental ratio).
+- `MAX_VOYAGE_SPLITS = 6` (maximum parcel voyages for dynamic capacity budgeting).
 - `LIGHTENING_PENALTY_DAYS = 2.5` & `LIGHTENING_PENALTY_COST_USD = $75,000`.
 - `DEFAULT_BALLAST_SPEED_KTS = 12.0` & `DEFAULT_SAFETY_BUFFER_HOURS = 6.0`.
+- `KEEP_ALIVE_INTERVAL_MINUTES = 10` (GitHub Actions keepalive frequency).
 - Typical Capacities: Capesize ($180\text{k}\text{ MT}$), Panamax/Kamsarmax ($75\text{k}$–$80\text{k}\text{ MT}$), Supramax/Ultramax ($58\text{k}\text{ MT}$).
