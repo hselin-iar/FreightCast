@@ -1,13 +1,3 @@
-/**
- * WhyNotComparator.tsx — DOC3 Dashboard sellable layer / Build Step 12
- *
- * "Clicking a non-winning scenario_comparison[] entry opens a side-by-side cost
- *  breakdown vs. the winner — pure re-render of already-fetched data, no new call."
- *  (DOC3)
- *
- * Renders an expandable row in the scenario table that shows a diff-style cost
- * comparison between the selected strategy and the winner.
- */
 import React, { useState } from 'react';
 import type { RecommendationResponse, Strategy } from '../lib/types';
 import ProvenanceBadge from './ProvenanceBadge';
@@ -16,45 +6,141 @@ interface Props {
   result: RecommendationResponse;
 }
 
-function fmtM(n: number) { return '$' + (n / 1e6).toFixed(2) + 'M'; }
-function fmtK(n: number) {
-  if (Math.abs(n) >= 1e6) return '$' + (n / 1e6).toFixed(2) + 'M';
-  if (Math.abs(n) >= 1e3) return '$' + Math.round(n / 1e3) + 'k';
-  return '$' + Math.round(n);
+function fmtM(v: number | null | undefined): string {
+  if (v == null || isNaN(v)) return '—';
+  return `$${(v / 1_000_000).toFixed(2)}M`;
 }
 
-interface CostDiffRowProps {
+function fmtDelta(d: number): string {
+  const sign = d > 0 ? '+' : '';
+  const abs = Math.abs(d);
+  if (abs >= 1_000_000) return `${sign}$${(d / 1_000_000).toFixed(2)}M`;
+  if (abs >= 1_000) return `${sign}$${(d / 1_000).toFixed(0)}k`;
+  return `${sign}$${d.toFixed(0)}`;
+}
+
+interface CostDiffCardProps {
   label: string;
-  winner: number;
-  challenger: number;
+  winner: number | null | undefined;
+  challenger: number | null | undefined;
+  note?: string;
 }
 
-function CostDiffRow({ label, winner, challenger }: CostDiffRowProps) {
-  const diff = challenger - winner;
-  const sign = diff > 0 ? '+' : '';
-  const color = diff > 0 ? 'var(--warn)' : diff < 0 ? 'var(--emerald-4)' : 'var(--sail-400)';
+function CostDiffCard({ label, winner, challenger, note }: CostDiffCardProps) {
+  const w = winner ?? 0;
+  const c = challenger ?? 0;
+  const delta = c - w; // positive = challenger is more expensive (winner saved money)
+  const isZero = Math.abs(delta) < 1;
+  const maxVal = Math.max(Math.abs(w), Math.abs(c), 1);
+  const wPct = Math.min(100, Math.max(6, Math.round((Math.abs(w) / maxVal) * 100)));
+  const cPct = Math.min(100, Math.max(6, Math.round((Math.abs(c) / maxVal) * 100)));
+
   return (
-    <tr style={{ borderBottom: '1px solid color-mix(in srgb, var(--sail-800) 60%, transparent)' }}>
-      <td style={{ padding: '7px 0', fontSize: 12, color: 'var(--sail-400)' }}>{label}</td>
-      <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--text-accent)' }}>
-        {fmtK(winner)}
-      </td>
-      <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12 }}>
-        {fmtK(challenger)}
-      </td>
-      <td style={{ textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12, color, paddingLeft: 8 }}>
-        {diff !== 0 ? `${sign}${fmtK(diff)}` : '—'}
-      </td>
-    </tr>
+    <div style={{
+      padding: '10px 14px',
+      background: 'color-mix(in srgb, var(--sail-900) 70%, transparent)',
+      border: '1px solid var(--sail-800)',
+      borderRadius: 'var(--r)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 8,
+    }}>
+      {/* Top Line: Category Label & Delta Badge */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 12.5, fontWeight: 600, color: 'var(--sail-100)' }}>
+            {label}
+          </span>
+          {note && (
+            <span style={{ fontSize: 10, color: 'var(--sail-400)' }}>
+              ({note})
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{
+            fontFamily: 'var(--f-mono)',
+            fontSize: 12,
+            fontWeight: 700,
+            color: isZero ? 'var(--sail-400)' : delta > 0 ? 'var(--emerald)' : 'var(--warn)',
+          }}>
+            {isZero ? 'Equal ($0)' : fmtDelta(delta)}
+          </span>
+          {!isZero && (
+            <span style={{
+              fontSize: 10,
+              fontWeight: 600,
+              padding: '2px 6px',
+              borderRadius: 3,
+              background: delta > 0 ? 'rgba(16, 185, 129, 0.12)' : 'rgba(217, 119, 6, 0.12)',
+              color: delta > 0 ? 'var(--emerald)' : 'var(--warn)',
+              fontFamily: 'var(--f-mono)',
+            }}>
+              {delta > 0 ? 'Winner Cheaper' : 'Challenger Cheaper'}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Comparison Metrics Stack */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14 }}>
+        {/* Winner Plan */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11 }}>
+            <span style={{ fontSize: 10.5, color: 'var(--sail-400)', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 500 }}>
+              Recommended Plan
+            </span>
+            <span style={{ fontFamily: 'var(--f-mono)', fontSize: 12.5, fontWeight: 700, color: 'var(--sail-100)' }}>
+              {fmtM(w)}
+            </span>
+          </div>
+          <div style={{ height: 4, background: 'var(--sail-800)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%',
+              width: `${wPct}%`,
+              background: 'var(--sail-400)',
+              borderRadius: 2,
+            }} />
+          </div>
+        </div>
+
+        {/* Challenger Alternative */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11 }}>
+            <span style={{ fontSize: 10.5, color: 'var(--sail-400)', textTransform: 'uppercase', letterSpacing: '0.4px', fontWeight: 500 }}>
+              Challenger
+            </span>
+            <span style={{ fontFamily: 'var(--f-mono)', fontSize: 12.5, fontWeight: 600, color: 'var(--sail-200)' }}>
+              {fmtM(c)}
+            </span>
+          </div>
+          <div style={{ height: 4, background: 'var(--sail-800)', borderRadius: 2, overflow: 'hidden' }}>
+            <div style={{
+              height: '100%',
+              width: `${cPct}%`,
+              background: delta > 0 ? 'var(--warn)' : 'var(--emerald)',
+              borderRadius: 2,
+            }} />
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }
 
-function StrategyRow({ strategy, isWinner, isSelected, onClick }: {
+function StrategyCard({
+  strategy,
+  isWinner,
+  isSelected,
+  onClick,
+}: {
   strategy: Strategy;
   isWinner: boolean;
   isSelected: boolean;
   onClick: () => void;
 }) {
+  const [hovered, setHovered] = useState(false);
   const spotCount   = strategy.voyages.filter(v => v.mode === 'spot').length;
   const lockedCount = strategy.voyages.filter(v => v.mode === 'locked').length;
   const modeMix = spotCount === strategy.voyages.length ? 'all spot'
@@ -71,34 +157,138 @@ function StrategyRow({ strategy, isWinner, isSelected, onClick }: {
     }
   }
 
+  const isEco = strategy.cost_breakdown?.steaming_mode === 'eco';
+  const isExpress = strategy.cost_breakdown?.steaming_mode === 'express';
+
   return (
-    <tr
-      onClick={onClick}
+    <div
+      onClick={isWinner ? undefined : onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       style={{
-        borderBottom: '1px solid color-mix(in srgb, var(--sail-800) 60%, transparent)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 8,
+        padding: '12px 14px',
+        borderRadius: 'var(--r)',
+        border: isWinner
+          ? '1px solid var(--sail-700)'
+          : isSelected
+          ? '1px solid var(--sail-600)'
+          : '1px solid var(--sail-800)',
+        background: isWinner
+          ? 'color-mix(in srgb, var(--emerald) 6%, var(--sail-900))'
+          : isSelected
+          ? 'color-mix(in srgb, var(--sail-700) 25%, var(--sail-900))'
+          : hovered
+          ? 'color-mix(in srgb, var(--sail-800) 30%, transparent)'
+          : 'var(--sail-900)',
         cursor: isWinner ? 'default' : 'pointer',
-        background: isWinner ? 'color-mix(in srgb, var(--accent) 5%, transparent)' : isSelected ? 'color-mix(in srgb, var(--accent) 8%, transparent)' : undefined,
-        transition: 'background 0.1s',
+        transition: 'all 0.15s ease',
+        borderLeft: isWinner
+          ? '3px solid var(--emerald)'
+          : isSelected
+          ? '3px solid var(--sail-500)'
+          : '3px solid transparent',
       }}
     >
-      <td style={{ padding: '9px 12px 9px 0', color: isWinner ? 'var(--text-accent)' : 'var(--sail-200)', fontWeight: isWinner ? 600 : undefined }}>
-        {isWinner ? '★ ' : isSelected ? '▶ ' : ''}
-        {primaryLabel}
-        {isWinner ? ' (selected)' : ''}
-      </td>
-      <td style={{ padding: '9px 12px', textAlign: 'center', fontFamily: 'var(--f-mono)', fontSize: 12 }}>{strategy.voyage_count}</td>
-      <td style={{ padding: '9px 12px', textAlign: 'center', fontFamily: 'var(--f-mono)', fontSize: 12, whiteSpace: 'nowrap' }}>{modeMix}</td>
-      <td style={{ padding: '9px 12px', textAlign: 'right', fontFamily: 'var(--f-mono)', fontSize: 12, color: 'var(--sail-100)' }}>
-        {fmtM(strategy.total_cost_worst_case)}
-      </td>
-      <td style={{ padding: '9px 0 9px 12px', fontSize: 11, color: strategy.infeasible_reason ? 'var(--warn)' : 'var(--sail-400)', fontFamily: 'var(--f-sans)' }}>
-        {strategy.infeasible_reason
-          ? `Infeasible: ${strategy.infeasible_reason}`
-          : strategy.voyages.some(v => v.lightening_required) ? 'Lightening req.' : 
-             hasTheme ? strategy.voyages.length > 0 ? `${strategy.voyages.length} ${strategy.voyages[0].vessel_class} (${modeMix})` : ''
-             : strategy.provenance_note?.slice(0, 36) ?? ''}
-      </td>
-    </tr>
+      {/* Tier 1: Strategy Status, Title & Total Cost */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0, flex: 1 }}>
+          {isWinner ? (
+            <span className="badge badge-emerald" style={{ fontSize: 9, fontWeight: 700, flexShrink: 0 }}>
+              RECOMMENDED
+            </span>
+          ) : isSelected ? (
+            <span className="badge" style={{ fontSize: 9, background: 'var(--sail-700)', color: 'var(--sail-100)', flexShrink: 0 }}>
+              COMPARING
+            </span>
+          ) : null}
+          <span style={{
+            fontSize: 13,
+            fontWeight: isWinner ? 700 : 500,
+            color: 'var(--sail-100)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+          }}>
+            {primaryLabel}
+          </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div style={{ textAlign: 'right' }}>
+            <span style={{
+              fontFamily: 'var(--f-mono)',
+              fontSize: 13,
+              fontWeight: 700,
+              color: 'var(--sail-100)',
+            }}>
+              {fmtM(strategy.total_cost_worst_case)}
+            </span>
+            <span style={{ fontSize: 10, color: 'var(--sail-400)', marginLeft: 4 }}>
+              worst-case
+            </span>
+          </div>
+
+          {!isWinner && (
+            <span style={{
+              fontSize: 10,
+              fontWeight: 500,
+              padding: '2px 8px',
+              borderRadius: 4,
+              background: isSelected ? 'var(--sail-700)' : 'var(--sail-800)',
+              color: isSelected ? 'var(--sail-100)' : 'var(--sail-300)',
+              border: '1px solid var(--sail-700)',
+              whiteSpace: 'nowrap',
+            }}>
+              {isSelected ? 'Viewing Diff ▼' : 'Compare ↗'}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Tier 2: Sub-Attributes & Operational Context */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: 11, color: 'var(--sail-400)', flexWrap: 'wrap', gap: 8, paddingTop: 2 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontFamily: 'var(--f-mono)', color: 'var(--sail-300)' }}>
+            {strategy.voyage_count} {strategy.voyage_count === 1 ? 'voyage' : 'voyages'}
+          </span>
+          <span>·</span>
+          <span className={`badge ${
+            modeMix === 'all locked'
+              ? 'badge-emerald'
+              : modeMix === 'all spot'
+              ? 'badge-primary'
+              : 'badge-warn'
+          }`} style={{ fontSize: 9, textTransform: 'uppercase' }}>
+            {modeMix}
+          </span>
+          {isEco && (
+            <span className="badge" style={{ fontSize: 9, background: 'rgba(16, 185, 129, 0.1)', color: 'var(--emerald)' }}>
+              Eco Steaming
+            </span>
+          )}
+          {isExpress && (
+            <span className="badge" style={{ fontSize: 9, background: 'rgba(217, 119, 6, 0.1)', color: 'var(--warn)' }}>
+              Fast Steaming
+            </span>
+          )}
+        </div>
+
+        <div style={{ fontSize: 11 }}>
+          {strategy.infeasible_reason ? (
+            <span style={{ color: 'var(--warn)', fontWeight: 600 }}>Infeasible: {strategy.infeasible_reason}</span>
+          ) : strategy.voyages.some(v => v.lightening_required) ? (
+            <span style={{ color: 'var(--warn)' }}>Lightening required</span>
+          ) : hasTheme ? (
+            <span style={{ color: 'var(--sail-400)' }}>{strategy.voyages.length > 0 ? `${strategy.voyages.length} ${strategy.voyages[0].vessel_class}` : ''}</span>
+          ) : (
+            <span style={{ color: 'var(--sail-400)' }}>{strategy.provenance_note?.slice(0, 36) ?? ''}</span>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -113,76 +303,119 @@ const WhyNotComparator: React.FC<Props> = ({ result }) => {
 
   return (
     <section className="panel" style={{ marginTop: 16, flex: 1, display: 'flex', flexDirection: 'column' }}>
-      <div className="panel-hd">
-        <span className="panel-title">Ranked Alternatives</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <ProvenanceBadge provenance="modeled" note="Pure re-render of scenario_comparison[] from /recommendation — no re-solve." />
-          <span className="panel-meta">click row to compare</span>
+      <div className="panel-hd" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+        <div>
+          <span className="panel-title">Why-Not Comparison</span>
+          <span className="panel-meta" style={{ marginLeft: 6 }}>
+            {others.length} alternative strategies evaluated
+          </span>
         </div>
+        <ProvenanceBadge provenance="modeled" note="All scenarios evaluated with the same MILP cost formulation — not a heuristic post-sort." />
       </div>
-      <div className="panel-body" style={{ overflowX: 'auto', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-          <thead>
-            <tr style={{ color: 'var(--sail-500)', borderBottom: '1px solid var(--sail-800)' }}>
-              <th style={{ padding: '8px 12px 8px 0', fontWeight: 500, textAlign: 'left' }}>Strategy</th>
-              <th style={{ padding: '8px 12px', fontWeight: 500, textAlign: 'center' }}>Voyages</th>
-              <th style={{ padding: '8px 12px', fontWeight: 500, textAlign: 'center' }}>Mode</th>
-              <th style={{ padding: '8px 12px', fontWeight: 500, textAlign: 'right' }}>Worst-case</th>
-              <th style={{ padding: '8px 0 8px 12px', fontWeight: 500, textAlign: 'left' }}>Notes</th>
-            </tr>
-          </thead>
-          <tbody className="mono">
-            <StrategyRow strategy={winner} isWinner onClick={() => {}} isSelected={false} />
-            {others.map((s, i) => (
-              <StrategyRow key={i} strategy={s} isWinner={false}
+
+      <div className="panel-body" style={{ overflowX: 'hidden', display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+        <p className="infer" style={{ margin: 0 }}>
+          Select any alternative below to inspect why the optimizer rejected it in favor of the recommended plan.
+        </p>
+
+        {/* Vertical Stack of Strategy Cards */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <StrategyCard
+            strategy={winner}
+            isWinner={true}
+            isSelected={false}
+            onClick={() => {}}
+          />
+
+          {others.map((s, i) => (
+            <React.Fragment key={i}>
+              <StrategyCard
+                strategy={s}
+                isWinner={false}
                 isSelected={selected === i}
                 onClick={() => setSelected(prev => prev === i ? null : i)}
               />
-            ))}
-          </tbody>
-        </table>
 
-        {/* Expanded comparison panel */}
-        {challenger && challBD && (
-          <div style={{
-            marginTop: 12, padding: 12,
-            background: 'color-mix(in srgb, var(--accent) 4%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--accent) 18%, transparent)',
-            borderRadius: 6,
-          }}>
-            <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--sail-300)', marginBottom: 8 }}>
-              Why <em style={{ color: 'var(--text-accent)' }}>{winner.commitment_mode} (winner)</em> beats{' '}
-              <em>{challenger.commitment_mode}</em> — same cost engine, not a re-solve
-            </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
-              <thead>
-                <tr style={{ color: 'var(--sail-500)', borderBottom: '1px solid var(--sail-800)' }}>
-                  <th style={{ textAlign: 'left', padding: '6px 0', fontWeight: 500 }}>Bucket</th>
-                  <th style={{ textAlign: 'right', padding: '6px 0', fontWeight: 500, color: 'var(--text-accent)' }}>Winner</th>
-                  <th style={{ textAlign: 'right', padding: '6px 0', fontWeight: 500 }}>Challenger</th>
-                  <th style={{ textAlign: 'right', padding: '6px 0', fontWeight: 500, paddingLeft: 8 }}>Δ</th>
-                </tr>
-              </thead>
-              <tbody>
-                <CostDiffRow label="Ocean freight"     winner={winnerBD.ocean_freight}        challenger={challBD.ocean_freight} />
-                <CostDiffRow label="Bunker"            winner={winnerBD.bunker}               challenger={challBD.bunker} />
-                <CostDiffRow label="Port & handling"   winner={winnerBD.port_handling}        challenger={challBD.port_handling} />
-                <CostDiffRow label="Lightening / extra" winner={winnerBD.lightening_extra ?? 0} challenger={challBD.lightening_extra ?? 0} />
-                <CostDiffRow label="Risk buffer"       winner={winnerBD.risk_buffer ?? 0}     challenger={challBD.risk_buffer ?? 0} />
-                <CostDiffRow label="TOTAL (worst-case)" winner={winner.total_cost_worst_case} challenger={challenger.total_cost_worst_case} />
-              </tbody>
-            </table>
-            {challenger.infeasible_reason && (
-              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--warn)', background: 'color-mix(in srgb, var(--warn) 5%, transparent)', padding: '6px 8px', borderRadius: 4, border: '1px solid color-mix(in srgb, var(--warn) 20%, transparent)' }}>
-                ⚠ Infeasible: {challenger.infeasible_reason}
-              </div>
-            )}
-          </div>
-        )}
+              {/* Inline Expanded Challenger Diff Drawer when this strategy is selected */}
+              {selected === i && challenger && challBD && (
+                <div style={{
+                  margin: '4px 0 8px 0',
+                  padding: 14,
+                  background: 'var(--sail-950)',
+                  border: '1px solid var(--sail-700)',
+                  borderRadius: 'var(--r)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 12,
+                }}>
+                  {/* Diff Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: 8, borderBottom: '1px solid var(--sail-800)', flexWrap: 'wrap', gap: 6 }}>
+                    <div>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--sail-100)' }}>
+                        Economic Comparison Breakdown
+                      </div>
+                      <div style={{ fontSize: 11, color: 'var(--sail-400)', marginTop: 2 }}>
+                        Recommended Winner vs <strong style={{ color: 'var(--sail-200)' }}>{challenger.commitment_mode}</strong>
+                      </div>
+                    </div>
 
-        {!selected && others.length > 0 && (
-          <p className="infer" style={{ marginTop: 'auto' }}>Click a non-winning row to see a cost breakdown diff against the winner.</p>
-        )}
+                    <span className="badge badge-emerald" style={{ fontSize: 11, fontWeight: 700, fontFamily: 'var(--f-mono)' }}>
+                      Winner Saves: {fmtDelta((challenger.total_cost_worst_case ?? 0) - (winner.total_cost_worst_case ?? 0))}
+                    </span>
+                  </div>
+
+                  {/* Vertical Stack of Cost Bucket Cards */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <CostDiffCard
+                      label="Ocean Freight"
+                      winner={winnerBD.ocean_freight}
+                      challenger={challBD.ocean_freight}
+                    />
+
+                    <CostDiffCard
+                      label="Bunker Fuel"
+                      winner={winnerBD.bunker}
+                      challenger={challBD.bunker}
+                    />
+
+                    {((winnerBD.speed_bunker_savings_usd ?? 0) > 0 || (challBD.speed_bunker_savings_usd ?? 0) > 0) && (
+                      <CostDiffCard
+                        label="Speed Bunker Savings"
+                        winner={-(winnerBD.speed_bunker_savings_usd ?? 0)}
+                        challenger={-(challBD.speed_bunker_savings_usd ?? 0)}
+                        note="Eco steaming fuel reduction"
+                      />
+                    )}
+
+                    <CostDiffCard
+                      label="Port & Handling"
+                      winner={winnerBD.port_handling}
+                      challenger={challBD.port_handling}
+                    />
+
+                    <CostDiffCard
+                      label="Lightening / Extra"
+                      winner={winnerBD.lightening_extra ?? 0}
+                      challenger={challBD.lightening_extra ?? 0}
+                    />
+
+                    <CostDiffCard
+                      label="Demurrage Risk"
+                      winner={winnerBD.demurrage_exposure}
+                      challenger={challBD.demurrage_exposure}
+                    />
+
+                    <CostDiffCard
+                      label="Laycan Opportunity"
+                      winner={winnerBD.opportunity_cost}
+                      challenger={challBD.opportunity_cost}
+                    />
+                  </div>
+                </div>
+              )}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     </section>
   );

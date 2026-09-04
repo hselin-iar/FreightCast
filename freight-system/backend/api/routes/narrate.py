@@ -87,20 +87,27 @@ async def narrate(req: NarrateRequest) -> NarrateResponse:
     """
     Generate an analyst-quality narrative from Prophet decomposition numbers.
 
-    Calls Groq if GROQ_API_KEY is set; falls back to template otherwise.
-    This endpoint is called on-demand when the user opens the Rate Driver panel.
-    The API key is never exposed to the frontend.
+    Prioritizes NVIDIA NIM API (using NVIDIA_API_KEY in .env), falls back to Groq,
+    and finally to a deterministic template if offline.
     """
-    api_keys = [
+    # 1. Gather NVIDIA NIM Keys
+    nvidia_keys = [
+        k for k in (
+            os.environ.get("NVIDIA_API_KEY"),
+            os.environ.get("NVIDIA_API_KEY_2"),
+            os.environ.get("NVIDIA_API_KEY_3"),
+            os.environ.get("NVIDIA_NIM_API_KEY"),
+        ) if k and k.strip()
+    ]
+
+    # 2. Gather Groq Keys
+    groq_keys = [
         k for k in (
             os.environ.get("GROQ_API_KEY"),
             os.environ.get("GROQ_API_KEY_2"),
             os.environ.get("GROQ_API_KEY_3"),
         ) if k and k.strip()
     ]
-    if not api_keys:
-        logger.debug("/narrate: GROQ_API_KEY not set — using template")
-        return NarrateResponse(narrative=_template(req), source="template")
 
     # Build structured fact block — LLM must interpret facts, not invent them
     facts: list[str] = [
@@ -110,9 +117,9 @@ async def narrate(req: NarrateRequest) -> NarrateResponse:
     ]
     amp = req.weekly_seasonality_amplitude
     if amp > 1.0:
-        facts.append(f"- Weekly seasonality amplitude (peak-to-trough): {amp:.1f} $/day")
+        facts.append(f"- Weekly seasonality amplitude: {amp:.1f} $/day peak-to-trough")
     if req.regressor_effects:
-        facts.append("- Macro driver effects ($/day additive, from Prophet decomposition):")
+        facts.append("- Macro driver effects ($/day additive from Prophet decomposition):")
         for name, eff in sorted(req.regressor_effects.items(), key=lambda x: abs(x[1]), reverse=True):
             label = _REG_LABELS.get(name, name.replace("_", " ").title())
             sign = "+" if eff >= 0 else ""
@@ -122,52 +129,84 @@ async def narrate(req: NarrateRequest) -> NarrateResponse:
 
     fact_block = "\n".join(facts)
     prompt = (
-        "You are a senior dry-bulk freight analyst writing a brief market commentary "
-        "for a live chartering dashboard.\n\n"
-        "Below are exact numbers from a Prophet time-series decomposition model for a specific "
-        "vessel route. Turn these into a clear, natural 2-3 sentence analytical paragraph that "
-        "a trader can read at a glance.\n\n"
-        "RULES:\n"
-        "- Use only the numbers given. Do not invent or assume anything extra.\n"
-        "- Specific $/day figures must appear where they add insight.\n"
-        "- Active voice, present tense, plain English. No bullet points or markdown.\n"
-        "- Do NOT open with 'Freight rates are' or 'The freight rates'. Vary your opener.\n"
-        "- Maximum 70 words.\n\n"
-        f"Facts (use exactly as given):\n{fact_block}\n\n"
-        "Analyst commentary:"
+        "You are an expert commercial dry-bulk chartering analyst providing an instant executive briefing.\n"
+        "Below are exact decomposition numbers from a Prophet time-series model for this vessel route.\n"
+        "Synthesize these facts into EXACTLY two concise, punchy sentences:\n"
+        "Sentence 1: State the dominant market force driving freight rate momentum and its operational cause.\n"
+        "Sentence 2: State the direct commercial recommendation for the charterer (whether to lock forward or float spot).\n\n"
+        "STRICT RULES:\n"
+        "- Maximum 45 words total.\n"
+        "- Plain English. No markdown, no asterisks, no bullet points, no preamble.\n"
+        "- Do NOT start with 'The freight rates' or 'Freight rates'.\n\n"
+        f"Facts:\n{fact_block}\n\n"
+        "Briefing:"
     )
 
-    try:
-        import asyncio
-        async with httpx.AsyncClient(timeout=15.0) as client:
-            for attempt in range(4):
-                key_to_use = api_keys[attempt % len(api_keys)]
-                resp = await client.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {key_to_use}", "Content-Type": "application/json"},
-                    json={
-                        "model": "groq/compound-mini",
-                        "messages": [{"role": "user", "content": prompt}],
-                        "max_tokens": 130,
-                        "temperature": 0.4,
-                        "top_p": 0.9,
-                    },
-                )
-                if resp.status_code == 429 and attempt < 3:
-                    await asyncio.sleep(2.5 * (attempt + 1))
-                    continue
-                
-                resp.raise_for_status()
-                text = resp.json()["choices"][0]["message"]["content"].strip()
-                if len(text) < 20:
-                    raise ValueError(f"Suspiciously short response: {text!r}")
-                return NarrateResponse(narrative=text, source="groq")
-            
-            # Should never reach here due to raise_for_status, but just in case
-            return NarrateResponse(narrative=_template(req), source="template")
-            logger.info("/narrate: Groq narrative generated (%d chars)", len(text))
-            return NarrateResponse(narrative=text, source="groq")
+    import asyncio
 
-    except Exception as exc:
-        logger.warning("/narrate: Groq call failed (%s) — using template fallback", exc)
-        return NarrateResponse(narrative=_template(req), source="template")
+    # Try NVIDIA NIM first
+    if nvidia_keys:
+        model = os.environ.get("NVIDIA_MODEL", "google/diffusiongemma-26b-a4b-it")
+        for attempt in range(len(nvidia_keys)):
+            key = nvidia_keys[attempt]
+            try:
+                async with httpx.AsyncClient(timeout=14.0) as client:
+                    resp = await client.post(
+                        "https://integrate.api.nvidia.com/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                        json={
+                            "model": model,
+                            "messages": [
+                                {"role": "system", "content": "You are a senior maritime chartering strategist. Output exactly two concise sentences directly without bullet points or preamble."},
+                                {"role": "user", "content": prompt}
+                            ],
+                            "max_tokens": 180,
+                            "temperature": 0.2,
+                        },
+                    )
+                    if resp.status_code == 200:
+                        msg = resp.json()["choices"][0]["message"]
+                        text = (msg.get("content") or "").strip()
+                        if not text and msg.get("reasoning"):
+                            raw_r = msg.get("reasoning").strip()
+                            import re
+                            m1 = re.search(r'Sentence 1:\s*"?([^"\n\r]+)"?', raw_r)
+                            m2 = re.search(r'Sentence 2:\s*"?([^"\n\r]+)"?', raw_r)
+                            if m1 and m2:
+                                text = f"{m1.group(1).strip()} {m2.group(1).strip()}"
+                            else:
+                                text = raw_r
+                        text = text.strip('"\'')
+                        if len(text) > 20:
+                            logger.info("/narrate: NVIDIA NIM synthesis generated (%d chars)", len(text))
+                            return NarrateResponse(narrative=text, source="nvidia")
+            except Exception as e:
+                logger.warning("/narrate: NVIDIA NIM attempt %d failed (%s)", attempt + 1, e)
+
+    # Try Groq fallback
+    if groq_keys:
+        model = os.environ.get("GROQ_MODEL", "groq/compound-mini")
+        for attempt in range(len(groq_keys)):
+            key = groq_keys[attempt]
+            try:
+                async with httpx.AsyncClient(timeout=8.0) as client:
+                    resp = await client.post(
+                        "https://api.groq.com/openai/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                        json={
+                            "model": model,
+                            "messages": [{"role": "user", "content": prompt}],
+                            "max_tokens": 120,
+                            "temperature": 0.3,
+                        },
+                    )
+                    if resp.status_code == 200:
+                        text = resp.json()["choices"][0]["message"]["content"].strip().strip('"\'')
+                        if len(text) > 20:
+                            logger.info("/narrate: Groq synthesis generated (%d chars)", len(text))
+                            return NarrateResponse(narrative=text, source="groq")
+            except Exception as e:
+                logger.warning("/narrate: Groq attempt %d failed (%s)", attempt + 1, e)
+
+    # Deterministic template fallback
+    return NarrateResponse(narrative=_template(req), source="template")

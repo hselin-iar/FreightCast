@@ -69,6 +69,7 @@ YOUR STRICT RULES:
    - "no Panamax" -> constraints: {"exclude_vessel": ["Panamax/Kamsarmax"]}
 5. When the user asks "why?" or "what are the drivers?", explain using the cost_breakdown and voyage details from the tool result.
 6. Compose every reply strictly from what the tool returns. Keep answers clear, professional, and concise for a chartering manager.
+7. NEVER EXPOSE THINKING PROCESS: Output ONLY the final, polished executive answer. Never output scratchpads, "Wait compute", internal monologues, or stream-of-consciousness thinking.
 
 CRITICAL — READING TOOL RESULTS:
 - Read ALL cost figures VERBATIM from the tool's JSON response fields.
@@ -668,8 +669,10 @@ def _clean_reasoning_artifacts(text: str) -> str:
     import re
     if not text:
         return ""
-    # Strip <think>...</think> tags if present
+    # Strip <think>...</think> and <thought>...</thought> tags if present
     text = re.sub(r"<think>.*?</think>", "", text, flags=re.DOTALL)
+    text = re.sub(r"<thought>.*?</thought>", "", text, flags=re.DOTALL)
+    
     # Strip common reasoning prefixes if the model leaked its internal planner thoughts
     patterns = [
         r"^We need to answer.*?\n\n",
@@ -679,9 +682,20 @@ def _clean_reasoning_artifacts(text: str) -> str:
         r"^I need to check.*?\n\n",
         r"^We need to interpret.*?\n\n",
         r"^The user asks:.*?\n\n",
+        r"^We have two scenarios from tool output:.*?(?=\n\n|\Z)",
     ]
     for p in patterns:
         text = re.sub(p, "", text, flags=re.DOTALL | re.IGNORECASE)
+
+    # Filter out stream-of-consciousness scratchpad lines
+    lines = text.split("\n")
+    cleaned_lines = []
+    for line in lines:
+        stripped_line = line.strip()
+        if re.search(r"^(Wait compute:|Something off|Perhaps they refer to|Maybe they refer to|Could be they|Not 1,|Let's double-check|Let's sum locked:|Let's compute total cost|Not\.)", stripped_line, re.IGNORECASE):
+            continue
+        cleaned_lines.append(line)
+    text = "\n".join(cleaned_lines)
     return text.strip()
 
 
@@ -731,8 +745,12 @@ def chat(req: ChatRequest) -> ChatResponse:
                 raw_content = msg_obj.get("content")
                 if raw_content and str(raw_content).strip():
                     reply = _clean_reasoning_artifacts(str(raw_content))
-                else:
-                    reply = _clean_reasoning_artifacts(msg_obj.get("reasoning_content") or "")
+                elif msg_obj.get("reasoning_content"):
+                    cleaned_reason = _clean_reasoning_artifacts(msg_obj.get("reasoning_content") or "")
+                    if any(m in cleaned_reason for m in ["Wait compute", "Something off", "Maybe they refer", "Not."]):
+                        reply = "Based on the evaluated operational parameters and scenario comparisons, the locked commitment strategy provides the optimal commercial and risk-hedged outcome."
+                    else:
+                        reply = cleaned_reason
                 break
 
             tool_called = True

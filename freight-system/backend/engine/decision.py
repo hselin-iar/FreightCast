@@ -100,6 +100,7 @@ class HumanOverrides:
     max_completion_day: Optional[int]      = None    # τ must be ≤ this day
     force_mode:        Optional[Literal["spot", "locked"]] = None  # w_{i,m}=0 for opposite mode
     min_fix_day:       Optional[int]       = None    # τ must be ≥ this day
+    speed_mode:        Optional[str]       = "design"  # "eco", "design", "express"
 
 
 @dataclass
@@ -119,6 +120,9 @@ class VoyageDetail:
     freight_revenue_usd:  float = 0.0   # cargo_tonnes × effective_freight_rate
     voyage_cost_usd:      float = 0.0   # total cost from CostBreakdown
     net_sail_value_usd:   float = 0.0   # freight_revenue - voyage_cost (profit signal)
+    steaming_speed_knots: float = 12.5
+    steaming_mode:        str = "design"
+    speed_bunker_savings_usd: float = 0.0
 
 
 @dataclass
@@ -277,6 +281,7 @@ def _compute_cost_coefficients(
     origin_port: str = "Australia (Hay Point)",  # actual origin for route_key construction
     idle_days: float = 0.0,
     repositioning_days_cache: Optional[Dict[str, Optional[float]]] = None,
+    speed_mode: str = "design",
 ) -> Dict[Tuple, CostBreakdown]:
     """
     Compute cost coefficients for all feasible (vessel, port, τ, mode, scenario) combos.
@@ -291,7 +296,7 @@ def _compute_cost_coefficients(
             continue
         vc = opt.vessel_class
         port = opt.port
-        route_key = f"{origin_port}\u2192{port}"  # consistent with solve() → forecasts keys
+        route_key = f"{origin_port}→{port}"  # consistent with solve() → forecasts keys
 
         fc = forecasts.get((route_key, vc))
         if fc is None:
@@ -338,6 +343,7 @@ def _compute_cost_coefficients(
                             lightening_penalty_days=opt.lightening_penalty_days,
                             repositioning_days=repo_days,
                             ballast_consumption_tpd=bctpd,
+                            speed_mode=speed_mode,
                         )
                         coeffs[(vc, port, tau_day, mode, scen)] = bd
                     except Exception as exc:
@@ -498,35 +504,44 @@ def _build_and_solve_milp(
     prob += pulp.lpSum(x[cand] for cand in candidates) <= max_voyages, "max_voyages"
     prob += pulp.lpSum(x[cand] for cand in candidates) >= 1, "min_voyages"
 
+    # 4. Decompose candidate economics into fixed voyage charges (bunker, opex, other, lightening, waiting)
+    #    and per-tonne incremental flow rates (ocean freight, port handling, tax, kill benchmark).
+    #    This ensures multi-voyage allocations accurately evaluate fixed vessel vs variable tonnage costs.
+    f_fixed_worst: Dict[Tuple, float] = {}
+    u_inc_worst: Dict[Tuple, float] = {}
+    f_fixed_base: Dict[Tuple, float] = {}
+    u_inc_base: Dict[Tuple, float] = {}
+
+    for cand in candidates:
+        v, p, tau, mode = cand
+        bd_bear = coeffs.get((v, p, tau, mode, "bear"))
+        bd_base = coeffs.get((v, p, tau, mode, "base"))
+        f_w = -(bd_bear.bunker + bd_bear.opex + bd_bear.other_cost + bd_bear.lightening_extra + bd_bear.waiting) if bd_bear else 0.0
+        f_b = -(bd_base.bunker + bd_base.opex + bd_base.other_cost + bd_base.lightening_extra + bd_base.waiting) if bd_base else 0.0
+        f_fixed_worst[cand] = f_w
+        f_fixed_base[cand] = f_b
+        w_inc = sail_kill[cand].worst_incremental
+        b_inc = sail_kill[cand].base_incremental
+        u_inc_worst[cand] = (w_inc - f_w) / cargo_quantity if cargo_quantity > 0 else 0.0
+        u_inc_base[cand] = (b_inc - f_b) / cargo_quantity if cargo_quantity > 0 else 0.0
+
     # 4. Objective: MAXIMIZE total worst-case incremental value (Step 51V transplant)
-    #    worst_incremental = min(bear_inc, base_inc, bull_inc) per candidate
-    #    This asks: "which combination of vessel/port/τ/mode generates the most value
-    #    above SAIL's kill (walk-away) baseline, even in the worst market scenario?"
     prob += pulp.lpSum(
-        x[cand] * sail_kill[cand].worst_incremental
+        f_fixed_worst[cand] * x[cand] + u_inc_worst[cand] * q[cand]
         for cand in candidates
     ), "maximize_worst_incremental"
 
     # 5. Portfolio risk constraint (Step 51V RISK_RATIO=0.60):
-    #    Σ x[cand]*worst_incremental ≥ RISK_RATIO × Σ x[cand]*base_incremental
+    #    Σ worst_incremental ≥ RISK_RATIO × Σ base_incremental
     #    Guarantees that even under a Bear market, SAIL retains ≥60% of expected margins.
-    #    Rearranged into ≥ 0 form: Σ x*(worst - RISK_RATIO*base) ≥ 0
-    #
-    #    CONDITIONAL: only added when at least one candidate satisfies the constraint.
-    #    If no candidate meets the risk standard (all have worst < RISK_RATIO*base),
-    #    the constraint is relaxed — the MILP still picks the best available option
-    #    and the frontier is logged as a warning. Mirrors the research pipeline's behavior
-    #    of not making the solve infeasible when the market is uniformly unfavorable.
     risk_satisfying = [
         c for c in candidates
         if sail_kill[c].worst_incremental >= MILP_RISK_RATIO * sail_kill[c].base_incremental
     ]
     if risk_satisfying:
         risk_expr = pulp.lpSum(
-            x[cand] * (
-                sail_kill[cand].worst_incremental
-                - MILP_RISK_RATIO * sail_kill[cand].base_incremental
-            )
+            (f_fixed_worst[cand] - MILP_RISK_RATIO * f_fixed_base[cand]) * x[cand]
+            + (u_inc_worst[cand] - MILP_RISK_RATIO * u_inc_base[cand]) * q[cand]
             for cand in candidates
         )
         prob += risk_expr >= 0, "portfolio_risk_ratio"
@@ -668,6 +683,7 @@ def _assemble_strategy(
     commitment_benchmark_pct: float,
     is_default_benchmark: bool,
     origin_port: str = "Australia (Hay Point)",
+    cargo_quantity: Optional[float] = None,
 ) -> Strategy:
     """
     Convert raw solver assignments into a Strategy object.
@@ -683,6 +699,13 @@ def _assemble_strategy(
     voyages_raw: List[Dict] = []  # interim accumulator before sorting
     has_high_uncertainty = False
 
+    # Total cargo quantity represented across the consignment
+    if cargo_quantity is not None and cargo_quantity > 0:
+        total_q = float(cargo_quantity)
+    else:
+        assigned_sum = sum(float(a.get("cargo_tonnes", 0.0)) for a in assignments)
+        total_q = assigned_sum if assigned_sum > 0 else 1.0
+
     # Build an index for fast lookup
     opt_index = {(o.vessel_class, o.port): o for o in feasible_opts}
 
@@ -692,39 +715,56 @@ def _assemble_strategy(
         tau     = asgn["tau_day"]
         mode    = asgn["mode"]
         q_mt    = float(asgn.get("cargo_tonnes", 0.0))
+        if q_mt <= 0.0:
+            q_mt = total_q / max(len(assignments), 1)
+        frac    = q_mt / max(total_q, 1.0)
         opt     = opt_index.get((vc, port))
-
-        cost_by_scen: Dict[str, float] = {}
-        # Use bear/base/bull naming (Step 51V) for the scenario comparison table
-        for scen in ("base", "bull", "bear"):
-            bd = coeffs.get((vc, port, tau, mode, scen))
-            cost_by_scen[scen] = bd.total if bd else 0.0
 
         bd_base = coeffs.get((vc, port, tau, mode, "base"))
         bd_bear = coeffs.get((vc, port, tau, mode, "bear"))
         bd_bull = coeffs.get((vc, port, tau, mode, "bull"))
-        voyage_cost = bd_base.total if bd_base else 0.0
 
-        # Freight revenue: back-compute rate from ocean_freight / q
-        if bd_base and q_mt > 0:
-            base_rate  = bd_base.ocean_freight / q_mt
-        else:
-            base_rate  = 0.0
-        bear_rate = (bd_bear.ocean_freight / q_mt if bd_bear and q_mt > 0 else base_rate)
-        bull_rate = (bd_bull.ocean_freight / q_mt if bd_bull and q_mt > 0 else base_rate)
+        # Base rate in $/MT (ocean_freight in bd_base was computed on total_q in _compute_cost_coefficients)
+        base_rate = (bd_base.ocean_freight / total_q) if (bd_base and total_q > 0) else 0.0
+        bear_rate = (bd_bear.ocean_freight / total_q) if (bd_bear and total_q > 0) else base_rate
+        bull_rate = (bd_bull.ocean_freight / total_q) if (bd_bull and total_q > 0) else base_rate
 
-        freight_revenue = q_mt * base_rate  # == bd_base.ocean_freight when q matches
+        # Per-scenario voyage costs scaling tonnage variable items (ocean freight, tax, port handling)
+        # while keeping per-ship fixed expenses (bunker, opex, other, lightening, waiting) intact per voyage call.
+        cost_by_scen: Dict[str, float] = {}
+        for scen in ("base", "bull", "bear"):
+            bd = coeffs.get((vc, port, tau, mode, scen))
+            if bd:
+                v_ocean = bd.ocean_freight * frac
+                v_tax   = bd.tax * frac
+                v_port  = bd.port_handling * frac
+                scen_cost = v_ocean + v_tax + v_port + bd.bunker + bd.opex + bd.other_cost + bd.lightening_extra + bd.waiting
+                cost_by_scen[scen] = round(scen_cost, 2)
+            else:
+                cost_by_scen[scen] = 0.0
 
-        # Net sail value (base scenario only — single number for the card)
-        net_sail_value = freight_revenue - voyage_cost
+        # Base scenario voyage breakdown
+        ocean_base  = (bd_base.ocean_freight * frac) if bd_base else 0.0
+        tax_base    = (bd_base.tax * frac) if bd_base else 0.0
+        port_base   = (bd_base.port_handling * frac) if bd_base else 0.0
+        bunker_base = bd_base.bunker if bd_base else 0.0
+        opex_base   = bd_base.opex if bd_base else 0.0
+        other_base  = bd_base.other_cost if bd_base else 0.0
+        light_base  = bd_base.lightening_extra if bd_base else 0.0
+        wait_base   = bd_base.waiting if bd_base else 0.0
+        voyage_cost = cost_by_scen.get("base", 0.0)
+
+        # Freight revenue for this voyage's assigned cargo tonnes
+        freight_revenue = round(q_mt * base_rate, 2)
+        net_sail_value  = round(freight_revenue - voyage_cost, 2)
 
         # Full Sail vs Kill economics via transplanted Step 51V function.
         # spot_rate_base = base_rate (kill = sell cargo at today's market rate)
         ske = build_sail_kill_economics(
             cargo_quantity=q_mt,
-            bear_voyage_cost=bd_bear.total if bd_bear else voyage_cost,
+            bear_voyage_cost=cost_by_scen.get("bear", voyage_cost),
             base_voyage_cost=voyage_cost,
-            bull_voyage_cost=bd_bull.total if bd_bull else voyage_cost,
+            bull_voyage_cost=cost_by_scen.get("bull", voyage_cost),
             bear_rate=bear_rate,
             base_rate=base_rate,
             bull_rate=bull_rate,
@@ -739,6 +779,11 @@ def _assemble_strategy(
         fc = forecasts.get((route_key, vc))
         if fc and getattr(fc, "is_high_uncertainty", False):
             has_high_uncertainty = True
+
+        bd_base = coeffs.get((vc, port, tau, mode, "base"))
+        speed_knots = getattr(bd_base, "steaming_speed_knots", 12.5) if bd_base else 12.5
+        speed_mode_val = getattr(bd_base, "steaming_mode", "design") if bd_base else "design"
+        speed_savings = getattr(bd_base, "speed_bunker_savings_usd", 0.0) if bd_base else 0.0
 
         voyages_raw.append({
             "detail": VoyageDetail(
@@ -755,12 +800,22 @@ def _assemble_strategy(
                 freight_revenue_usd=round(freight_revenue, 2),
                 voyage_cost_usd=round(voyage_cost, 2),
                 net_sail_value_usd=round(net_sail_value, 2),
+                steaming_speed_knots=speed_knots,
+                steaming_mode=speed_mode_val,
+                speed_bunker_savings_usd=speed_savings,
             ),
-            "bd_base": bd_base,
+            "ocean_base": ocean_base,
+            "tax_base": tax_base,
+            "port_base": port_base,
+            "bunker_base": bunker_base,
+            "opex_base": opex_base,
+            "other_base": other_base,
+            "light_base": light_base,
+            "wait_base": wait_base,
             "worst_incremental": worst_incremental,
             "expected_incremental": expected_incremental,
             "kill_value": ske.kill_value,
-            "worst_case": max(cost_by_scen.values()),
+            "worst_case": max(cost_by_scen.values()) if cost_by_scen else 0.0,
         })
 
     # ── Step51k ranking: worst_incremental DESC, expected_incremental DESC ─
@@ -770,17 +825,18 @@ def _assemble_strategy(
 
     # ── Aggregate cost breakdown across all voyages ─────────────────────────
     worst_case    = sum(r["worst_case"] for r in voyages_raw)
-    total_ocean   = sum(r["bd_base"].ocean_freight   if r["bd_base"] else 0.0 for r in voyages_raw)
-    total_bunker  = sum(r["bd_base"].bunker          if r["bd_base"] else 0.0 for r in voyages_raw)
-    total_opex    = sum(r["bd_base"].opex            if r["bd_base"] else 0.0 for r in voyages_raw)
-    total_other   = sum(r["bd_base"].other_cost      if r["bd_base"] else 0.0 for r in voyages_raw)
-    total_port    = sum(r["bd_base"].port_handling   if r["bd_base"] else 0.0 for r in voyages_raw)
-    total_light   = sum(r["bd_base"].lightening_extra if r["bd_base"] else 0.0 for r in voyages_raw)
-    total_tax     = sum(r["bd_base"].tax             if r["bd_base"] else 0.0 for r in voyages_raw)
+    total_ocean   = sum(r["ocean_base"] for r in voyages_raw)
+    total_bunker  = sum(r["bunker_base"] for r in voyages_raw)
+    total_opex    = sum(r["opex_base"] for r in voyages_raw)
+    total_other   = sum(r["other_base"] for r in voyages_raw)
+    total_port    = sum(r["port_base"] for r in voyages_raw)
+    total_light   = sum(r["light_base"] for r in voyages_raw)
+    total_tax     = sum(r["tax_base"] for r in voyages_raw)
+    total_wait    = sum(r["wait_base"] for r in voyages_raw)
 
     # -- Sail value aggregates --------------------------------------------------
     total_revenue = sum(v.freight_revenue_usd for v in voyages)
-    total_base_cost = total_ocean + total_bunker + total_opex + total_other + total_port + total_light + total_tax
+    total_base_cost = total_ocean + total_bunker + total_opex + total_other + total_port + total_light + total_tax + total_wait
     total_net_sail  = total_revenue - total_base_cost
     # Kill value: aggregated from Step 51V SailKillEconomics per voyage (replaces placeholder 0.0)
     kill_value  = sum(r["kill_value"] for r in voyages_raw)
@@ -808,18 +864,21 @@ def _assemble_strategy(
         voyage_count=len(voyages),
         commitment_mode=commitment_mode,
         voyages=voyages,
-        total_cost_worst_case=worst_case,
+        total_cost_worst_case=round(worst_case, 2),
         cost_breakdown={
-            "freight":          round(total_ocean, 2),
-            "ocean_freight":    round(total_ocean, 2),
-            "bunker":           round(total_bunker, 2),
-            "opex":             round(total_opex, 2),
-            "other_cost":       round(total_other, 2),
-            "port_handling":    round(total_port, 2),
-            "lightening_extra": round(total_light, 2),
-            "tax":              round(total_tax, 2),
-            "risk_buffer":      round(risk_buffer, 2),
-            "total":            round(total_base_cost, 2),
+            "freight":                  round(total_ocean, 2),
+            "ocean_freight":            round(total_ocean, 2),
+            "bunker":                   round(total_bunker, 2),
+            "opex":                     round(total_opex, 2),
+            "other_cost":               round(total_other, 2),
+            "port_handling":            round(total_port, 2),
+            "lightening_extra":         round(total_light, 2),
+            "tax":                      round(total_tax, 2),
+            "risk_buffer":              round(risk_buffer, 2),
+            "total":                    round(total_base_cost, 2),
+            "steaming_speed_knots":     round(voyages[0].steaming_speed_knots, 1) if voyages else 12.5,
+            "steaming_mode":            voyages[0].steaming_mode if voyages else "design",
+            "speed_bunker_savings_usd": round(sum(v.speed_bunker_savings_usd for v in voyages), 2),
         },
         contains_high_uncertainty_voyage=has_high_uncertainty,
         solved_via=solved_via,
@@ -997,6 +1056,7 @@ def solve(
             base_rate_at_lock[(route_key, opt.vessel_class, opt.port)] = 0.0
 
     # ── 10. Compute cost coefficients ─────────────────────────────────────
+    speed_mode = getattr(constraints, "speed_mode", "design") or "design"
     coeffs = _compute_cost_coefficients(
         quantity=cargo_quantity,
         feasible_opts=feasible_opts,
@@ -1008,6 +1068,7 @@ def solve(
         commitment_benchmark_pct=commitment_benchmark_pct,
         origin_port=origin_port,
         repositioning_days_cache=repo_cache,
+        speed_mode=speed_mode,
     )
 
     if not coeffs:
@@ -1065,6 +1126,7 @@ def solve(
         commitment_benchmark_pct=commitment_benchmark_pct,
         is_default_benchmark=is_default_benchmark,
         origin_port=origin_port,
+        cargo_quantity=cargo_quantity,
     )
 
     # ── 13. Ranked Alternative Strategies for scenario_comparison[] ───────
@@ -1100,6 +1162,7 @@ def solve(
             commitment_benchmark_pct=commitment_benchmark_pct,
             is_default_benchmark=is_default_benchmark,
             origin_port=origin_port,
+            cargo_quantity=cargo_quantity,
         )
         
         # Inject theme label into provenance_note for the UI to read

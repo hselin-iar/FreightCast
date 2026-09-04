@@ -21,10 +21,12 @@ A chartering manager evaluating a specific shipment request (*Cargo Quantity*, *
 4. **First-Principles Empirical Verification & Audit Gate:** Deterministically prove *why* the optimal vessel, parcel split, and discharge port assignment dominates alternative combinations using hydrodynamic laws, channel draft restrictions, cubic speed-power fuel curves, Admiralty distance deltas, and laytime/demurrage exposure, grounded in verified warehouse telemetry (`/provenance/situations/active` and `/provenance/catalog`).
 
 ### Tier 2: Fleet-Wide Portfolio Scheduling (Batch / Multi-Contract)
-For fleet operations and periodic reviews across all tracked bulk carriers and an entire slate of pending contracts (`GET /fleet-schedule`):
-- Assigns real IMO-tracked vessels to candidate contracts.
-- Enforces non-overlapping voyage windows across a temporal conflict graph (preventing double-booking).
-- Ranks contracts and generates an optimal **SAIL vs. KILL** schedule maximizing portfolio net margin subject to vessel repositioning speed and ballast distance.
+For monthly fleet operations, desk reviews, and multi-parcel tenders across all tracked bulk carriers and an entire slate of pending contracts (`GET /fleet-schedule` and `POST /fleet-schedule/solve`):
+- Evaluates a batch of 10–20 cargo inquiries simultaneously rather than in isolation.
+- Constructs an interval-overlap **temporal conflict graph** across candidate vessels to guarantee physical feasibility ($x_a + x_b \le 1$ for overlapping voyages).
+- Solves a global Mixed-Integer Linear Program (MILP) maximizing total portfolio worst-case incremental net margin while preserving downside risk protection floors.
+- Dynamically partitions the contract slate into **SAIL** (accepted and scheduled with assigned vessel, departure date, and ETA) vs. **KILL** (rejected or left to float on the spot market).
+- Grounds scheduling in real-time AIS vessel telemetry (positions, underway speed, and ballast repositioning time).
 
 ---
 
@@ -77,6 +79,17 @@ The system exposes two front-ends (React Dashboard and Decision Assistant Chatbo
 3. **Interactive Evidence Inspector:** The output is scanned by `termHighlighter`, rendering dotted cyan underlines under maritime data terms (`demurrage`, `ocean freight`, `bunker`, `OPEX`, `MILP`, `draft`, `laytime`). Hovering reveals interactive cards with definitions, formulas, and telemetry sources.
 4. **Universal Math Preprocessing:** All equations pass through `mathUtils.ts`, auto-healing delimiter brackets (`\left` / `\right`), eliminating empty display boxes, and ensuring crisp KaTeX rendering.
 
+### 3e. Via Fleet Schedule & Portfolio Optimization
+1. **Monthly Slate Review:** Chartering desk opens the **Fleet** tab (`GET /fleet-schedule` and `GET /fleet-status`). The executive banner immediately summarizes the portfolio bottom line: total contracts, expected incremental net margin above spot, worst-case floor, and active vessel commitments.
+2. **Operational Constraint Tuning:**
+   - **Max Sail Contracts:** Manager adjusts active capacity limit (e.g. throttling from 12 to 8 contracts due to letter-of-credit or bunker credit limits).
+   - **Downside Risk Ratio:** Desk moves the risk tolerance slider ($0.0 \to 1.0$) to balance conservative downside floor protection vs. aggressive expected margin.
+3. **Dynamic Re-Optimization (`POST /fleet-schedule/solve`):** Triggers an on-demand solve of the Step 51V PuLP CBC MILP formulation. Evaluates the batch against the interval-overlap conflict graph and returns the new optimal allocation in $<500\text{ms}$.
+4. **Visual De-confliction (Schedule Gantt):** The Gantt timeline displays horizontal vessel lanes with distinct contract voyage blocks ($Departure \to ETA$), visually verifying that consecutive voyages on the same bulk carrier have collision-free turnaround intervals.
+5. **Execution & Live Grounding (Decision Matrix & AIS Inspector):**
+   - Filterable table isolates **SAIL** decisions (assigned vessel, laycan window, voyage cost, incremental margin) for broker fixing vs. **KILL** decisions (walk away or float unhedged on spot).
+   - Live AIS Telemetry tab displays real-time Latitude/Longitude, underway speed (knots), and position pings of tracked bulk carriers to verify physical laycan feasibility.
+
 ---
 
 ## 4. High-Level Architecture
@@ -89,17 +102,19 @@ The system exposes two front-ends (React Dashboard and Decision Assistant Chatbo
 │  ├─ Dashboard (WhatIfSliders, Interactive Form, WinningPlanBanner, 7-Bucket Cost Grid) │
 │  ├─ Provenance Lab (SituationalProofLab, Evidence Inspector, Hypothesis Auditor)       │
 │  ├─ Scenario Lab (Base / Bull / Bear Fan Chart, Robustness & Regret Readouts)          │
-│  ├─ Fleet Schedule (AIS Tracked Carrier Schedule, Repositioning Gantt, SAIL vs KILL)   │
+│  ├─ Fleet Schedule (Gantt Timeline, Portfolio Optimizer Sliders, Decision Matrix, AIS) │
 │  ├─ AST Mathematical & Currency Preprocessor (mathUtils.ts, rehypeUnescapeCurrency)    │
 │  └─ Decision Assistant (Natural-Language Chat with Live Tool-Calling & Normalization)   │
 └───────────────────────────────────────────┬────────────────────────────────────────────┘
                                             │ HTTP JSON (stateless) + Auto-Failover
 ┌───────────────────────────────────────────▼────────────────────────────────────────────┐
 │                                  FASTAPI BACKEND API                                   │
-│  /recommendation   /scenario   /chat   /forecast   /compatible-vessels   /fleet-schedule│
-│  /provenance/situations   /provenance/situations/active   /provenance/catalog   /api/ping│
+│  /recommendation   /scenario   /chat   /forecast   /compatible-vessels   /port-status  │
+│  /fleet-schedule   /fleet-schedule/solve   /fleet-status   /api/ping   /health  /scope │
+│  /provenance/situations   /provenance/situations/active   /provenance/catalog          │
 │  ├─ Scope Validator & Natural Language Constraint Normalizer (_normalize_constraints)  │
 │  ├─ Telemetry Citation & Grounded Scenario Builder (build_grounded_scenarios)          │
+│  ├─ Fleet Portfolio Engine (Step 51V MILP Conflict Graph Solver: fleet_optimizer.py)   │
 │  └─ Chat Tool-Calling Proxy (Groq / Nvidia NIM / Anthropic Claude / OpenAI)           │
 └───────┬─────────────────────┬─────────────────────┬────────────────────┬───────────────┘
         │                     │                     │                    │
@@ -225,9 +240,13 @@ $$\text{Total Cost} = \text{Ocean Freight} + \text{Bunker} + \text{OPEX} + \text
 1. **Ocean Freight:**
    - *Spot:* $\text{Quantity} \times \text{Forecast Rate}(\tau, s)$.
    - *Locked:* $\text{Quantity} \times \text{Base Rate}(\tau=0) \times (1 - \text{Discount Benchmark})$. Identical across all scenario evaluations.
-2. **Bunker Cost (Physics):**
+2. **Bunker Cost (Physics & Cubic Steaming Law):**
    - $\text{Voyage Days} = \frac{\text{Distance NM}}{24 \times \text{Speed Knots}} + \text{Discharge Days} + \text{Lightening Days}$.
-   - $\text{Bunker Cost} = (\text{Laden Consumption TPD} \times \text{Voyage Days}) \times \text{Bunker Price USD/MT}$.
+   - Evaluates three distinct operational steaming speed regimes governed by the cubic Admiralty law ($P \propto V^3$, daily fuel burn $\propto V^3$):
+     * **Eco Mode ($11.5\text{ kn}$):** Slow steaming reduces fuel burn by $22.15\%$ ($\left(11.5/12.5\right)^3 \approx 0.7785$), saving $\approx \$49,000$ in bunker expenses per voyage for flexible laycans.
+     * **Base Mode ($12.5\text{ kn}$):** Canonical commercial charter party service speed establishing the contract baseline.
+     * **Fast Mode ($14.0\text{ kn}$):** High-speed transit for tight laycan deadlines, accelerating arrival by $\approx 1.2\text{ days}$ at an added $+40.5\%$ fuel burn cost ($\left(14.0/12.5\right)^3 \approx 1.405$).
+   - $\text{Bunker Cost} = (\text{Laden Consumption TPD}(\text{Speed}) \times \text{Voyage Days}) \times \text{Bunker Price USD/MT}$.
 3. **OPEX Cost:** $\text{Daily OPEX USD} \times \text{Voyage Days}$ ($\$8,500/\text{day}$ Capesize, $\$7,200/\text{day}$ Panamax, $\$6,500/\text{day}$ Supramax).
 4. **Other Voyage Costs:** Port dues, canal tolls, pilotage from `RoutePhysics`.
 5. **Port Handling:** Port handling tariff $\times \text{Cargo Quantity}$.
@@ -294,6 +313,14 @@ Supports:
 
 The Provenance layer transforms optimization outputs from opaque mathematical solutions into fully auditable, empirical first-principles proofs.
 
+### 12.0 Typed Provenance Classification & Lineage Tracking
+Every data point, forecast, cost coefficient, and recommendation carries an immutable typed provenance classification tagged at the point of origin:
+- **`measured`:** Directly captured empirical telemetry from verified physical sensors, navigational publications, or market feeds (e.g. live AIS coordinates, underway speed over ground, daily BDI close, published bunker spot prices, verified berth limits, Admiralty geodetic distances).
+- **`modeled`:** Algorithmic outputs derived from statistical forecasts, econometric models, or deterministic operations research (e.g. walk-forward XGBoost rate forecasts, 7-bucket voyage cost breakdowns, Admiralty cubic speed-power fuel curves, interval-overlap conflict graphs, and MILP optimal allocations).
+- **`assumed`:** Operational baselines, contractual defaults, or user-configured parameters set by the chartering manager (e.g. locked-rate discount benchmark, timing flexibility bounds, daily demurrage penalties).
+
+Tagged values originate via typed helpers (`tag_measured()`, `tag_modeled()`, `tag_assumed()`) in `warehouse/repository.py`, `forecasting.py`, `cost_terms.py`, and `decision.py`, propagating to the UI via interactive `ProvenanceBadge` tokens and hover popovers.
+
 ### 12.1 Dynamic Recommendation-Grounded Empirical Proofs
 Rather than displaying static boilerplate, `POST /provenance/situations/active` binds the active cargo recommendation (Quantity, Origin, Selected Port, Vessel Class, Voyage Count, Cost Breakdown) with warehouse telemetry to construct four grounded situational proofs:
 1. **Port Hydrodynamics & Draft Physics:** Proves why port draft limits (e.g. Dhamra 14.0m) physically block Capesize ($18.2\text{m}$ draft) and force parcel splitting into multiple Panamax voyages, calculating exact overhead and pilotage deltas.
@@ -328,12 +355,48 @@ The `mathUtils.ts` preprocessor immunizes frontend KaTeX rendering against commo
 
 ---
 
-## 13. Fleet Portfolio Scheduling (Step 51V)
+## 13. Fleet Portfolio Scheduling & Temporal Conflict Optimization (Step 51V)
 
-Available via `GET /fleet-schedule`:
-- Solves multi-contract, multi-vessel temporal assignments across tracked bulk carriers.
-- Builds a temporal conflict graph ($10,890$ potential collision edges) preventing overlapping fixtures.
-- Generates a visual Gantt schedule classifying contracts as **SAIL** (accepted) vs. **KILL** (rejected).
+The Fleet Portfolio Engine (`backend/engine/fleet_optimizer.py`, `POST /fleet-schedule/solve`, and `GET /fleet-schedule`) provides global, multi-contract batch scheduling across all active bulk carriers, replacing manual spreadsheets with an integer programming model.
+
+### 13.1 Production Problem Definition
+In dry bulk chartering operations, a desk handles a monthly slate of $C$ candidate contracts ($10$–$20$ inquiries) across $V$ available bulk carriers. Each candidate voyage $k = (c, v)$ possesses:
+- Specific departure date $D_k$ and estimated arrival $\text{ETA}_k$.
+- 3-scenario market rates: $\text{Bear}_k$, $\text{Base}_k$, $\text{Bull}_k$.
+- Voyage economics: $\text{Bunker Cost}_k$, $\text{Daily OPEX}_k$, and $\text{Port Handling}_k$.
+- Incremental margin over walk-away benchmark: $\text{Worst Incremental}_k = \min_{s} \text{Incremental}_k(s)$.
+
+### 13.2 Interval-Overlap Temporal Conflict Graph
+To eliminate voyage collisions and double-booking, the engine builds a temporal conflict graph $G = (\mathcal{K}, \mathcal{E})$. For any two candidate voyages $a, b \in \mathcal{K}$ assigned to the same physical vessel $\text{IMO}_a = \text{IMO}_b$:
+$$(a, b) \in \mathcal{E} \iff D_a < \text{ETA}_b \quad \text{and} \quad D_b < \text{ETA}_a$$
+
+Every collision edge yields a hard mutual-exclusion packing constraint:
+$$x_a + x_b \le 1 \quad \forall (a, b) \in \mathcal{E}$$
+
+### 13.3 Global MILP Mathematical Formulation
+The problem is formulated in PuLP and solved via CBC ($<500\text{ms}$ solve time):
+
+$$\max_{x} \sum_{k \in \mathcal{K}} x_k \cdot \text{Worst Incremental}_k$$
+
+Subject to:
+1. **Single Assignment per Contract:** At most one vessel is assigned to each contract inquiry:
+   $$\sum_{k \in \mathcal{K}(c)} x_k \le 1 \quad \forall c \in \mathcal{C}$$
+2. **Fleet Capacity Budgeting:** Limits total simultaneous commitments to manageable operational limits:
+   $$\sum_{k \in \mathcal{K}} x_k \le \text{MaxSail} \quad (\text{user-controlled, default: } 12)$$
+3. **Zero-Collision Temporal Feasibility:**
+   $$x_a + x_b \le 1 \quad \forall (a, b) \in \mathcal{E}$$
+4. **Downside Risk Protection Floor:** Guarantees that the accepted portfolio preserves downside safety relative to base expectations:
+   $$\sum_{k \in \mathcal{K}} x_k \cdot \text{Worst Incremental}_k \ge \text{RiskRatio} \cdot \sum_{k \in \mathcal{K}} x_k \cdot \text{Base Incremental}_k \quad (\text{default: } 0.60)$$
+
+### 13.4 Decision Partitioning & Output Architecture
+The solution dynamically partitions contracts:
+- **`SAIL`:** High-yielding, risk-protected contracts accepted for chartering with a specific vessel assignment, departure date, and ETA window.
+- **`KILL`:** Contracts rejected or deferred to spot execution due to negative incremental margins, vessel calendar conflicts, or downside risk violations.
+
+### 13.5 Live AIS Fleet Telemetry & Grounding
+Via `GET /fleet-status`, the fleet schedule is validated against real-world AIS telemetry:
+- Live Latitude/Longitude, underway speed in knots, and latest satellite pings for each tracked vessel.
+- Canonical physical specifications (`VesselSpec`: summer draft, LOA, beam, typical DWT) confirming berth compatibility.
 
 ---
 
@@ -353,7 +416,9 @@ Post-solve advisory layer matching candidate fixtures against real-world broker 
 | `GET` | `/forecast` | Forward rate forecast and confidence bands. |
 | `GET` | `/compatible-vessels`| Physical berth rule checks. |
 | `GET` | `/port-status` | Port congestion and queue wait times. |
-| `GET` | `/fleet-schedule` | Multi-vessel fleet schedule and Gantt data. |
+| `GET` | `/fleet-schedule` | Multi-vessel fleet schedule, assignments, and Gantt data. |
+| `POST` | `/fleet-schedule/solve` | On-demand Step 51V multi-contract fleet portfolio MILP solve. |
+| `GET` | `/fleet-status` | Live tracked AIS vessel telemetry and canonical vessel classes. |
 | `GET` | `/provenance/situations` | Baseline first-principles situational proofs. |
 | `POST` | `/provenance/situations/active`| Dynamic recommendation-grounded empirical proofs. |
 | `GET` | `/provenance/catalog` | Grounded telemetry and parameter registry. |
@@ -375,13 +440,14 @@ Post-solve advisory layer matching candidate fixtures against real-world broker 
 8. **Scenario Fan Chart:** Recharts visualization of Base, Bull, and Bear forecast curves with marked fix dates ($\tau$).
 9. **AIS Route & Repositioning Map:** Map displaying load/discharge ports, vessel positions, and congestion status.
 10. **WhyNotComparator:** Side-by-side diagnostic comparison between winning plan and alternative candidate options.
-11. **Executive Brief Export:** One-page summary export for chartering executives.
+11. **FleetSchedulePage & ScheduleGantt:** Zero-collision Gantt deployment timeline, reactive `Max Sail` and `Risk Ratio` sliders, contract decision matrix with `SAIL`/`KILL` filtering, and real-time tracked AIS fleet inspector.
+12. **Executive Brief Export:** One-page summary export for chartering executives.
 
 ---
 
 ## 17. Non-Functional Performance & High-Availability Standards
 
-- **Solver Latency:** $<50\text{ms}$ for standard MILP solves (timeout threshold: $4.0\text{s}$).
+- **Solver Latency:** $<50\text{ms}$ for standard MILP solves (timeout threshold: $4.0\text{s}$); $<500\text{ms}$ for global multi-contract fleet portfolio MILP solves.
 - **Database Query Latency:** $<10\text{ms}$ via indexed SQLite / PostgreSQL.
 - **Stateless API:** Zero server-side session state for chat and recommendation requests.
 - **Frontend Responsiveness:** $<300\text{ms}$ debounced re-render during slider adjustments.
@@ -410,6 +476,7 @@ Post-solve advisory layer matching candidate fixtures against real-world broker 
 | Berth draft/LOA inaccuracies causing grounding | Strict deterministic rules; physical hard-blocks on LOA/draft; manual verification gate. |
 | Freight market volatility & geopolitical shocks | 3-scenario fan bands; downside risk ratio constraint; Damped-trend fallback. |
 | Large parcel infeasibility at restricted ports | Dynamic capacity budgeting splitting up to 6 voyages; physical vessel capacity clamping. |
+| Multi-contract voyage collisions / double-booking | Interval-overlap temporal conflict graph generating hard mutual-exclusion constraints ($x_a + x_b \le 1$). |
 | Chatbot hallucination of rates or ship names | System prompt live scope injection; fuzzy constraint normalizer; strict verbatim tool grounding. |
 | LLM rate-limit or timeout on complex proofs | Dual-section concurrent synthesis splitting physical and mathematical derivations; multi-provider failover. |
 | Malformed LaTeX or empty display boxes | Universal AST preprocessor with early block stashing, delimiter auto-healing, and currency escaping. |
@@ -423,8 +490,10 @@ Post-solve advisory layer matching candidate fixtures against real-world broker 
 - `TAX_RATE_PCT = 5.0%` (computed strictly on effective post-discount ocean freight).
 - `DEFAULT_COMMITMENT_BENCHMARK_PCT = 10.0%` (locked discount vs. spot).
 - `MILP_RISK_RATIO = 0.60` (minimum acceptable worst-to-base incremental ratio).
+- `DEFAULT_MAX_SAIL_CONTRACTS = 12` (fleet portfolio capacity ceiling).
 - `MAX_VOYAGE_SPLITS = 6` (maximum parcel voyages for dynamic capacity budgeting).
 - `LIGHTENING_PENALTY_DAYS = 2.5` & `LIGHTENING_PENALTY_COST_USD = $75,000`.
 - `DEFAULT_BALLAST_SPEED_KTS = 12.0` & `DEFAULT_SAFETY_BUFFER_HOURS = 6.0`.
+- Steaming Speed Modes: `Base = 12.5 kn`, `Eco = 11.5 kn` (-22.15% fuel burn), `Fast = 14.0 kn` (+40.5% fuel burn).
 - `KEEP_ALIVE_INTERVAL_MINUTES = 10` (GitHub Actions keepalive frequency).
 - Typical Capacities: Capesize ($180\text{k}\text{ MT}$), Panamax/Kamsarmax ($75\text{k}$–$80\text{k}\text{ MT}$), Supramax/Ultramax ($58\text{k}\text{ MT}$).

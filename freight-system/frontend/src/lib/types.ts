@@ -69,6 +69,9 @@ export interface VoyageDetail {
   cargo_tonnes?:       number;
   freight_revenue_usd?: number;
   net_sail_value_usd?: number;
+  steaming_speed_knots?: number;
+  steaming_mode?: string;
+  speed_bunker_savings_usd?: number;
 }
 
 export interface Strategy {
@@ -86,7 +89,10 @@ export interface Strategy {
     tax?:             number;
     risk_buffer:      number;
     total:            number;
-    [key: string]:    number | undefined;
+    steaming_speed_knots?: number;
+    steaming_mode?: string;
+    speed_bunker_savings_usd?: number;
+    [key: string]:    any;
   };
   contains_high_uncertainty_voyage: boolean;
   solved_via:                     SolvedVia;
@@ -103,6 +109,16 @@ export interface RecommendationResponse {
   scenario_comparison: Strategy[];
 }
 
+export interface OperationalEvidenceScore {
+  route: string;
+  vessel_class: string;
+  confidence: 'strong' | 'moderate' | 'weak' | 'no_data';
+  observation_count: number;
+  most_recent_observation_at: string | null;
+  provenance: Provenance;
+  note: string;
+}
+
 /* ── /recommendation request ─────────────────────────────── */
 export interface HumanOverrides {
   exclude_vessel?:     string[];
@@ -110,6 +126,7 @@ export interface HumanOverrides {
   max_completion_day?: number;
   force_mode?:         'spot' | 'locked';
   min_fix_day?:        number;
+  speed_mode?:         'eco' | 'design' | 'express';
 }
 
 export interface RecommendationRequest {
@@ -118,6 +135,7 @@ export interface RecommendationRequest {
   discharge_ports:          string[];
   timing_flexibility_days:  number;
   commitment_benchmark_pct?: number;
+  speed_mode?:              'eco' | 'design' | 'express';
   constraints?:             HumanOverrides;
 }
 
@@ -278,6 +296,21 @@ export const FALLBACK_SCOPE: ScopeResponse = {
   dest_ports: ['Dhamra', 'Gangavaram', 'Paradip'],
   vessel_classes: ['Capesize', 'Panamax/Kamsarmax', 'Supramax/Ultramax']
 };
+
+export interface PortConstraintItem {
+  name: string;
+  max_draft_m: number;
+  max_loa_m: number;
+  max_beam_m: number;
+  handling_rate_tpd: number;
+  tidal_dependent: boolean;
+  verified: boolean;
+  source: string;
+  lat: number;
+  lon: number;
+  role: 'discharge' | 'load';
+  lightening_point?: string | null;
+}
 
 /* ── /provenance ────────────────────────────────────────── */
 

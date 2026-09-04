@@ -16,7 +16,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-# Use SQLite :memory: for tests — override DATABASE_URL before any warehouse import
+_ORIGINAL_DB_URL = os.environ.get("DATABASE_URL")
 _SQLITE_URL = "sqlite:///:memory:"
 os.environ["DATABASE_URL"] = _SQLITE_URL
 
@@ -43,6 +43,11 @@ def fresh_db():
     # Invalidate scope cache so tests don't bleed
     repository.invalidate_scope_cache()
     yield
+    reset_engine()
+    if _ORIGINAL_DB_URL is not None:
+        os.environ["DATABASE_URL"] = _ORIGINAL_DB_URL
+    else:
+        os.environ.pop("DATABASE_URL", None)
     reset_engine()
 
 

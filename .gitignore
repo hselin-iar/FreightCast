@@ -70,3 +70,4 @@ Thumbs.db
 *.log
 scratch/
 .system_generated/
+freight-system/backend/freight_dev.db

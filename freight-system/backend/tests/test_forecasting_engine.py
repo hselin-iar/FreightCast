@@ -22,6 +22,7 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
+_ORIGINAL_DB_URL = os.environ.get("DATABASE_URL")
 # SQLite override before any warehouse import
 os.environ["DATABASE_URL"] = "sqlite:///:memory:"
 
@@ -72,6 +73,11 @@ def fresh_db():
     create_all_tables("sqlite:///:memory:")
     repository.invalidate_scope_cache()
     yield
+    reset_engine()
+    if _ORIGINAL_DB_URL is not None:
+        os.environ["DATABASE_URL"] = _ORIGINAL_DB_URL
+    else:
+        os.environ.pop("DATABASE_URL", None)
     reset_engine()
 
 

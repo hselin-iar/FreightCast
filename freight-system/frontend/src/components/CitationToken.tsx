@@ -18,13 +18,20 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
   useLayoutEffect(() => {
     if (isOpen && triggerRef.current) {
       const rect = triggerRef.current.getBoundingClientRect();
-      const halfWidth = 190;
+      const halfWidth = 180;
       const idealLeft = rect.left + window.scrollX + rect.width / 2;
       const minLeft = halfWidth + 16;
       const maxLeft = Math.max(minLeft, window.innerWidth - halfWidth - 16);
       const clampedLeft = Math.max(minLeft, Math.min(maxLeft, idealLeft));
+
+      // Check if space above, otherwise position below
+      const spaceAbove = rect.top;
+      const popoverTop = spaceAbove > 280
+        ? rect.top + window.scrollY - 8 // Above trigger
+        : rect.bottom + window.scrollY + 8; // Below trigger
+
       setPopoverCoords({
-        top: rect.top + window.scrollY - 8, // Just above the trigger
+        top: popoverTop,
         left: clampedLeft,
       });
     }
@@ -51,49 +58,31 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
     citation.provenance === 'measured'
       ? 'var(--emerald)'
       : citation.provenance === 'modeled'
-      ? '#2563eb'
+      ? 'var(--accent)'
       : 'var(--warn)';
-
-  const badgeBg =
-    citation.provenance === 'measured'
-      ? 'var(--badge-measured-bg)'
-      : citation.provenance === 'modeled'
-      ? 'var(--badge-modeled-bg)'
-      : 'var(--badge-assumed-bg)';
 
   return (
     <span
       ref={triggerRef}
       style={{ position: 'relative', display: 'inline' }}
-      onMouseEnter={() => setIsOpen(true)}
-      onMouseLeave={() => setIsOpen(false)}
     >
       <span
         onClick={() => setIsOpen((prev) => !prev)}
         style={{
-          borderBottom: `2px dotted ${badgeBorder}`,
+          borderBottom: `1.5px solid ${badgeBorder}`,
           color: '#FAFAFA',
           fontWeight: 600,
           cursor: 'pointer',
-          padding: '1px 3px',
-          borderRadius: 'var(--r)',
-          backgroundColor: isOpen ? badgeBg : 'transparent',
+          padding: '1px 5px',
+          borderRadius: 4,
+          backgroundColor: isOpen
+            ? 'color-mix(in srgb, var(--accent) 25%, transparent)'
+            : 'color-mix(in srgb, var(--sail-700) 45%, transparent)',
           transition: 'all 0.15s ease',
         }}
+        title="Click to inspect grounding authority & formula"
       >
         {children}
-        <span
-          style={{
-            fontSize: 10,
-            verticalAlign: 'super',
-            marginLeft: 3,
-            color: badgeBorder,
-            fontFamily: 'var(--f-mono)',
-            fontWeight: 700,
-          }}
-        >
-          [{citation.provenance === 'measured' ? 'DATA' : citation.provenance === 'modeled' ? 'MODEL' : 'ASSUMED'}]
-        </span>
       </span>
 
       {/* Floating Evidence Inspector Popover */}
@@ -105,14 +94,14 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
             top: popoverCoords.top,
             left: popoverCoords.left,
             transform: 'translate(-50%, -100%)',
-            width: 360,
+            width: 340,
             maxWidth: '90vw',
             backgroundColor: 'var(--sail-900)',
             border: `1.5px solid ${badgeBorder}`,
-            boxShadow: 'var(--shadow-panel)',
-            borderRadius: 'var(--r-lg)',
-            padding: '14px 16px',
-            zIndex: 999999, // Ensure absolute top layer
+            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.45)',
+            borderRadius: 8,
+            padding: '12px 14px',
+            zIndex: 999999,
             fontSize: 12,
             lineHeight: 1.5,
             color: 'var(--sail-200)',
@@ -130,51 +119,65 @@ export const CitationToken: React.FC<Props> = ({ citation, children }) => {
               marginBottom: 8,
             }}
           >
-            <span style={{ fontWeight: 700, color: 'var(--sail-100)', fontSize: 13 }}>
-              {citation.title}
-            </span>
-            <ProvenanceBadge provenance={citation.provenance} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontWeight: 700, color: 'var(--sail-100)', fontSize: 12.5 }}>
+                {citation.title}
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <ProvenanceBadge provenance={citation.provenance} />
+              <button
+                onClick={() => setIsOpen(false)}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--sail-400)',
+                  cursor: 'pointer',
+                  fontSize: 14,
+                  padding: '0 2px',
+                  lineHeight: 1,
+                }}
+                title="Close"
+              >
+                ✕
+              </button>
+            </div>
           </div>
 
           {/* Source Citation */}
           <div style={{ marginBottom: 8 }}>
-            <span style={{ color: 'var(--sail-500)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-              Data Source / Authority
+            <span style={{ color: 'var(--sail-400)', fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
+              Authority / Data Source
             </span>
-            <div style={{ color: 'var(--sail-100)', fontWeight: 600, marginTop: 2 }}>
+            <div style={{ color: 'var(--sail-100)', fontWeight: 600, marginTop: 2, fontSize: 11.5 }}>
               {citation.source}
             </div>
           </div>
 
           {/* Governing Equation / Math (if present) */}
           {citation.equation && (
-            <div style={{ marginTop: 8, padding: '8px 10px', backgroundColor: 'var(--ink-700)', borderLeft: '2px solid var(--accent)', borderRadius: '0 4px 4px 0', overflowX: 'auto' }}>
-              <div style={{ fontSize: 9.5, color: 'var(--sail-400)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600, marginBottom: 4 }}>
+            <div style={{ marginTop: 6, padding: '6px 10px', backgroundColor: 'var(--ink-800)', borderLeft: '2px solid var(--accent)', borderRadius: '0 4px 4px 0', overflowX: 'auto' }}>
+              <div style={{ fontSize: 9.5, color: 'var(--sail-400)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700, marginBottom: 3 }}>
                 Mathematical Grounding
               </div>
-              <div style={{ color: '#FAFAFA', fontSize: 12 }}>
+              <div style={{ color: '#FAFAFA', fontSize: 11.5 }}>
                 <MathFormula math={citation.equation} block={true} />
               </div>
             </div>
           )}
 
           {/* Confidence & Rationale */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 6, marginTop: 12 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 8 }}>
             <div>
-              <span style={{ color: 'var(--sail-500)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
-                Confidence & Calibration
-              </span>
-              <div style={{ color: 'var(--sail-200)', fontSize: 11, fontWeight: 500 }}>
-                {citation.confidence}
-              </div>
-            </div>
-            <div>
-              <span style={{ color: 'var(--sail-500)', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+              <span style={{ color: 'var(--sail-400)', fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>
                 Why This Grounding Matters
               </span>
-              <div style={{ color: 'var(--sail-300)', fontSize: 11, marginTop: 2 }}>
+              <div style={{ color: 'var(--sail-300)', fontSize: 11, marginTop: 2, lineHeight: 1.4 }}>
                 {citation.rationale}
               </div>
+            </div>
+            <div style={{ fontSize: 10, color: 'var(--sail-500)', fontFamily: 'var(--f-mono)', borderTop: '1px solid var(--sail-800)', paddingTop: 5 }}>
+              Calibration: <span style={{ color: 'var(--sail-200)' }}>{citation.confidence}</span>
             </div>
           </div>
         </div>,

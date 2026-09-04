@@ -184,6 +184,20 @@ export async function getFleetSchedule(
 }
 
 /**
+ * POST /fleet-schedule/solve — Trigger dynamic Step 51V multi-contract fleet portfolio MILP optimization.
+ */
+export async function solveFleetSchedule(
+  req?: { max_sail?: number; risk_ratio?: number; time_limit?: number; bunker_price?: number },
+  signal?: AbortSignal,
+): Promise<Result<import('./types').FleetScheduleResponse>> {
+  return apiFetch<import('./types').FleetScheduleResponse>(
+    '/fleet-schedule/solve',
+    { method: 'POST', body: JSON.stringify(req || {}) },
+    signal,
+  );
+}
+
+/**
  * GET /fleet-status — Live fleet visibility MVP.
  */
 export async function getFleetStatus(
@@ -197,6 +211,31 @@ export async function getFleetStatus(
  */
 export async function getVesselPositions(): Promise<Result<Record<string, any>>> {
   return apiFetch<Record<string, any>>('/vessel-positions');
+}
+
+/**
+ * GET /port-constraints — Verified port hydrodynamics and geographic coordinates.
+ */
+export async function getPortConstraints(
+  signal?: AbortSignal,
+): Promise<Result<import('./types').PortConstraintItem[]>> {
+  return apiFetch<import('./types').PortConstraintItem[]>('/port-constraints', {}, signal);
+}
+
+/**
+ * GET /recommendation/evidence — Operational broker fixture alignment score.
+ */
+export async function getOperationalEvidenceScore(
+  route: string,
+  vesselClass: string,
+  signal?: AbortSignal,
+): Promise<Result<import('./types').OperationalEvidenceScore>> {
+  const query = new URLSearchParams({ route, vessel_class: vesselClass });
+  return apiFetch<import('./types').OperationalEvidenceScore>(
+    `/recommendation/evidence?${query.toString()}`,
+    {},
+    signal,
+  );
 }
 
 /**
@@ -215,7 +254,7 @@ export interface NarrateRequest {
 
 export interface NarrateResponse {
   narrative: string;
-  source: 'groq' | 'template';
+  source: 'nvidia' | 'groq' | 'template';
 }
 
 export async function postNarrate(

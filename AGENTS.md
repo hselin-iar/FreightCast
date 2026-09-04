@@ -1,28 +1,16 @@
 # AGENTS — Intelligent Freight Forecasting & Chartering (SAIL PS3)
 
 ## Session State
-CURRENT_STEP:    Post-Deployment Local Feature Development
-LAST_COMPLETED:  Build Step 14 — Deployment (Render + Vercel) ✓ VERIFIED
+CURRENT_STEP:    Steaming Speed Selector De-duplication & Fleet Page UX Clarification
+LAST_COMPLETED:  Steaming Speed Selector De-duplication ✓ VERIFIED
 SESSION_STATUS:  ACTIVE
-PAUSED_AT:       (none — parity complete and fully verified)
+PAUSED_AT:       (none — Verified in browser)
 
-NOTE (Research Parity & Testing Verification):
-- Layer 1 (OPEX + DB Seed + 7-Bucket Cost Breakdown): ✓ Verified
-- Layer 2 (Sail Value / Net Margin in Strategy & Schemas): ✓ Verified
-- Layer 3 (Worst-Incremental Candidate Ranking): ✓ Verified
-- Layer 4 (Frontend UI updates): ✓ Verified with Vite build & live browser test
-- Regression Pass: All 277 backend unit tests pass with 0 failures.
-- Bug Fixes & Stress Tests (TC1–TC5):
-  * TC3 Capacity Bug: Removed min(3,...) cap and clamped fallback assignments to vessel capacity. 300kt Dhamra now cleanly solves as 4 Panamax voyages in MILP (60k+80k+80k+80k).
-  * Tax Basis Bug: Tax is computed on effective post-discount freight cost; tax/freight ratio is exact 5.0%.
-  * Chatbot Scope & Hallucination: Live scope injection + alias normalizer (_normalize_constraints) maps "Cape Max", "Super Max", "Panamax" seamlessly to canonical warehouse classes.
-- Comparative Benchmark: All scenarios solve optimally via MILP in ~35ms.
-- GitHub Repository: Successfully published and synced to https://github.com/hselin-iar/FreightCast.git (branch main).
-- Production Release Commit: `6a3374c` — Includes dynamic recommendation-backed empirical proofs, interactive data term hover inspector, universal LaTeX / KaTeX rendering repairs, and Provenance tab navbar repositioning before Forecast.
-- Deployment Configs (Step 14):
-  * render.yaml Blueprint: Declares 4 resources (FastAPI Web API, AIS Worker, Retrain Cron, and Postgres DB) with secret keys segregated to server-side only.
-  * vercel.json: SPA rewrites configured for React/Vite production build.
-  * CORS: Configured in FastAPI to allow all https://*.vercel.app domains.
+NOTE (Steaming Speed Selector De-duplication Verification):
+- Removed Redundant Elements: Eliminated the secondary speed badge (`14.0 kn` / `12.5 kn`) next to the "Steaming Speed Mode" title and removed repetitive speed subtext (`11.5 kn`, `12.5 kn`, `14.0 kn`) from inside the buttons.
+- Clean Horizontal Segmented Pills: Each mode button displays a clean inline vector SVG icon (`LeafIcon`, `StandardIcon`, `ExpressIcon`) and label (`Eco`, `Standard`, `Express`), elevated with active card styling (`1.5px solid var(--sail-700)` on `#ffffff`).
+- Single Canonical Explanation Caption: Preserved the explanatory sentence below the control where mode name, exact kn speed, and operational fuel burn / laycan impact are concisely stated without repetition.
+- Visual Verification: Verified in live browser (http://localhost:5173/) across all states with screenshot saved to `steaming_speed_sidebar_final_1788530907099.png`. Build passes in 360ms.
 
 NOTE (Step 9 verification status): Provenance layer fully implemented and verified.
 - provenance.py: Provenance Literal type, tag_measured/tag_modeled/tag_assumed helpers,

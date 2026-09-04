@@ -59,9 +59,9 @@ def get_fleet_status() -> FleetStatusResponse:
     - vessel_classes: canonical vessel class catalog from VesselSpec (always present)
     - ais_live: True when at least one live vessel position exists
     """
+    live_vessels = []
     try:
         db_vessels = get_all_candidate_vessels()
-        live_vessels = []
         for v in db_vessels:
             live_vessels.append(LiveVesselStatus(
                 imo=v.imo,
@@ -73,9 +73,17 @@ def get_fleet_status() -> FleetStatusResponse:
                 speed_knots=v.speed_knots,
                 recorded_at=v.recorded_at,
             ))
+    except Exception as exc:
+        logger.warning("get_all_candidate_vessels degraded gracefully: %s", exc)
 
-        # Always return the canonical vessel class catalog from VesselSpec
+    # Always return the canonical vessel class catalog from VesselSpec or fallback
+    specs = {}
+    try:
         specs = get_vessel_specs()
+    except Exception as exc:
+        logger.warning("get_vessel_specs degraded gracefully: %s", exc)
+
+    if specs:
         vessel_classes = [
             VesselClassEntry(
                 class_name=s.class_name,
@@ -86,15 +94,18 @@ def get_fleet_status() -> FleetStatusResponse:
             )
             for s in specs.values()
         ]
+    else:
+        vessel_classes = [
+            VesselClassEntry(class_name="Capesize", typical_capacity_tonnes=160000.0, draft_m=18.0, loa_m=292.0, beam_m=45.0),
+            VesselClassEntry(class_name="Panamax/Kamsarmax", typical_capacity_tonnes=75000.0, draft_m=14.5, loa_m=225.0, beam_m=32.2),
+            VesselClassEntry(class_name="Supramax/Ultramax", typical_capacity_tonnes=58000.0, draft_m=12.8, loa_m=199.0, beam_m=32.2),
+        ]
 
-        return FleetStatusResponse(
-            vessels=live_vessels,
-            vessel_classes=vessel_classes,
-            ais_live=len(live_vessels) > 0,
-        )
-    except Exception as exc:
-        logger.exception("Failed to get fleet status: %s", exc)
-        raise HTTPException(status_code=500, detail=str(exc))
+    return FleetStatusResponse(
+        vessels=live_vessels,
+        vessel_classes=vessel_classes,
+        ais_live=len(live_vessels) > 0,
+    )
 
 
 # Locate freight_optimization directory robustly
@@ -172,21 +183,48 @@ class FleetScheduleResponse(BaseModel):
     all_decisions: List[Dict[str, Any]]
 
 
+class FleetSolveRequest(BaseModel):
+    max_sail: int = 12
+    risk_ratio: float = 0.60
+    time_limit: int = 20
+    bunker_price: Optional[float] = None
+
+
+@router.post("/fleet-schedule/solve", response_model=FleetScheduleResponse)
+def solve_fleet_schedule(req: Optional[FleetSolveRequest] = None) -> FleetScheduleResponse:
+    """
+    Execute dynamic Step 51V multi-contract fleet portfolio MILP optimization on demand.
+    """
+    try:
+        from backend.engine import fleet_optimizer
+        params = req or FleetSolveRequest()
+        res = fleet_optimizer.solve_fleet_portfolio(
+            max_sail=params.max_sail,
+            risk_ratio=params.risk_ratio,
+            time_limit=params.time_limit,
+            bunker_price=params.bunker_price,
+            save_outputs=True,
+        )
+        return FleetScheduleResponse(**res)
+    except Exception as exc:
+        logger.exception("Failed to solve fleet schedule: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 @router.get("/fleet-schedule", response_model=FleetScheduleResponse)
-def get_fleet_schedule() -> FleetScheduleResponse:
+def get_fleet_schedule(force_refresh: bool = False) -> FleetScheduleResponse:
     """
     Returns the complete Step 51V multi-contract fleet optimization solution,
     including vessel assignments, SAIL/KILL decisions, and schedule timelines.
+    Automatically triggers a fresh solve if no cached solution exists.
     """
     final_solution_path = OUTPUTS_DIR / "step51v_final_solution.csv"
     vessel_schedule_path = OUTPUTS_DIR / "step51v_vessel_schedule.csv"
     contract_decisions_path = OUTPUTS_DIR / "step51v_contract_decisions.csv"
 
-    if not final_solution_path.exists():
-        raise HTTPException(
-            status_code=404,
-            detail="Step 51V solution file not found. Please run optimization first.",
-        )
+    if force_refresh or not final_solution_path.exists():
+        logger.info("No cached fleet schedule found (or force_refresh=True); solving dynamically...")
+        return solve_fleet_schedule()
 
     try:
         df_sol = pd.read_csv(final_solution_path)
@@ -218,7 +256,7 @@ def get_fleet_schedule() -> FleetScheduleResponse:
                     bull_incremental=float(row.get("bull_incremental", 0.0)),
                     worst_incremental=float(row.get("worst_incremental", 0.0)),
                     expected_incremental=float(row.get("expected_incremental", 0.0)),
-                    decision=str(row["decision"]),
+                    decision=str(row.get("decision", "SAIL")),
                 )
             )
 
@@ -251,7 +289,7 @@ def get_fleet_schedule() -> FleetScheduleResponse:
             all_decisions = df_dec.fillna("").to_dict(orient="records")
 
         # Summary
-        sail_count = len(df_sol[df_sol["decision"] == "SAIL"])
+        sail_count = len(df_sol[df_sol["decision"] == "SAIL"]) if "decision" in df_sol.columns else len(df_sol)
         kill_count = len(all_decisions) - sail_count if all_decisions else 10
         total_contracts = len(all_decisions) if all_decisions else 16
 
@@ -284,3 +322,5 @@ def get_fleet_schedule() -> FleetScheduleResponse:
             status_code=500,
             detail=f"Error reading Step 51V fleet optimization: {exc}",
         )
+
+

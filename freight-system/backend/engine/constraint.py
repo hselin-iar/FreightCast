@@ -46,11 +46,14 @@ logger = logging.getLogger(__name__)
 #: Maps a destination port (too shallow) → list of deeper-draft ports
 #: that are route-compatible for a lightening call.
 LIGHTENING_PORTS: dict[str, list[str]] = {
-    "Paradip":    ["Gangavaram", "Dhamra"],       # deeper draft anchorages en route
-    "Haldia":     ["Gangavaram", "Dhamra", "Paradip"],
-    "Gangavaram": [],                              # already deep-draft; no lightening needed
-    "Dhamra":     ["Gangavaram"],
-    "Vizag":      [],                              # deep port; no lightening needed
+    "Paradip":            ["Gangavaram", "Dhamra"],       # deeper draft anchorages en route
+    "Haldia":             ["Dhamra", "Paradip", "Gangavaram"], # Dhamra is primary deepwater lightening point for Haldia
+    "Gangavaram":         [],                              # already deep-draft; no lightening needed
+    "Dhamra":             ["Gangavaram"],
+    "Vizag":              [],                              # deep port; no lightening needed
+    "Visakhapatnam":      [],                              # deep outer harbor (18m draft); no lightening needed
+    "Kamarajar (Ennore)": [],                              # deep coal berths (16m draft); no lightening needed
+    "Ennore":             [],
 }
 
 #: Estimated cost and time penalty per lightening call

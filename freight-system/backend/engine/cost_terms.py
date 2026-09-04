@@ -114,8 +114,19 @@ class CostBreakdown:
     tax:              float    # tax_cost
     waiting:          float    # waiting_cost (0.0 when no idle days — consistent zero)
     total:            float    # sum of all buckets
-    provenance:       Provenance                # "assumed" if placeholder constants dominate
+    provenance:       Provenance = "modeled"    # "assumed" if placeholder constants dominate
     provenance_note:  Optional[str] = None     # populated when provenance=="assumed"
+    steaming_speed_knots:     float = 12.5             # commercial steaming speed in knots
+    steaming_mode:            str = "design"           # "eco" (11.5kn), "design" (12.5kn), "express" (14.0kn)
+    speed_bunker_savings_usd: float = 0.0              # bunker cost saved by eco steaming vs design baseline
+
+
+# Discrete commercial steaming speed profiles and cubic consumption parameters
+STEAMING_SPEEDS: dict[str, float] = {
+    "eco": 11.5,
+    "design": 12.5,
+    "express": 14.0,
+}
 
 
 # ---------------------------------------------------------------------------
@@ -158,17 +169,17 @@ def bunker_cost(
     route_physics: RoutePhysics,
     laden: bool,
     bunker_price_usd_per_tonne: float,
+    speed_mode: str = "design",
 ) -> float:
     """
     Distance-based physics — not a flat placeholder.
 
     Rule:
-      consumption_tpd = laden_consumption_tpd if laden else ballast_consumption_tpd
-      voyage_days     = distance_nm / speed_knots / 24
+      effective_speed = STEAMING_SPEEDS[speed_mode]
+      cubic_multiplier = (effective_speed / 12.5) ** 3
+      consumption_tpd = (laden_tpd if laden else ballast_tpd) * cubic_multiplier
+      voyage_days     = distance_nm / effective_speed / 24
       cost            = consumption_tpd × voyage_days × bunker_price_usd_per_tonne
-
-    speed_knots uses route_physics.speed_knots (defaults to DEFAULT_BALLAST_SPEED_KNOTS
-    when not stored per-route).
 
     Raises ValueError if distance_nm <= 0 — that is a data error, not a business outcome.
     Provenance: "modeled" (real physics over real distance).
@@ -179,12 +190,25 @@ def bunker_cost(
             f"{route_physics.destination!r} has invalid distance_nm="
             f"{route_physics.distance_nm}. This is a data error."
         )
-    consumption_tpd = (
+    base_speed = route_physics.speed_knots or DEFAULT_BALLAST_SPEED_KNOTS
+    sm = (speed_mode or "design").lower()
+    if sm == "eco":
+        effective_speed = min(base_speed, 11.5)
+        cubic_multiplier = (effective_speed / base_speed) ** 3.0
+    elif sm == "express":
+        effective_speed = max(base_speed, 14.0)
+        cubic_multiplier = (effective_speed / base_speed) ** 3.0
+    else:  # "design" baseline
+        effective_speed = base_speed
+        cubic_multiplier = 1.0
+
+    base_tpd = (
         route_physics.laden_consumption_tpd
         if laden
         else route_physics.ballast_consumption_tpd
     )
-    voyage_days = route_physics.distance_nm / route_physics.speed_knots / 24.0
+    consumption_tpd = base_tpd * cubic_multiplier
+    voyage_days = route_physics.distance_nm / effective_speed / 24.0
     return consumption_tpd * voyage_days * bunker_price_usd_per_tonne
 
 
@@ -282,12 +306,12 @@ def repositioning_cost(
     return ballast_consumption_tpd * repositioning_days * bunker_price_usd_per_tonne
 
 
-def opex_cost(route_physics: RoutePhysics) -> float:
+def opex_cost(route_physics: RoutePhysics, speed_mode: str = "design") -> float:
     """
     Daily vessel operating expense × total voyage days (laden leg only).
     Research pipeline: step50b → daily_opex_usd × total_voyage_days.
 
-    voyage_days = distance_nm / speed_knots / 24 (same as bunker_cost's denominator)
+    voyage_days = distance_nm / effective_speed / 24
     Includes port days as a proxy (loaded leg + typical port time).
     Ballast return leg OPEX is NOT included — consistent with step50b which charges
     opex only for the contracted voyage, not the reposition.
@@ -297,7 +321,15 @@ def opex_cost(route_physics: RoutePhysics) -> float:
     """
     if not route_physics.daily_opex_usd or route_physics.distance_nm <= 0:
         return 0.0
-    voyage_days = route_physics.distance_nm / route_physics.speed_knots / 24.0
+    base_speed = route_physics.speed_knots or DEFAULT_BALLAST_SPEED_KNOTS
+    sm = (speed_mode or "design").lower()
+    if sm == "eco":
+        effective_speed = min(base_speed, 11.5)
+    elif sm == "express":
+        effective_speed = max(base_speed, 14.0)
+    else:
+        effective_speed = base_speed
+    voyage_days = route_physics.distance_nm / effective_speed / 24.0
     return route_physics.daily_opex_usd * voyage_days
 
 
@@ -332,6 +364,7 @@ def build_cost_coefficient(
     lightening_penalty_days:     float,
     repositioning_days:          Optional[float] = None,
     ballast_consumption_tpd:     Optional[float] = None,
+    speed_mode:                  str = "design",
 ) -> CostBreakdown:
     """
     Orchestrate all sub-functions into a single CostBreakdown per
@@ -362,9 +395,9 @@ def build_cost_coefficient(
         freight = locked_freight_cost(quantity, base_rate_at_lock_day, commitment_benchmark_pct)
 
     # 2. Bunker — laden leg (from origin to discharge port)
-    laden_bunker = bunker_cost(route_physics, laden=True, bunker_price_usd_per_tonne=bunker_price_usd_per_tonne)
+    laden_bunker = bunker_cost(route_physics, laden=True, bunker_price_usd_per_tonne=bunker_price_usd_per_tonne, speed_mode=speed_mode)
     # Ballast return leg
-    ballast_bunker = bunker_cost(route_physics, laden=False, bunker_price_usd_per_tonne=bunker_price_usd_per_tonne)
+    ballast_bunker = bunker_cost(route_physics, laden=False, bunker_price_usd_per_tonne=bunker_price_usd_per_tonne, speed_mode=speed_mode)
     # Repositioning (folds into bunker bucket — still bunker fuel)
     repo_cost = repositioning_cost(
         ballast_consumption_tpd=ballast_consumption_tpd,
@@ -374,7 +407,19 @@ def build_cost_coefficient(
     bunker_total = laden_bunker + ballast_bunker + repo_cost
 
     # 3. OPEX — daily operating cost × voyage days (step50b research pipeline addition)
-    opex = opex_cost(route_physics)
+    opex = opex_cost(route_physics, speed_mode=speed_mode)
+
+    # Baseline design bunker to quantify fuel savings for eco mode
+    baseline_bunker = bunker_cost(route_physics, laden=True, bunker_price_usd_per_tonne=bunker_price_usd_per_tonne, speed_mode="design") + bunker_cost(route_physics, laden=False, bunker_price_usd_per_tonne=bunker_price_usd_per_tonne, speed_mode="design")
+    speed_bunker_savings_usd = round(max(0.0, baseline_bunker - (laden_bunker + ballast_bunker)), 2)
+    base_speed = route_physics.speed_knots or DEFAULT_BALLAST_SPEED_KNOTS
+    sm = (speed_mode or "design").lower()
+    if sm == "eco":
+        effective_speed = min(base_speed, 11.5)
+    elif sm == "express":
+        effective_speed = max(base_speed, 14.0)
+    else:
+        effective_speed = base_speed
 
     # 4. Other voyage costs — port dues, canal tolls, pilotage (step50b addition)
     other = other_voyage_cost(route_physics)
@@ -414,6 +459,9 @@ def build_cost_coefficient(
         total=round(total, 2),
         provenance=prov,
         provenance_note=prov_note,
+        steaming_speed_knots=effective_speed,
+        steaming_mode=speed_mode.lower(),
+        speed_bunker_savings_usd=speed_bunker_savings_usd,
     )
 
 

@@ -194,7 +194,7 @@ results.append(("ARIMA", mae, rmse, mape, folds, f"{pct_vs_naive:+.1f}%"))
 if enriched_viable:
     def _enriched_fn(train: List[float], t: int) -> List[float]:
         exog_slice = {k: v[:t] for k, v in aligned_exog.items()}
-        return _fit_xgboost(train, HORIZON, exog=exog_slice)
+        return _fit_xgboost(train, HORIZON, exog=exog_slice)[0]
 
     mae, rmse, mape, folds = walk_forward("XGBoost (enriched)", _enriched_fn)
     pct_vs_naive = (naive_mae - mae) / naive_mae * 100 if naive_mae > 0 else 0

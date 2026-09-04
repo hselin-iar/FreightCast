@@ -109,16 +109,30 @@ export const HypothesisAuditor: React.FC<{
 
     setAuditPhase('Generating operational physics and mathematical sections in parallel…');
 
+    let groundTruthContext = '';
+    if (resultContext) {
+      const rec = resultContext.recommendation;
+      const primaryVoyage = rec.voyages?.[0];
+      const recBd = rec.cost_breakdown;
+      groundTruthContext = `\n\nAUDIT GROUND TRUTH FACTS (from active solver recommendation — use these verified figures directly):
+- Recommended Strategy: ${rec.commitment_mode}, Vessel: ${primaryVoyage?.vessel_class || 'N/A'}, Port: ${primaryVoyage?.port || 'N/A'}, Fix Day: ${primaryVoyage?.fix_day ?? 'N/A'}, Total Worst-Case Cost: $${Math.round(rec.total_cost_worst_case || 0).toLocaleString()}
+  Cost Breakdown: Ocean Freight: $${Math.round(recBd?.ocean_freight || 0).toLocaleString()}, Bunker: $${Math.round(recBd?.bunker || 0).toLocaleString()}, OPEX: $${Math.round(recBd?.opex || 0).toLocaleString()}, Port Handling: $${Math.round(recBd?.port_handling || 0).toLocaleString()}, Tax: $${Math.round(recBd?.tax || 0).toLocaleString()}, Risk Buffer: $${Math.round(recBd?.risk_buffer || 0).toLocaleString()}
+- Scenario Comparison:
+${resultContext.scenario_comparison?.map(s => `  * Mode: ${s.commitment_mode}, Vessel: ${s.voyages?.[0]?.vessel_class || 'N/A'}, Total Worst-Case: $${Math.round(s.total_cost_worst_case || 0).toLocaleString()}, Total Base: $${Math.round(s.cost_breakdown?.total || 0).toLocaleString()}, Risk Buffer: $${Math.round(s.cost_breakdown?.risk_buffer || 0).toLocaleString()}, Ocean Freight: $${Math.round(s.cost_breakdown?.ocean_freight || 0).toLocaleString()}`).join('\n') || 'None'}`;
+    }
+
     // Section 1: Physical & Operational Constraints
     const promptSec1 = `[AUDIT SECTION 1 - OPERATIONAL CONSTRAINTS & VESSEL PHYSICS]:
 Regarding the maritime question: "${q}"
-Please provide a rigorous, concise first-principles breakdown of the physical and operational constraints (e.g. vessel deadweight capacity, draft restrictions at discharge ports, approach channels, distance, and geofenced waiting time).
-Format using clean Markdown with bold terms. Do not include bracketed technical variable tags like ( freight ). Keep under 300 words.`;
+Please provide an exhaustive, multi-paragraph first-principles breakdown of the physical and operational constraints (e.g. vessel deadweight capacity, draft restrictions at discharge ports, approach channels, distance, and geofenced waiting time) with complete hydrodynamic depth and maritime domain detail.
+STRICT INSTRUCTION: Output ONLY the final, polished response for the user. Never output any scratchpads, "Wait compute", or stream-of-consciousness thinking.
+Format using clean Markdown with bold terms. Do not include bracketed technical variable tags like ( freight ).${groundTruthContext}`;
 
     // Section 2: Mathematical Derivation & Economic Proof
     const promptSec2 = `[AUDIT SECTION 2 - MATHEMATICAL COST DERIVATION & ECONOMIC PROOF]:
 Regarding the maritime question: "${q}"
-Please provide the mathematical formulation and numerical cost proof comparing the options.
+Please provide an exhaustive, in-depth mathematical derivation, full step-by-step cost reconciliation, and structured ledger table comparing the options.
+STRICT INSTRUCTION: Output ONLY the final, polished response for the user. Never output any scratchpads, "Wait compute", or stream-of-consciousness thinking.
 CRITICAL MATHEMATICAL & CURRENCY FORMATTING:
 - Display/block equations MUST be enclosed in double dollar signs on separate lines with NO internal blank lines:
 $$
@@ -133,7 +147,7 @@ $$
 - Never write semicolons around mathematical operators (write \\cdot or \\times, never ;\\times; or ;=;).
 - When writing dollar values, format as '$1,000,000' in plain prose outside LaTeX. Never write '$C = \\$1,000,000$'. Inside LaTeX equations, use '\\text{ USD}' (e.g. 'C^{\\text{oc}} = 1{,}002{,}300\\text{ USD}').
 - Include a clean Markdown table comparing Ocean freight, Bunker, OPEX, Port handling, Tax, and Demurrage/Rail costs.
-- Do not include bracketed technical variable tags like ( freight ). Keep under 350 words.`;
+- Do not include bracketed technical variable tags like ( freight ).${groundTruthContext}`;
 
     try {
       // Execute both sections concurrently to prevent token limits and timeouts

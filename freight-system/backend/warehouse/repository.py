@@ -737,6 +737,27 @@ def get_candidate_vessels_by_class(vessel_class: str) -> list[VesselPositionSnap
         return list(rows)
 
 
+def get_all_vessel_positions() -> dict[int, dict[str, Any]]:
+    """Return all tracked vessel positions from VesselPositionSnapshot keyed by IMO."""
+    with get_session() as session:
+        rows = session.execute(
+            select(VesselPositionSnapshot).order_by(desc(VesselPositionSnapshot.recorded_at))
+        ).scalars().all()
+        result = {}
+        for r in rows:
+            result[r.imo] = {
+                "imo": r.imo,
+                "vessel_name": r.vessel_name,
+                "vessel_class": r.vessel_class,
+                "dwt": r.dwt,
+                "current_lat": r.current_lat,
+                "current_lon": r.current_lon,
+                "speed_knots": r.speed_knots,
+                "recorded_at": r.recorded_at.isoformat() if r.recorded_at else None,
+            }
+        return result
+
+
 def get_all_candidate_vessels() -> list[VesselPositionSnapshot]:
     """
     Return all tracked vessel positions.

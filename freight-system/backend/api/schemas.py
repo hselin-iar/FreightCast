@@ -40,6 +40,7 @@ class HumanOverridesRequest(BaseModel):
     max_completion_day: Optional[int]       = Field(None, ge=1, description="Latest τ day allowed")
     force_mode:         Optional[Literal["spot", "locked"]] = Field(None, description="Lock commitment mode")
     min_fix_day:        Optional[int]       = Field(None, ge=0, description="Earliest τ day allowed")
+    speed_mode:         Optional[Literal["eco", "design", "express"]] = Field("design", description="Commercial steaming speed mode")
 
 
 class CostBreakdownResponse(BaseModel):
@@ -54,6 +55,9 @@ class CostBreakdownResponse(BaseModel):
     total:            float
     provenance:       str
     provenance_note:  Optional[str] = None
+    steaming_speed_knots: float = 12.5
+    steaming_mode:        str = "design"
+    speed_bunker_savings_usd: float = 0.0
 
 
 class VoyageDetailResponse(BaseModel):
@@ -71,6 +75,9 @@ class VoyageDetailResponse(BaseModel):
     cargo_tonnes:         float = 0.0
     freight_revenue_usd:  float = 0.0
     net_sail_value_usd:   float = 0.0
+    steaming_speed_knots: float = 12.5
+    steaming_mode:        str = "design"
+    speed_bunker_savings_usd: float = 0.0
 
 
 class StrategyResponse(BaseModel):
@@ -82,7 +89,7 @@ class StrategyResponse(BaseModel):
     commitment_mode:                str
     voyages:                        List[VoyageDetailResponse]
     total_cost_worst_case:          float
-    cost_breakdown:                 Dict[str, float]
+    cost_breakdown:                 Dict[str, Any]
     contains_high_uncertainty_voyage: bool
     solved_via:                     Literal["milp", "hybrid_fallback"]
     provenance:                     str
@@ -117,6 +124,9 @@ class RecommendationRequest(BaseModel):
     voyage_count:     Optional[int]  = Field(None, ge=1, le=3, description="Pin voyage count (for /scenario)")
     commitment_mode:  Optional[Literal["spot", "locked", "mixed"]] = Field(
         None, description="Pin commitment mode (for /scenario)"
+    )
+    speed_mode:       Optional[Literal["eco", "design", "express"]] = Field(
+        "design", description="Steaming speed mode: eco (11.5 kn), design (12.5 kn), express (14.0 kn)"
     )
     constraints: Optional[HumanOverridesRequest] = Field(
         None, description="Human overrides — applied as MILP variable-fixing"

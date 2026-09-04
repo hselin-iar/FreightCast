@@ -50,9 +50,7 @@ import pulp
 # PATHS
 # =============================================================================
 
-ROOT = Path(
-    "/home/aryashekhar/freight-optimization"
-)
+ROOT = Path(__file__).resolve().parents[1]
 
 PROCESSED = ROOT / "data" / "processed"
 OUTPUTS = ROOT / "outputs"

@@ -158,7 +158,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {view === 'fleet'      && <div style={{ padding: '1.5rem', maxWidth: '1400px', margin: '0 auto' }}><FleetSchedulePage /></div>}
+        {view === 'fleet'      && <FleetSchedulePage />}
         {view === 'forecast'   && <ForecastExplorerPage />}
         {view === 'ports'      && <PortConstraintsPage />}
         <div style={{ display: view === 'provenance' ? 'block' : 'none', height: '100%' }}>

@@ -15,10 +15,15 @@ logger = logging.getLogger(__name__)
 @router.get("/vessel-positions")
 def get_vessel_positions() -> Dict[int, Dict[str, Any]]:
     """
-    Return all in-memory vessel position snapshots keyed by IMO.
+    Return all vessel position snapshots keyed by IMO.
+    Combines live AIS listener stream with warehouse persistent snapshots.
     """
     try:
-        return ais_listener.get_latest_vessel_positions()
-    except Exception as exc:
-        logger.exception("Failed to fetch vessel positions")
-        return {}
+        live = ais_listener.get_latest_vessel_positions()
+        if live:
+            return live
+    except Exception:
+        pass
+
+    from backend.warehouse import repository
+    return repository.get_all_vessel_positions()

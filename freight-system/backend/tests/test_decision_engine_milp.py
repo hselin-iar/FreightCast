@@ -691,3 +691,72 @@ class TestStrategyShape:
         )
         assert empty.infeasible_reason is not None
         assert empty.voyage_count == 0
+
+    def test_multi_voyage_cost_conservation(self, route_physics):
+        """
+        Verify that in a multi-voyage split (e.g. 150,000 MT split into 80,000 MT + 70,000 MT),
+        total ocean freight equals exactly 150,000 * rate (not doubled),
+        tax is exactly 5% of total ocean freight, and bunker is charged once per vessel voyage.
+        """
+        total_q = 150_000.0
+        rate = 15.0
+        coeffs = {}
+        for scen in ("base", "bull", "bear"):
+            bd = build_cost_coefficient(
+                quantity=total_q,
+                mode="spot",
+                rate_at_tau=rate,
+                base_rate_at_lock_day=rate,
+                commitment_benchmark_pct=10.0,
+                route_physics=route_physics,
+                bunker_price_usd_per_tonne=600.0,
+                handling_rate_tpd=40_000.0,
+                idle_days=0.0,
+                requires_lightening=False,
+                lightening_penalty_days=0.0,
+            )
+            coeffs[("Panamax/Kamsarmax", "Gangavaram", 0, "spot", scen)] = bd
+
+        opt = FeasibleOption(
+            vessel_class="Panamax/Kamsarmax",
+            port="Gangavaram",
+            is_feasible=True,
+            infeasible_reason=None,
+            is_inefficient_fit=False,
+            discharge_days=3.75,
+            tidal_window_note=None,
+            requires_lightening=False,
+            lightening_port=None,
+            lightening_penalty_days=0.0,
+            lightening_penalty_cost_usd=0.0,
+            size_rank=2,
+        )
+
+        assignments = [
+            {"voyage": 1, "vessel_class": "Panamax/Kamsarmax", "port": "Gangavaram", "tau_day": 0, "mode": "spot", "cargo_tonnes": 80_000.0},
+            {"voyage": 2, "vessel_class": "Panamax/Kamsarmax", "port": "Gangavaram", "tau_day": 0, "mode": "spot", "cargo_tonnes": 70_000.0},
+        ]
+
+        strat = _assemble_strategy(
+            assignments=assignments,
+            feasible_opts=[opt],
+            coeffs=coeffs,
+            forecasts={},
+            solved_via="milp",
+            commitment_benchmark_pct=10.0,
+            is_default_benchmark=False,
+            origin_port="Australia (Hay Point)",
+            cargo_quantity=total_q,
+        )
+
+        assert strat.voyage_count == 2
+        # Exact freight conservation: 150,000 * 15.0 = 2,250,000
+        expected_freight = total_q * rate
+        assert strat.cost_breakdown["ocean_freight"] == pytest.approx(expected_freight, rel=1e-4)
+        assert strat.total_freight_revenue_usd == pytest.approx(expected_freight, rel=1e-4)
+        # Exact tax ratio: 5.0%
+        assert strat.cost_breakdown["tax"] == pytest.approx(expected_freight * 0.05, rel=1e-4)
+        # Bunker charged for both voyages (2x single vessel fuel burn)
+        single_bunker = coeffs[("Panamax/Kamsarmax", "Gangavaram", 0, "spot", "base")].bunker
+        assert strat.cost_breakdown["bunker"] == pytest.approx(single_bunker * 2, rel=1e-4)
+

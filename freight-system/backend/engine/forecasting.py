@@ -275,7 +275,7 @@ def _walk_forward_mae(
     forecast_fn,
     horizon: int,
     min_train: int = 30,
-    max_folds: int = 50,   # cap validation folds — prevents multi-minute retrains on large datasets
+    max_folds: int = 10,   # cap validation folds — prevents multi-minute retrains on large datasets
 ) -> float:
     """
     Walk-forward MAE: train on values[:t], predict t+1..t+horizon, slide.
@@ -314,7 +314,7 @@ def _walk_forward_mae_with_exog(
     forecast_fn,
     horizon: int,
     min_train: int = 30,
-    max_folds: int = 50,
+    max_folds: int = 10,
 ) -> float:
     """
     Walk-forward MAE for enriched XGBoost: slices the exog dict per fold so that
@@ -388,18 +388,31 @@ def _holdout_mae(
 # ---------------------------------------------------------------------------
 
 def _fit_arima(history: List[float], horizon: int) -> List[float]:
-    """Fit ARIMA(1,1,1) and forecast horizon steps ahead."""
+    """Fit Auto-ARIMA with AIC-minimizing parameter search and forecast horizon steps ahead."""
     try:
         from statsmodels.tsa.arima.model import ARIMA
         import warnings
+        candidate_orders = [(1, 1, 1), (1, 1, 0), (0, 1, 1), (2, 1, 1), (1, 0, 1)]
+        best_aic = float("inf")
+        best_fit = None
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            model = ARIMA(history, order=(1, 1, 1))
-            fit = model.fit()
-            forecast = fit.forecast(steps=horizon)
-        return list(forecast)
+            for order in candidate_orders:
+                try:
+                    fit = ARIMA(history, order=order).fit()
+                    if fit.aic < best_aic:
+                        best_aic = fit.aic
+                        best_fit = fit
+                except Exception:
+                    continue
+
+        if best_fit is not None:
+            forecast = best_fit.forecast(steps=horizon)
+            return [float(x) for x in forecast]
+        return damped_trend(history, horizon)
     except Exception as exc:
-        logger.warning("ARIMA fit failed: %s — falling back to damped_trend", exc)
+        logger.warning("Auto-ARIMA fit failed: %s — falling back to damped_trend", exc)
         return damped_trend(history, horizon)
 
 
@@ -1144,8 +1157,16 @@ def _build_forecast_object(
         for i, p in enumerate(clamped_preds)
     ]
 
-    # High-uncertainty flag: residual CoV > 20%
-    is_high_uncertainty = (margin / max(point_estimate, 1.0)) > 0.20
+    # High-uncertainty flag:
+    # True if model failed production gating (naive/damped_trend fallback), history is sparse (<25),
+    # or extreme residual volatility (>75% margin-to-price ratio).
+    # Gated production models (XGBoost / ARIMA) with normal dispersion serve as primary models (is_high_uncertainty=False).
+    if model_name in ("naive", "damped_trend"):
+        is_high_uncertainty = True
+    elif len(history) < 25:
+        is_high_uncertainty = True
+    else:
+        is_high_uncertainty = (margin / max(point_estimate, 1.0)) > 0.75
 
     # --- Build enriched driver_explanation JSON ---
     # Lead text: human-first, conversational prose — NOT a machine dump.

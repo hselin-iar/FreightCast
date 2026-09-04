@@ -17,6 +17,7 @@ import {
   getForecast,
   getScope,
   postNarrate,
+  getOperationalEvidenceScore,
 } from '../lib/apiClient';
 import type {
   HealthResponse,
@@ -25,6 +26,7 @@ import type {
   RecommendationResponse,
   ScopeResponse,
   Strategy,
+  OperationalEvidenceScore,
 } from '../lib/types';
 import WhatIfSliders      from '../components/WhatIfSliders';
 import ScenarioFanChart   from '../components/ScenarioFanChart';
@@ -54,6 +56,26 @@ function fmtK(n: number)  {
 }
 function pct(a: number, total: number) { return total > 0 ? Math.round((a / total) * 100) : 0; }
 
+const LeafIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: '-1px' }}>
+    <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+    <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+  </svg>
+);
+
+const BaseIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: '-1px' }}>
+    <path d="M12 14l3.5-3.5" />
+    <path d="M3.34 19a10 10 0 1 1 17.32 0" />
+  </svg>
+);
+
+const FastIcon = ({ size = 12 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" stroke="none" style={{ display: 'inline-block', verticalAlign: '-1px' }}>
+    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+  </svg>
+);
+
 /* ── Left panel: Cargo Request form ────────────────────────── */
 interface FormPanelProps {
   scope: ScopeResponse | null;
@@ -64,12 +86,14 @@ interface FormPanelProps {
   ports: Set<string>; togglePort: (p: string) => void;
   flex: number; setFlex: (v: number) => void;
   bench: string; setBench: (v: string) => void;
+  speedMode: 'eco' | 'design' | 'express'; setSpeedMode: (v: 'eco' | 'design' | 'express') => void;
   onSubmit: (e: React.FormEvent) => void;
 }
 
 function CargoForm({
   scope, health, loading, qty, setQty, origin, setOrigin,
-  ports, togglePort, flex, setFlex, bench, setBench, onSubmit,
+  ports, togglePort, flex, setFlex, bench, setBench,
+  speedMode, setSpeedMode, onSubmit,
 }: FormPanelProps) {
   const [benchOpen, setBenchOpen] = useState(false);
   const [wakeElapsed, setWakeElapsed] = useState(0);
@@ -172,6 +196,90 @@ function CargoForm({
           </div>
         </div>
 
+        {/* Steaming Speed Mode */}
+        <div className="form-group" style={{ borderTop: '1px solid var(--sail-800)', paddingTop: 12 }}>
+          <label className="form-label" style={{ fontWeight: 600, whiteSpace: 'nowrap', display: 'block', marginBottom: 6 }}>
+            Steaming Speed Mode
+          </label>
+
+          {/* Integrated Segmented Tab Selector */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(3, 1fr)',
+            gap: 4,
+            background: 'color-mix(in srgb, var(--sail-100) 4%, #ffffff)',
+            padding: 4,
+            borderRadius: 8,
+            border: '1px solid var(--sail-700)',
+          }}>
+            {[
+              { id: 'eco', label: 'Eco', Icon: LeafIcon, tooltip: 'Slow steaming (11.5 kn): 22.15% lower fuel burn (~$49k saved/voyage)', accentColor: 'var(--emerald)' },
+              { id: 'design', label: 'Base', Icon: BaseIcon, tooltip: 'Base service speed (12.5 kn): Contract baseline rate', accentColor: 'var(--sail-100)' },
+              { id: 'express', label: 'Fast', Icon: FastIcon, tooltip: 'Fast steaming (14.0 kn): 10.7% faster transit for urgent laycans', accentColor: 'var(--warn)' },
+            ].map(m => {
+              const active = speedMode === m.id;
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setSpeedMode(m.id as any)}
+                  title={m.tooltip}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 5,
+                    padding: '7px 4px',
+                    borderRadius: 6,
+                    border: active ? '1.5px solid var(--sail-700)' : '1.5px solid transparent',
+                    background: active ? '#ffffff' : 'transparent',
+                    color: active ? 'var(--sail-100)' : 'var(--sail-300)',
+                    boxShadow: active ? '0 2px 5px rgba(0, 0, 0, 0.08)' : 'none',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <span style={{ color: active ? m.accentColor : 'var(--sail-500)', display: 'flex', alignItems: 'center' }}>
+                    <m.Icon size={12} />
+                  </span>
+                  <span style={{
+                    fontSize: 11.5,
+                    fontWeight: active ? 700 : 600,
+                    color: active ? 'var(--sail-100)' : 'var(--sail-300)',
+                  }}>
+                    {m.label}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <p className="infer" style={{ fontSize: 10.5, marginTop: 6, lineHeight: 1.4, color: 'var(--sail-300)' }}>
+            {speedMode === 'eco' ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                <span style={{ color: 'var(--emerald)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                  <LeafIcon size={10} /> Eco (11.5 kn):
+                </span>
+                Slow steaming saves ~$49k/voyage via cubic bunker burn reduction.
+              </span>
+            ) : speedMode === 'express' ? (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                <span style={{ color: 'var(--warn)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                  <FastIcon size={10} /> Fast (14.0 kn):
+                </span>
+                Fast transit for tight laycans (+40.5% fuel burn).
+              </span>
+            ) : (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
+                <span style={{ color: 'var(--sail-100)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 3 }}>
+                  <BaseIcon size={10} /> Base (12.5 kn):
+                </span>
+                Canonical commercial charter party service speed.
+              </span>
+            )}
+          </p>
+        </div>
+
         <button
           type="submit"
           className="btn btn-accent btn-full"
@@ -250,14 +358,14 @@ function PortCongestionPanel({ portStatuses }: { portStatuses: PortStatusRespons
 }
 
 /* ── Center: Winning Plan Banner ───────────────────────────── */
-function WinningPlanBanner({ rec }: { rec: Strategy; ports?: Set<string> }) {
+function WinningPlanBanner({ rec, evidence }: { rec: Strategy; ports?: Set<string>; evidence?: OperationalEvidenceScore | null }) {
   const bd = rec.cost_breakdown;
-  void bd; // bd used in plan-tags below
   const robustness = 0.91; // derived from scenario comparison in full impl (Step 12)
 
   const desc = rec.voyages.map((v, i) => {
     const cargo = v.cargo_tonnes ? `${v.cargo_tonnes} MT ` : '';
-    return `Voyage ${i + 1}: ${v.port} (${v.vessel_class}, ${cargo}${v.mode}, fix day ${v.fix_day})`;
+    const speedInfo = v.steaming_speed_knots ? ` · ${v.steaming_speed_knots} kn` : '';
+    return `Voyage ${i + 1}: ${v.port} (${v.vessel_class}, ${cargo}${v.mode}, fix day ${v.fix_day}${speedInfo})`;
   }).join(' · ');
 
   return (
@@ -284,6 +392,37 @@ function WinningPlanBanner({ rec }: { rec: Strategy; ports?: Set<string> }) {
       </div>
       <div className="plan-tags">
         {rec.solved_via === 'milp' && <span className="plan-tag">MILP solve</span>}
+
+        {/* Steaming Speed Badge */}
+        {bd?.steaming_mode && (
+          <span
+            className={`plan-tag ${bd.steaming_mode === 'eco' ? 'emerald' : ''}`}
+            style={{
+              borderColor: bd.steaming_mode === 'eco' ? 'var(--emerald)' : undefined,
+              color: bd.steaming_mode === 'eco' ? 'var(--emerald)' : undefined,
+            }}
+          >
+            {bd.steaming_mode === 'eco' ? 'Eco (11.5 kn)' : bd.steaming_mode === 'express' ? 'Fast (14.0 kn)' : 'Base (12.5 kn)'}
+            {(bd.speed_bunker_savings_usd ?? 0) > 0 && ` · Saved $${Math.round(bd.speed_bunker_savings_usd!).toLocaleString()}`}
+          </span>
+        )}
+
+        {/* Operational Market Evidence Badge */}
+        {evidence && (
+          <span
+            className="plan-tag"
+            style={{
+              borderColor: evidence.confidence === 'strong' ? 'var(--emerald)' : evidence.confidence === 'moderate' ? 'var(--text-accent)' : undefined,
+              color: evidence.confidence === 'strong' ? 'var(--emerald)' : evidence.confidence === 'moderate' ? 'var(--text-accent)' : undefined,
+              cursor: 'help',
+            }}
+            title={evidence.note}
+          >
+            {evidence.confidence === 'strong' ? '🟢 Strong Broker Evidence' : evidence.confidence === 'moderate' ? '🟡 Moderate Evidence' : '⚪ Model Backed'}
+            {evidence.observation_count > 0 ? ` (${evidence.observation_count} fixtures)` : ''}
+          </span>
+        )}
+
         {!rec.voyages.some(v => v.lightening_required) && <span className="plan-tag">No lightening required</span>}
         {rec.contains_high_uncertainty_voyage
           ? <span className="plan-tag warn">High uncertainty ⚠</span>
@@ -318,11 +457,11 @@ function CostBreakdown({ bd }: { bd: Strategy['cost_breakdown'] }) {
           </div>
           {opex > 0 && (
             <div className="cost-seg opex" style={{ width: `${pct(opex, total)}%` }}>
-              {pct(opex, total) > 6 && `OPEX ${pct(opex, total)}%`}
+              {pct(opex, total) > 5 && `OPEX ${pct(opex, total)}%`}
             </div>
           )}
           <div className="cost-seg port" style={{ width: `${pct(bd.port_handling, total)}%` }}>
-            {pct(bd.port_handling, total) > 6 && `Port ${pct(bd.port_handling, total)}%`}
+            {pct(bd.port_handling, total) > 5 && `Port ${pct(bd.port_handling, total)}%`}
           </div>
           {otherCost > 0 && (
             <div className="cost-seg other" style={{ width: `${pct(otherCost, total)}%` }}>
@@ -362,6 +501,28 @@ function CostBreakdown({ bd }: { bd: Strategy['cost_breakdown'] }) {
             </div>
           ))}
         </div>
+
+        {/* Eco Steaming Fuel Savings Callout */}
+        {(bd.speed_bunker_savings_usd ?? 0) > 0 && (
+          <div style={{
+            marginTop: 12,
+            padding: '8px 12px',
+            borderRadius: 6,
+            background: 'color-mix(in srgb, var(--emerald) 10%, transparent)',
+            border: '1px solid color-mix(in srgb, var(--emerald) 30%, transparent)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontSize: 12,
+          }}>
+            <span style={{ color: 'var(--emerald)', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+              <LeafIcon size={13} /> <strong>Eco Steaming Savings:</strong> Slower 11.5 kn speed reduces fuel burn via naval cubic power law relative to design speed.
+            </span>
+            <span className="mono" style={{ fontWeight: 600, color: 'var(--emerald)' }}>
+              -${fmtK(bd.speed_bunker_savings_usd!)}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -387,6 +548,8 @@ function FeasibleOptions({ rec }: { rec: Strategy }) {
                 ? `Draft exceed · lighten at ${v.lightening_port ?? '?'}`
                 : `Draft OK · discharge ~${v.discharge_days}d`}
               {v.tidal_window_note && ` · ${v.tidal_window_note}`}
+              {v.steaming_mode && ` · ${v.steaming_mode === 'eco' ? 'Eco' : v.steaming_mode === 'express' ? 'Fast' : 'Base'} (${v.steaming_speed_knots ?? 12.5} kn)`}
+              {(v.speed_bunker_savings_usd ?? 0) > 0 && ` · saved $${fmtK(v.speed_bunker_savings_usd!)}`}
             </div>
           </div>
         ))}
@@ -437,11 +600,19 @@ function RateDrivers({ driverNote }: { driverNote: string | null }) {
     <section className="panel">
       <div className="panel-hd">
         <span className="panel-title">Rate Drivers</span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'nowrap' }}>
           {hasProphet && (
-            <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 4,
-              background: 'rgba(59,130,246,0.15)', color: '#1d4ed8',
-              fontFamily: 'var(--f-mono)' }}>
+            <span style={{
+              fontSize: 9.5,
+              fontWeight: 700,
+              padding: '2px 6px',
+              borderRadius: 4,
+              whiteSpace: 'nowrap',
+              background: 'rgba(59,130,246,0.15)',
+              color: '#38bdf8',
+              fontFamily: 'var(--f-mono)',
+              border: '1px solid rgba(56,189,248,0.3)',
+            }}>
               PROPHET · ACTIVE
             </span>
           )}
@@ -742,6 +913,8 @@ export default function RecommendationPage({
   const [ports,  setPorts]  = useState<Set<string>>(new Set(initialScope.dest_ports.slice(0, 2)));
   const [flex,   setFlex]   = useState(30);
   const [bench,  setBench]  = useState('95');
+  const [speedMode, setSpeedMode] = useState<'eco' | 'design' | 'express'>('design');
+  const [evidence,  setEvidence]  = useState<OperationalEvidenceScore | null>(null);
 
   /** Last submitted request — fed into WhatIfSliders as base values */
   const [baseRequest, setBaseRequest] = useState<RecommendationRequest | null>(null);
@@ -835,6 +1008,7 @@ export default function RecommendationPage({
       discharge_ports:          [...ports],
       timing_flexibility_days:  flex,
       commitment_benchmark_pct: parseFloat(bench) || 95,
+      speed_mode:               speedMode,
     };
     const { data, error: apiErr } = await getRecommendation(req, abortRef.current.signal);
     setLoading(false);
@@ -849,9 +1023,12 @@ export default function RecommendationPage({
         getForecast(`${origin}→${mainVoyage.port}`, mainVoyage.vessel_class, 30).then(fRes => {
           if (fRes.data) setDriverNote(fRes.data.driver_explanation);
         });
+        getOperationalEvidenceScore(`${origin}→${mainVoyage.port}`, mainVoyage.vessel_class).then(evRes => {
+          if (evRes.data) setEvidence(evRes.data);
+        });
       }
     }
-  }, [qty, origin, ports, flex, bench, onCargoContextChange, onResultChange]);
+  }, [qty, origin, ports, flex, bench, speedMode, onCargoContextChange, onResultChange]);
 
   /** WhatIfSliders callback — same /recommendation path, AbortSignal provided by slider */
   const handleSliderChange = useCallback(async (req: RecommendationRequest, signal: AbortSignal) => {
@@ -869,6 +1046,9 @@ export default function RecommendationPage({
         getForecast(`${req.origin_port}→${mainVoyage.port}`, mainVoyage.vessel_class, 30).then(fRes => {
           if (fRes.data) setDriverNote(fRes.data.driver_explanation);
         });
+        getOperationalEvidenceScore(`${req.origin_port}→${mainVoyage.port}`, mainVoyage.vessel_class).then(evRes => {
+          if (evRes.data) setEvidence(evRes.data);
+        });
       }
     }
   }, []);
@@ -882,6 +1062,9 @@ export default function RecommendationPage({
       if (mainVoyage && origin) {
         getForecast(`${origin}→${mainVoyage.port}`, mainVoyage.vessel_class, 30).then(fRes => {
           if (fRes.data) setDriverNote(fRes.data.driver_explanation);
+        });
+        getOperationalEvidenceScore(`${origin}→${mainVoyage.port}`, mainVoyage.vessel_class).then(evRes => {
+          if (evRes.data) setEvidence(evRes.data);
         });
       }
     }
@@ -904,6 +1087,7 @@ export default function RecommendationPage({
           ports={ports} togglePort={togglePort}
           flex={flex} setFlex={setFlex}
           bench={bench} setBench={setBench}
+          speedMode={speedMode} setSpeedMode={setSpeedMode}
           onSubmit={handleSubmit}
         />
         {/* WhatIfSliders — shown once we have a result + base request */}
@@ -996,7 +1180,7 @@ export default function RecommendationPage({
                 </span>
               </div>
             )}
-            <WinningPlanBanner rec={rec} />
+            <WinningPlanBanner rec={rec} evidence={evidence} />
             <CostBreakdown bd={rec.cost_breakdown} />
             <ScenarioFanChart result={result!} origin={origin} />
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>

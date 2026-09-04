@@ -130,9 +130,10 @@ def _validate_scope(req: RecommendationRequest) -> None:
                 )
 
 
-def _build_overrides(c: HumanOverridesRequest | None) -> HumanOverrides | None:
+def _build_overrides(c: HumanOverridesRequest | None, speed_mode: str = "design") -> HumanOverrides:
     if c is None:
-        return None
+        return HumanOverrides(speed_mode=speed_mode)
+    effective_speed = c.speed_mode or speed_mode
     return HumanOverrides(
         allow_vessel=c.allow_vessel,
         require_vessel=c.require_vessel,
@@ -141,6 +142,7 @@ def _build_overrides(c: HumanOverridesRequest | None) -> HumanOverrides | None:
         max_completion_day=c.max_completion_day,
         force_mode=c.force_mode,
         min_fix_day=c.min_fix_day,
+        speed_mode=effective_speed,
     )
 
 
@@ -159,6 +161,9 @@ def _serialise_strategy(s: Strategy) -> StrategyResponse:
             cargo_tonnes=v.cargo_tonnes,
             freight_revenue_usd=v.freight_revenue_usd,
             net_sail_value_usd=v.net_sail_value_usd,
+            steaming_speed_knots=getattr(v, "steaming_speed_knots", 12.5),
+            steaming_mode=getattr(v, "steaming_mode", "design"),
+            speed_bunker_savings_usd=getattr(v, "speed_bunker_savings_usd", 0.0),
         )
         for v in s.voyages
     ]
@@ -188,7 +193,7 @@ def get_recommendation(req: RecommendationRequest) -> RecommendationResponse:
     MILP_SOLVE_TIMEOUT_SECONDS) — frontend must show a loading state.
     """
     _validate_scope(req)
-    overrides = _build_overrides(req.constraints)
+    overrides = _build_overrides(req.constraints, speed_mode=req.speed_mode or "design")
 
     try:
         best, comparisons = decision.solve(
@@ -206,4 +211,46 @@ def get_recommendation(req: RecommendationRequest) -> RecommendationResponse:
     return RecommendationResponse(
         recommendation=_serialise_strategy(best),
         scenario_comparison=[_serialise_strategy(s) for s in comparisons],
+    )
+
+
+# ---------------------------------------------------------------------------
+# Operational Evidence Endpoint (DOC3 §FEATURE: Operational Evidence Layer)
+# ---------------------------------------------------------------------------
+
+from pydantic import BaseModel
+from typing import Optional
+from datetime import datetime
+from fastapi import Query
+from backend.engine import evidence
+
+
+class OperationalEvidenceResponse(BaseModel):
+    route: str
+    vessel_class: str
+    confidence: str
+    observation_count: int
+    most_recent_observation_at: Optional[datetime] = None
+    note: str
+    provenance: str = "modeled"
+
+
+@router.get("/recommendation/evidence", response_model=OperationalEvidenceResponse)
+def get_operational_evidence_score(
+    route: str = Query(..., description="Corridor, e.g. 'Australia (Hay Point)→Paradip'"),
+    vessel_class: str = Query(..., description="Vessel class, e.g. 'Capesize'"),
+) -> OperationalEvidenceResponse:
+    """
+    Return the operational evidence score and broker fixture observations for a route-class pair.
+    Advisory overlay post-solve per DOC3 §FEATURE: Operational Evidence Layer.
+    """
+    score = evidence.score_operational_evidence(route=route, vessel_class=vessel_class)
+    return OperationalEvidenceResponse(
+        route=score.route,
+        vessel_class=score.vessel_class,
+        confidence=score.confidence,
+        observation_count=score.observation_count,
+        most_recent_observation_at=score.most_recent_observation_at,
+        note=score.note,
+        provenance=score.provenance,
     )
