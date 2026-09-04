@@ -6,8 +6,10 @@ Tests for DOC3 §FEATURE: Operational Evidence Layer (engine/evidence.py).
 import pytest
 from datetime import datetime, timezone, timedelta
 from backend.engine.evidence import score_operational_evidence, OperationalEvidenceScore
-from backend.warehouse.db import get_session
+from backend.warehouse.db import create_all_tables, get_session
 from backend.warehouse.models import OperationalEvidence
+
+create_all_tables()
 
 
 def test_operational_evidence_scoring_with_no_data():

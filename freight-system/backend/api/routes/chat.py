@@ -83,13 +83,17 @@ CRITICAL — MATHEMATICAL NOTATION & MILP FORMULAS:
 - Always format mathematical expressions, MILP formulations, and variables using standard LaTeX delimiters:
   * For display/block equations (such as the MILP objective function, draft restrictions, or cargo conservation), ALWAYS enclose them in double dollar signs on separate lines without internal blank lines:
     $$
-    \\min \\sum_{i} \\sum_{v} \\sum_{p} \\left( C^{\\text{oc}}_{ivp} + C^{\\text{bk}}_{ivp} + C^{\\text{ox}}_{ivp} + C^{\\text{ph}}_{ivp} + C^{\\text{tx}}_{ivp} + C^{\\text{rail}}_{ip} \\right) x_{iv}
+    \\min \\sum_{i} \\sum_{v} \\sum_{p} \\left( C^{\\text{oc}}_{ivp} + C^{\\text{bk}}_{ivp} + C^{\\text{ox}}_{ivp} + C^{\\text{ph}}_{ivp} + C^{\\text{tx}}_{ivp} + C^{\\text{rail}}_{ip} \\right) x_{iv} \\qquad (1)
     $$
+  * NEVER use LaTeX "\\]" or "\\[" delimiters anywhere in your response.
+  * NEVER write equation numbers like "\\qquad (1) \\]" or "\\tag{1} \\]" with a closing bracket "\\]". Write "\\qquad (1)" inside "$$ ... $$" before the closing "$$".
+  * NEVER write English prose or sentences on the same line as an equation or immediately after a closing delimiter. Place all explanations, "where", and "If" clauses in separate paragraphs after a blank line.
   * Every opening \\left[ or \\left( must be paired with a closing \\right] or \\right). Never emit an unclosed \\right without its delimiter.
   * In variable definition bullet lists, ALWAYS enclose the variable in single dollar signs, e.g. "• $r^{\\text{dem}}$ = demurrage rate" or "• $\\mathbb{E}[D_v]$ = expected delay".
   * For inline variables, ALWAYS use single dollar signs: $q_i$, $x_{iv}$, $y_{ip}$, $z_{i\\tau}$, $w_{im}$, $\\ell_{ip}$, $C^{\\text{tot}}_p$.
   * Never write raw LaTeX commands (\\min, \\sum, \\mathbb{E}, C^{\\text{...}}) without dollar signs.
-  * Never write semicolons around mathematical operators (never write ;\\times; or ;=;).
+  * Never write semicolons around mathematical operators (never write ;\\times; or ;=;). Use commas for function arguments like \\max(0, x), never semicolons.
+  * For combined super/subscripts, always write C^{\\text{dem}}_{iv}, never omit the underscore like C^{\\text{dem}}{iv}.
   * Never put a single dollar sign on its own line.
 
 AVAILABLE TOOL: get_recommendation

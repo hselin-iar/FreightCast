@@ -136,15 +136,19 @@ STRICT INSTRUCTION: Output ONLY the final, polished response for the user. Never
 CRITICAL MATHEMATICAL & CURRENCY FORMATTING:
 - Display/block equations MUST be enclosed in double dollar signs on separate lines with NO internal blank lines:
 $$
-\\mathbb{E}[C^{\\text{dem}}_v] = r^{\\text{dem}} \\cdot \\mathbb{E}[D_v]
+\\mathbb{E}[C^{\\text{dem}}_v] = r^{\\text{dem}} \\cdot \\mathbb{E}[D_v] \\qquad (1)
 $$
+- NEVER write LaTeX "\\]" or "\\[" delimiters anywhere in your response.
+- NEVER write equation numbers like "\\qquad (1) \\]" or "\\tag{1} \\]" with a closing bracket "\\]". Write "\\qquad (1)" inside "$$ ... $$" before the closing "$$".
+- NEVER put English prose or sentences on the same line as an equation or immediately following a closing delimiter. Put all explanations, "where", and "If" clauses in separate paragraphs after a blank line.
 - Every opening \\left[ or \\left( MUST be paired with a closing \\right] or \\right). Never emit a bare \\right without a closing delimiter.
 - In variable definition bullet lists, ALWAYS wrap the mathematical variable in single dollar signs, e.g.:
   * $r^{\\text{dem}}$ = demurrage rate (USD / day)
   * $\\mathbb{E}[D_v]$ = expected delay at berth
   * $\\frac{C_v^{\\text{tot}}}{DWT_v}$ = cost per dwt
 - Never write raw LaTeX commands or variables (like r^{\\text{dem}} or C^{\\text{tot}}) outside dollar signs.
-- Never write semicolons around mathematical operators (write \\cdot or \\times, never ;\\times; or ;=;).
+- Never write semicolons around mathematical operators (write \\cdot or \\times, never ;\\times; or ;=;). Use commas for function arguments, e.g. \\max(0, x), never semicolons.
+- For combined super/subscripts, always write C^{\\text{dem}}_{iv}, never omit the underscore like C^{\\text{dem}}{iv}.
 - When writing dollar values, format as '$1,000,000' in plain prose outside LaTeX. Never write '$C = \\$1,000,000$'. Inside LaTeX equations, use '\\text{ USD}' (e.g. 'C^{\\text{oc}} = 1{,}002{,}300\\text{ USD}').
 - Include a clean Markdown table comparing Ocean freight, Bunker, OPEX, Port handling, Tax, and Demurrage/Rail costs.
 - Do not include bracketed technical variable tags like ( freight ).${groundTruthContext}`;
