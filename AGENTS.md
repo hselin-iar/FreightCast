@@ -6,17 +6,13 @@ LAST_COMPLETED:  Agentic Auditor KaTeX Rendering Hardening ✓ VERIFIED
 SESSION_STATUS:  ACTIVE
 PAUSED_AT:       (none — Pushed to GitHub)
 
-NOTE (Agentic Auditor KaTeX Rendering Hardening):
-- Root Cause Identified: The LLM was emitting asymmetric LaTeX display delimiters (opening with `$$` or `\[` and closing with `\qquad (1) \]` or unclosed tags followed immediately by inline prose paragraphs). This created an odd number of `$$` and caused `mathUtils.ts` to invert display math boundaries, swallowing dozens of lines of Markdown headers, bullet points, and text into giant unclosed math blocks that triggered red KaTeX parse error spans (`<span class="katex-error">`). Additionally, a JavaScript string replacement bug (`$$` in string replacements resolving to a single `$`) was collapsing display math delimiters.
-- Comprehensive Preprocessor Upgrade (`mathUtils.ts`):
-  1. Splitting inline prose suffixes immediately following equation numbers or `\]`.
-  2. Subscript auto-repair for nested superscripts (`C^{\text{dem}}{iv}` -> `C^{\text{dem}}_{iv}`).
-  3. Semicolon-in-math correction (`r^{\text{dem}};\max` -> `r^{\text{dem}} \cdot \max` and `(0; \tau)` -> `(0, \tau)`).
-  4. Fix `\right` auto-heal bug to never corrupt valid LaTeX delimiters like `\rceil`, `\rfloor`, `\rangle`.
-  5. Function-based replacers across all regex steps to guarantee literal `$$` preservation.
-  6. Structural delimiter unpacking: scans `$$ ... $$` blocks and unpacks any embedded Markdown structures (`###`, `---`, lists, tables) or prose lines into isolated, valid display equations and standard Markdown paragraphs.
-- Prompt Hardening (`HypothesisAuditor.tsx` & `backend/api/routes/chat.py`): Explicit instructions prohibiting `\]` and inline prose after formulas, enforcing isolated `$$ ... $$` blocks and standard commas.
-- Deployed & Verified: All 297 backend tests pass (`22.31s`), frontend Vite build passes (`297ms`), and changes deployed to GitHub (`3160f3c`).
+NOTE (LaTeX Subscript Auto-Repair & Raw Formula Wrapping):
+- Root Cause Identified: The LLM was emitting LaTeX cost terms with superscripts and subscripts without the subscript underscore (`C^{\text{oc}}{v}`, `C^{\text{bk}}{v}`, `C^{\text{opx}}{v}`, `C^{\text{ph}}{v}` instead of `C^{\text{oc}}_{v}`, etc.). Furthermore, formulas like `x_{v}\Bigl(C^{\text{oc}}{v}+...\Bigr)` were being outputted without dollar signs (`$ ... $` or `$$ ... $$`), resulting in raw un-rendered LaTeX math or markdown typography mangling.
+- Backend & Frontend Dual-Layer Sanitizer:
+  1. `_sanitize_mathematical_latex` in `backend/api/routes/chat.py` automatically injects missing subscript underscores for `C^{\text{...}}{sub}` and `V{sub}` patterns, cleans semicolons, and fixes orphan tags.
+  2. `preprocessMathematicalMarkdown` in `frontend/src/lib/mathUtils.ts` automatically repairs missing subscript underscores, promotes standalone multiline variable/bracket expressions (`x_{v}\Bigl(...)` or `C^{\text{...}}`) to display `$$ ... $$` math BEFORE block stashing, and detects/wraps un-delimited inline sizing brackets (`\Bigl(...\Bigr)` or `\left(...\right)`) into inline `$ ... $`.
+  3. Prompt hardening across both `HypothesisAuditor.tsx` and `backend/api/routes/chat.py` explicitly demanding `C^{\text{oc}}_{v}` and forbidding raw un-delimited mathematical formulas.
+- Deployed & Verified: All 297 backend tests pass (`19.09s`), frontend Vite build passes (`298ms`), and verified in Node KaTeX runner.
 
 NOTE (Step 9 verification status): Provenance layer fully implemented and verified.
 - provenance.py: Provenance Literal type, tag_measured/tag_modeled/tag_assumed helpers,

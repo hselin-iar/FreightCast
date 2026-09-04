@@ -85,6 +85,8 @@ CRITICAL — MATHEMATICAL NOTATION & MILP FORMULAS:
     $$
     \\min \\sum_{i} \\sum_{v} \\sum_{p} \\left( C^{\\text{oc}}_{ivp} + C^{\\text{bk}}_{ivp} + C^{\\text{ox}}_{ivp} + C^{\\text{ph}}_{ivp} + C^{\\text{tx}}_{ivp} + C^{\\text{rail}}_{ip} \\right) x_{iv} \\qquad (1)
     $$
+  * NEVER emit mathematical formulas or variables without dollar signs. Every inline formula MUST be wrapped in single dollar signs, e.g. "$x_{v} \\Bigl( C^{\\text{oc}}_{v} + C^{\\text{bk}}_{v} \\Bigr)$".
+  * ALWAYS use an underscore for subscripts after superscripts: write C^{\\text{oc}}_{v}, C^{\\text{bk}}_{v}, C^{\\text{opx}}_{v}, C^{\\text{ph}}_{v}, C^{\\text{dem}}_{iv}. NEVER omit the underscore like C^{\\text{oc}}{v}, C^{\\text{bk}}{v}, or C^{\\text{ph}}{v}.
   * NEVER use LaTeX "\\]" or "\\[" delimiters anywhere in your response.
   * NEVER write equation numbers like "\\qquad (1) \\]" or "\\tag{1} \\]" with a closing bracket "\\]". Write "\\qquad (1)" inside "$$ ... $$" before the closing "$$".
   * NEVER write English prose or sentences on the same line as an equation or immediately after a closing delimiter. Place all explanations, "where", and "If" clauses in separate paragraphs after a blank line.
@@ -93,7 +95,6 @@ CRITICAL — MATHEMATICAL NOTATION & MILP FORMULAS:
   * For inline variables, ALWAYS use single dollar signs: $q_i$, $x_{iv}$, $y_{ip}$, $z_{i\\tau}$, $w_{im}$, $\\ell_{ip}$, $C^{\\text{tot}}_p$.
   * Never write raw LaTeX commands (\\min, \\sum, \\mathbb{E}, C^{\\text{...}}) without dollar signs.
   * Never write semicolons around mathematical operators (never write ;\\times; or ;=;). Use commas for function arguments like \\max(0, x), never semicolons.
-  * For combined super/subscripts, always write C^{\\text{dem}}_{iv}, never omit the underscore like C^{\\text{dem}}{iv}.
   * Never put a single dollar sign on its own line.
 
 AVAILABLE TOOL: get_recommendation
@@ -703,6 +704,30 @@ def _clean_reasoning_artifacts(text: str) -> str:
     return text.strip()
 
 
+def _sanitize_mathematical_latex(text: str) -> str:
+    """Auto-repair common LLM mathematical LaTeX glitches (missing subscript underscores, semicolons)."""
+    import re
+    if not text:
+        return ""
+    # 1. Fix missing subscript underscores after superscripts or variables:
+    # e.g. C^{\text{oc}}{v} -> C^{\text{oc}}_{v}
+    # e.g. C^{\text{dem}}{iv} -> C^{\text{dem}}_{iv}
+    # e.g. D{v} -> D_{v}
+    text = re.sub(r"(\^\{(?:[^{}]+|\{[^{}]*\})*\})\{([a-zA-Z0-9_]+)\}", r"\1_{\2}", text)
+    text = re.sub(r"\b([A-Za-z])\{([a-zA-Z0-9]+)\}", r"\1_{\2}", text)
+
+    # 2. Fix semicolons in math:
+    text = re.sub(r";(?=\s*\\(?:max|min|sum|prod|exp|log)\b)", r" \\cdot ", text)
+    text = re.sub(r"([0-9a-zA-Z_}]+)\s*;\s*([0-9a-zA-Z_{\\]+)", r"\1, \2", text)
+    text = re.sub(r";([=+\-*/]|\\times|\\pm|\\cdot|\\approx|\\le|\\ge|\\ne);", r" \;\1\; ", text)
+
+    # 3. Clean orphan equation delimiters and tags:
+    text = re.sub(r"(\\qquad\s*\([0-9]+\))\s*\\?\]", r"\1", text)
+    text = re.sub(r"\\right(?![ \t]*(?:[\[\](){}.|/]|\\[a-zA-Z]+))", r"\\right.", text)
+
+    return text
+
+
 # ---------------------------------------------------------------------------
 # Route handler
 # ---------------------------------------------------------------------------
@@ -871,6 +896,9 @@ def chat(req: ChatRequest) -> ChatResponse:
             reply = " ".join(b.get("text", "") for b in content_blocks if b.get("text")).strip()
 
     # ── Echo updated history back to caller ────────────────────────────────
+    if reply:
+        reply = _sanitize_mathematical_latex(reply)
+
     history_out: List[ChatMessage] = [
         ChatMessage(role=m.role, content=m.content)
         for m in req.conversation_history

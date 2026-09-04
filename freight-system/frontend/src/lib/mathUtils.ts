@@ -90,7 +90,36 @@ export function preprocessMathematicalMarkdown(text: string): string {
   // Any remaining orphan \] becomes closing $$
   cleaned = cleaned.replace(/\\\]/g, () => `\n$$\n\n`);
 
-  // 9. UNPACK MIXED $$ ... $$ BLOCKS:
+  // 9. Detect standalone equations with equation numbers like \qquad (1)
+  cleaned = cleaned.replace(
+    /(?:^|\n)([ \t]*(?:C\^\{|N_v|\\frac|\\min|\\sum|q_i|[a-zA-Z]_\{[a-zA-Z0-9]+\})[^\n]+?\\qquad\s*\([0-9]+\))\s*(?:\\\]|\])?\s*(where|\*|\n|$)/gi,
+    (_m, g1, g2) => `\n\n$$\n${g1.trim()}\n$$\n\n${g2}`
+  );
+
+  // 10. Detect raw un-delimited equations on standalone lines (BEFORE stashing):
+  // Catches lines starting with operators, variables with subscripts & sizing brackets:
+  // e.g. x_{v}\Bigl(C^{\text{oc}}_{v}+...\Bigr)
+  // e.g. \sum_{v} x_v C^{\text{tot}}_v \le B
+  cleaned = cleaned.replace(
+    /(?:^|\n)([ \t]*(?:[a-zA-Z0-9_^{}\\]*\\(?:Bigl|left|Big|bigg)|\\min|\\max|\\sum|\\prod|\\mathbb|\\frac|\\int|\\boxed|[a-zA-Z]_\{[a-zA-Z0-9]+\}\s*\\(?:Bigl|left|\()|C\^\{|N_v\s*=)[^\n]+)(?:\n|$)/g,
+    (match, line) => {
+      const t = line.trim();
+      if (t.startsWith('-') || t.startsWith('*') || t.startsWith('•') || t.startsWith('#') || t.startsWith('|')) {
+        return match;
+      }
+      if (!line.includes('$') && !line.includes('__DISPLAY_BLOCK_')) {
+        const words = t.match(/\b[a-zA-Z]{3,}\b/g) || [];
+        const nonMathWords = words.filter((w: string) => !['min', 'max', 'sum', 'prod', 'text', 'frac', 'left', 'right', 'bigl', 'bigr', 'approx', 'times', 'cdot', 'load', 'disch', 'handle', 'dem', 'opex', 'rate', 'tax', 'opx', 'oc', 'bk', 'ph'].includes(w.toLowerCase()));
+        if (nonMathWords.length < 3) {
+          const cleanedLine = line.replace(/\\\]/g, '').replace(/\]\s*$/, '').trim();
+          return `\n\n$$\n${cleanedLine}\n$$\n\n`;
+        }
+      }
+      return match;
+    }
+  );
+
+  // 11. UNPACK MIXED $$ ... $$ BLOCKS:
   // If an LLM opened a $$ ... $$ block that spans across Markdown structural breaks
   // (headers, horizontal rules, bullet lists) or English sentences (where, If, At, etc.),
   // split it cleanly into individual display math blocks and pristine Markdown prose!
@@ -103,7 +132,7 @@ export function preprocessMathematicalMarkdown(text: string): string {
       if (/^(#{1,6}\s|---|\*|\-|•|\|)/.test(t)) return true;
       if (/^(where\b|If\b|At\b|Nevertheless\b|The\b|Note\b|Let\b|Assuming\b|Here\b|This\b|Using\b)/i.test(t)) return true;
       const words = t.match(/\b[a-zA-Z]{3,}\b/g) || [];
-      const mathWords = words.filter((w: string) => !['min', 'max', 'sum', 'prod', 'text', 'frac', 'left', 'right', 'qquad', 'approx', 'times', 'cdot', 'quad', 'load', 'disch', 'handle', 'dem', 'opex', 'rate', 'exp', 'log'].includes(w.toLowerCase()));
+      const mathWords = words.filter((w: string) => !['min', 'max', 'sum', 'prod', 'text', 'frac', 'left', 'right', 'qquad', 'approx', 'times', 'cdot', 'quad', 'load', 'disch', 'handle', 'dem', 'opex', 'rate', 'exp', 'log', 'tax', 'opx', 'oc', 'bk', 'ph'].includes(w.toLowerCase()));
       return mathWords.length >= 3 && !t.includes('\\qquad') && !/^[\\$%]/.test(t);
     });
 
@@ -136,7 +165,7 @@ export function preprocessMathematicalMarkdown(text: string): string {
       const isHeaderOrRule = /^(#{1,6}\s|---|\*|\-|•|\|)/.test(t);
       const isProseStart = /^(where\b|If\b|At\b|Nevertheless\b|The\b|Note\b|Let\b|Assuming\b|Here\b|This\b|Using\b)/i.test(t);
       const words = t.match(/\b[a-zA-Z]{3,}\b/g) || [];
-      const mathWords = words.filter((w: string) => !['min', 'max', 'sum', 'prod', 'text', 'frac', 'left', 'right', 'qquad', 'approx', 'times', 'cdot', 'quad', 'load', 'disch', 'handle', 'dem', 'opex', 'rate', 'exp', 'log'].includes(w.toLowerCase()));
+      const mathWords = words.filter((w: string) => !['min', 'max', 'sum', 'prod', 'text', 'frac', 'left', 'right', 'qquad', 'approx', 'times', 'cdot', 'quad', 'load', 'disch', 'handle', 'dem', 'opex', 'rate', 'exp', 'log', 'tax', 'opx', 'oc', 'bk', 'ph'].includes(w.toLowerCase()));
       const isProseSentence = mathWords.length >= 3 && !t.includes('\\qquad') && !/^[\\$%]/.test(t);
 
       if (isHeaderOrRule || isProseStart || isProseSentence) {
@@ -151,8 +180,7 @@ export function preprocessMathematicalMarkdown(text: string): string {
     return '\n\n' + segments.join('\n\n') + '\n\n';
   });
 
-  // 10. EARLY STASH of existing display math blocks ($$ ... $$):
-  // Must run BEFORE heuristic line detection to prevent existing blocks from being re-wrapped into four $$ delimiters
+  // 12. STASH ALL DISPLAY BLOCKS ($$ ... $$):
   const displayBlocks: string[] = [];
   cleaned = cleaned.replace(/\$\$([\s\S]*?)\$\$/g, (_match, content) => {
     let inner = content.trim();
@@ -170,7 +198,14 @@ export function preprocessMathematicalMarkdown(text: string): string {
     return `__DISPLAY_BLOCK_${displayBlocks.length - 1}__`;
   });
 
-  // 11. Heuristic bullet-point mathematical variable wrapping:
+  // 13. Detect and wrap un-delimited INLINE LaTeX expressions (with \Bigl, \left, or fraction):
+  // e.g. "... x_{v}\Bigl(C^{\text{oc}}_{v}+...\Bigr) ..."
+  cleaned = cleaned.replace(
+    /(?<!\$)\b([a-zA-Z0-9_^{}\\]*\\(?:Bigl|left|Big|bigg)[(\[{][^$\n]+?\\(?:Bigr|right|Big|bigg)[)\]}][a-zA-Z0-9_^{}\\]*)(?!\$)/g,
+    (_m, expr) => `$${expr}$`
+  );
+
+  // 14. Heuristic bullet-point mathematical variable wrapping:
   // Automatically wrap LaTeX variables, expectations, or fractions preceding '=' at the start of bullet points
   // e.g. • r^{\text{dem}} = ... -> • $r^{\text{dem}}$ = ...
   // e.g. • \mathbb{E}[D_v] = ... -> • $\mathbb{E}[D_v]$ = ...
@@ -178,13 +213,7 @@ export function preprocessMathematicalMarkdown(text: string): string {
   const bulletMathRe = /(^[ \t]*[•*\-]\s*)(\\frac\{.+?\}\{.+?\}|\\mathbb\{[a-zA-Z]+\}(?:\[.+?\])?|[a-zA-Z](?:\^\{.+?\})?(?:_\{.+?\}|_[a-zA-Z0-9]+)?)\s*=/gm;
   cleaned = cleaned.replace(bulletMathRe, (_m, g1, g2) => `${g1}$${g2}$ =`);
 
-  // 12. Standalone equations with equation numbers like \qquad (1) \] or \qquad (2) ]
-  cleaned = cleaned.replace(
-    /(?:^|\n)([ \t]*(?:C\^\{|N_v|\\frac|\\min|\\sum|q_i)[^\n]+?\\qquad\s*\([0-9]+\))\s*(?:\\\]|\])?\s*(where|\*|\n|$)/gi,
-    (_m, g1, g2) => `\n\n$$\n${g1.trim()}\n$$\n\n${g2}`
-  );
-
-  // 13. Fix un-delimited fraction formulas (e.g. in list items: \frac{2,261...}{60,000} = $37.68/t)
+  // 15. Fix un-delimited fraction formulas (e.g. in list items: \frac{2,261...}{60,000} = $37.68/t)
   cleaned = cleaned.replace(
     /(?<!\$)(?:^|(?<=[:\s]))(\\frac\{.+?\}\{.+?\}\s*=\s*(?:\\\$|&#36;|\$)?\d[\d,.]*(?:\/\s*\\text\{[^{}]+\}|\/[a-zA-Z]+)?)(?!\$)/gm,
     (_match, formula) => {
@@ -193,19 +222,7 @@ export function preprocessMathematicalMarkdown(text: string): string {
     }
   );
 
-  // 14. Detect raw un-delimited equations on standalone lines (equations that were NOT already enclosed in $$):
-  cleaned = cleaned.replace(
-    /(?:^|\n)([ \t]*(\\min|\\max|\\sum|\\mathbb|\\int|\\boxed)[^\n]+)(?:\n|$)/g,
-    (match, line) => {
-      if (!line.includes('$') && !line.includes('__DISPLAY_BLOCK_')) {
-        const cleanedLine = line.replace(/\\\]/g, '').replace(/\]\s*$/, '').trim();
-        return `\n\n$$\n${cleanedLine}\n$$\n\n`;
-      }
-      return match;
-    }
-  );
-
-  // 15. Fix unclosed \text in subscripts before relational operators:
+  // 16. Fix unclosed \text in subscripts before relational operators:
   // e.g. x_{\text{Panamax}=1 -> $x_{\text{Panamax}}=1$
   // e.g. x_{\text{Supramax}\ge2 -> $x_{\text{Supramax}}\ge2$
   cleaned = cleaned.replace(
@@ -213,21 +230,17 @@ export function preprocessMathematicalMarkdown(text: string): string {
     (_m, g1, _t, g3, g4) => `$${g1}}${g3}${g4}$`
   );
 
-  // 16. Protect currency dollar signs OUTSIDE display math:
+  // 17. Protect currency dollar signs OUTSIDE display math:
   // Converts $ followed by digits ($450,000, $1.2M) to &#36; so remark-math never pairs them as math delimiters
   cleaned = cleaned.replace(/(?<![\\$])\$(\d[\d,.]*(?:\s*[kKmMbBtT]|(?=\s|\b|[.,;:)!]|$)))/g, '&#36;$1');
 
-  // 17. Normalize any currency signs inside INLINE math ($...$):
+  // 18. Normalize any currency signs inside INLINE math ($...$):
   // Convert any &#36; or plain $ followed by digits inside $...$ to \text{USD ...}
   // This prevents remark-math from interpreting $ as a math delimiter closing tag
   cleaned = cleaned.replace(/\$([^$]+)\$/g, (_match: string, inner: string) => {
     const fixed = inner.replace(/(?:&#36;|\\\$|\$)(\d[\d,.]*)/g, (_m: string, num: string) => `\\text{USD } ${num}`);
     return `$${fixed}$`;
   });
-
-  // 18. Clean stray orphan brackets:
-  cleaned = cleaned.replace(/\\\]/g, '');
-  cleaned = cleaned.replace(/\\\[/g, '');
 
   // 19. Restore all protected display blocks:
   cleaned = cleaned.replace(/__DISPLAY_BLOCK_(\d+)__/g, (_match, idx) => {

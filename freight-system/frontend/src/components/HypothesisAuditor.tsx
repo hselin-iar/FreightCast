@@ -138,6 +138,8 @@ CRITICAL MATHEMATICAL & CURRENCY FORMATTING:
 $$
 \\mathbb{E}[C^{\\text{dem}}_v] = r^{\\text{dem}} \\cdot \\mathbb{E}[D_v] \\qquad (1)
 $$
+- NEVER emit mathematical formulas or expressions without dollar signs. Every inline formula MUST be wrapped in single dollar signs, e.g. "$x_{v} \\Bigl( C^{\\text{oc}}_{v} + C^{\\text{bk}}_{v} \\Bigr)$".
+- ALWAYS include the underscore before subscripts: write C^{\\text{oc}}_{v}, C^{\\text{bk}}_{v}, C^{\\text{opx}}_{v}, C^{\\text{ph}}_{v}, C^{\\text{tax}}_{v}, C^{\\text{dem}}_{iv}. NEVER omit the underscore like C^{\\text{oc}}{v}, C^{\\text{bk}}{v}, or C^{\\text{ph}}{v}.
 - NEVER write LaTeX "\\]" or "\\[" delimiters anywhere in your response.
 - NEVER write equation numbers like "\\qquad (1) \\]" or "\\tag{1} \\]" with a closing bracket "\\]". Write "\\qquad (1)" inside "$$ ... $$" before the closing "$$".
 - NEVER put English prose or sentences on the same line as an equation or immediately following a closing delimiter. Put all explanations, "where", and "If" clauses in separate paragraphs after a blank line.
@@ -148,7 +150,6 @@ $$
   * $\\frac{C_v^{\\text{tot}}}{DWT_v}$ = cost per dwt
 - Never write raw LaTeX commands or variables (like r^{\\text{dem}} or C^{\\text{tot}}) outside dollar signs.
 - Never write semicolons around mathematical operators (write \\cdot or \\times, never ;\\times; or ;=;). Use commas for function arguments, e.g. \\max(0, x), never semicolons.
-- For combined super/subscripts, always write C^{\\text{dem}}_{iv}, never omit the underscore like C^{\\text{dem}}{iv}.
 - When writing dollar values, format as '$1,000,000' in plain prose outside LaTeX. Never write '$C = \\$1,000,000$'. Inside LaTeX equations, use '\\text{ USD}' (e.g. 'C^{\\text{oc}} = 1{,}002{,}300\\text{ USD}').
 - Include a clean Markdown table comparing Ocean freight, Bunker, OPEX, Port handling, Tax, and Demurrage/Rail costs.
 - Do not include bracketed technical variable tags like ( freight ).${groundTruthContext}`;
