@@ -1,16 +1,17 @@
 # AGENTS — Intelligent Freight Forecasting & Chartering (SAIL PS3)
 
 ## Session State
-CURRENT_STEP:    Steaming Speed Selector De-duplication & Fleet Page UX Clarification
-LAST_COMPLETED:  Steaming Speed Selector De-duplication ✓ VERIFIED
+CURRENT_STEP:    Situational Stress-Tests Contrast & Readability Polish Complete
+LAST_COMPLETED:  Situational Stress-Tests Contrast & Readability Polish ✓ VERIFIED
 SESSION_STATUS:  ACTIVE
-PAUSED_AT:       (none — Verified in browser)
+PAUSED_AT:       (none — Pushed to GitHub)
 
-NOTE (Steaming Speed Selector De-duplication Verification):
-- Removed Redundant Elements: Eliminated the secondary speed badge (`14.0 kn` / `12.5 kn`) next to the "Steaming Speed Mode" title and removed repetitive speed subtext (`11.5 kn`, `12.5 kn`, `14.0 kn`) from inside the buttons.
-- Clean Horizontal Segmented Pills: Each mode button displays a clean inline vector SVG icon (`LeafIcon`, `StandardIcon`, `ExpressIcon`) and label (`Eco`, `Standard`, `Express`), elevated with active card styling (`1.5px solid var(--sail-700)` on `#ffffff`).
-- Single Canonical Explanation Caption: Preserved the explanatory sentence below the control where mode name, exact kn speed, and operational fuel burn / laycan impact are concisely stated without repetition.
-- Visual Verification: Verified in live browser (http://localhost:5173/) across all states with screenshot saved to `steaming_speed_sidebar_final_1788530907099.png`. Build passes in 360ms.
+NOTE (Situational Stress-Tests Contrast Fix):
+- Eradicated White-on-White Title: The selected scenario card in `SituationalProofLab.tsx` now renders its title in crisp, high-contrast dark charcoal (`var(--sail-100)`: `#1A1A1A`) with bold 700 weight, replacing the unreadable `#FAFAFA` white text on white background.
+- Eradicated Yellow-on-White Category: The category tag (e.g. `HYDRODYNAMICS & SIZING`) now renders with `var(--text-accent)` (`#7a6e00` — dark warm gold/olive) which provides strong 4.5+:1 WCAG contrast on the white card, eliminating washed-out neon yellow.
+- Elevated Active Card Styling: Active card uses a pure white elevated card (`#ffffff`), subtle card elevation shadow (`0 2px 6px rgba(0, 0, 0, 0.06)`), refined border (`1.5px solid var(--accent-dim)`), and a clean left indicator pill (`borderLeft: 4px solid var(--accent-dim)`).
+- Grounding Citations Accordion Polish: Updated expanded citation headers to pure `#ffffff` with high-contrast `#1A1A1A` title and readable `#7a6e00` chevron.
+- Deployed & Verified: Tested build (`npm run build` passes in 301ms) and deployed to GitHub (`61a5558`).
 
 NOTE (Step 9 verification status): Provenance layer fully implemented and verified.
 - provenance.py: Provenance Literal type, tag_measured/tag_modeled/tag_assumed helpers,
