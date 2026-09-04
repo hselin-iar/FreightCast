@@ -66,10 +66,10 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
                     alignItems: 'flex-start',
                     padding: '10px 12px',
                     borderRadius: 6,
-                    border: '1px solid',
-                    borderColor: isSelected ? 'var(--accent)' : 'var(--sail-800)',
-                    backgroundColor: isSelected ? 'color-mix(in srgb, var(--accent) 12%, var(--sail-900))' : 'var(--sail-950)',
-                    color: isSelected ? '#FAFAFA' : 'var(--sail-200)',
+                    border: isSelected ? '1.5px solid var(--accent-dim)' : '1px solid var(--sail-800)',
+                    borderLeft: isSelected ? '4px solid var(--accent-dim)' : '4px solid transparent',
+                    backgroundColor: isSelected ? '#ffffff' : 'var(--sail-950)',
+                    boxShadow: isSelected ? '0 2px 6px rgba(0, 0, 0, 0.06)' : 'none',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.15s ease',
@@ -80,14 +80,14 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
                       fontSize: 9.5,
                       textTransform: 'uppercase',
                       letterSpacing: '0.05em',
-                      color: isSelected ? 'var(--accent)' : 'var(--sail-400)',
+                      color: isSelected ? 'var(--text-accent)' : 'var(--sail-500)',
                       fontWeight: 700,
                       marginBottom: 2,
                     }}
                   >
                     {sc.category}
                   </span>
-                  <span style={{ fontSize: 12.5, fontWeight: 600, color: isSelected ? '#FAFAFA' : 'var(--sail-100)', lineHeight: 1.3 }}>
+                  <span style={{ fontSize: 12.5, fontWeight: isSelected ? 700 : 600, color: 'var(--sail-100)', lineHeight: 1.3 }}>
                     {sc.title}
                   </span>
                 </button>
@@ -139,7 +139,7 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
                   style={{
                     backgroundColor: 'var(--sail-950)',
                     borderRadius: 6,
-                    border: isExpanded ? '1px solid var(--accent)' : '1px solid var(--sail-800)',
+                    border: isExpanded ? '1.5px solid var(--accent-dim)' : '1px solid var(--sail-800)',
                     overflow: 'hidden',
                     transition: 'border-color 0.15s ease',
                   }}
@@ -153,15 +153,15 @@ export const SituationalProofLab: React.FC<Props> = ({ scenarios }) => {
                       alignItems: 'center',
                       justifyContent: 'space-between',
                       cursor: 'pointer',
-                      background: isExpanded ? 'color-mix(in srgb, var(--accent) 8%, var(--sail-900))' : 'transparent',
+                      background: isExpanded ? '#ffffff' : 'transparent',
                       userSelect: 'none',
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
-                      <span style={{ fontSize: 9, color: isExpanded ? 'var(--accent)' : 'var(--sail-500)', transition: 'transform 0.15s ease' }}>
+                      <span style={{ fontSize: 9, color: isExpanded ? 'var(--text-accent)' : 'var(--sail-500)', transition: 'transform 0.15s ease' }}>
                         {isExpanded ? '▼' : '▶'}
                       </span>
-                      <span style={{ fontSize: 12, fontWeight: 600, color: isExpanded ? 'var(--text-accent)' : 'var(--sail-100)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <span style={{ fontSize: 12, fontWeight: isExpanded ? 700 : 600, color: isExpanded ? 'var(--sail-100)' : 'var(--sail-100)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {cit.title}
                       </span>
                     </div>

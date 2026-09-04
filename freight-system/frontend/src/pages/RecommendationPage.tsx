@@ -308,7 +308,7 @@ function CargoForm({
             color: 'var(--sail-300)',
             textAlign: 'center',
           }}>
-            <span style={{ color: 'var(--accent)', fontWeight: 600 }}>Waking up cloud engine</span>
+            <span style={{ color: 'var(--text-accent)', fontWeight: 600 }}>Waking up cloud engine</span>
             {wakeElapsed >= 3 && <span> · Free-tier instances spin up in ~30–45s ({wakeElapsed}s elapsed)</span>}
           </div>
         )}
